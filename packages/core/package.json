@@ -1,0 +1,29 @@
+{
+  "name": "@mosaic/core",
+  "version": "0.0.0",
+  "description": "Framework-free utilities and schemas for Mosaic trading components.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [],
+  "author": "zayau",
+  "dependencies": {
+    "big.js": "^7.0.1",
+    "zod": "^4.4.3"
+  }
+}

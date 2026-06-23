@@ -1,0 +1,14 @@
+node_modules
+dist
+.turbo
+.vite
+coverage
+
+.DS_Store
+*.log
+
+.env
+.env.*
+!.env.example
+
+docs/internal-design-decisions.md

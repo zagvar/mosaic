@@ -1,0 +1,33 @@
+{
+  "name": "mosaic",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Accessible, composable trading UI components and utilities.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.8.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm --filter @mosaic/docs dev",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "keywords": [
+    "trading",
+    "stocks",
+    "react",
+    "components",
+    "accessibility"
+  ],
+  "author": "zayau",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/big.js": "^6.2.2",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

@@ -25,10 +25,20 @@ export type {
 
 export { useTradeDraft } from "./use-trade-draft";
 
-export { defaultTradeTicketMessages, TradeTicket } from "./trade-ticket";
+export { TradeTicket } from "./trade-ticket";
+
+export { defaultTradeTicketMessages } from "./trade-ticket-messages";
 
 export type {
   TradeTicketClassNames,
-  TradeTicketMessages,
   TradeTicketProps,
 } from "./trade-ticket";
+
+export type {
+  TradeTicketMessages,
+  TradeTicketMessagesInput,
+  TradeTicketValidationMessage,
+  TradeTicketValidationMessageBaseContext,
+  TradeTicketValidationMessageContext,
+  TradeTicketValidationMessages,
+} from "./trade-ticket-messages";

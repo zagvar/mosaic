@@ -17,6 +17,7 @@ export interface AvailableBalanceProps {
   baseAvailable: number;
   quoteCurrency: string;
   baseSymbol: string;
+  locale: string;
   messages: AvailableBalanceMessages;
   classNames?: AvailableBalanceClassNames;
 }
@@ -27,13 +28,14 @@ export function AvailableBalance({
   baseAvailable,
   quoteCurrency,
   baseSymbol,
+  locale,
   messages,
   classNames,
 }: AvailableBalanceProps) {
   const value =
     side === "buy"
-      ? formatCurrency(quoteAvailable, quoteCurrency)
-      : `${formatDecimal(baseAvailable)} ${baseSymbol}`;
+      ? formatCurrency(quoteAvailable, quoteCurrency, locale)
+      : `${formatDecimal(baseAvailable, locale)} ${baseSymbol}`;
 
   return (
     <div {...classNameProps(classNames?.root)}>
@@ -43,8 +45,8 @@ export function AvailableBalance({
   );
 }
 
-function formatCurrency(value: number, currency: string) {
-  return new Intl.NumberFormat(undefined, {
+function formatCurrency(value: number, currency: string, locale: string) {
+  return new Intl.NumberFormat(locale, {
     currency,
     maximumFractionDigits: 2,
     minimumFractionDigits: 2,
@@ -52,8 +54,8 @@ function formatCurrency(value: number, currency: string) {
   }).format(value);
 }
 
-function formatDecimal(value: number) {
-  return new Intl.NumberFormat(undefined, {
+function formatDecimal(value: number, locale: string) {
+  return new Intl.NumberFormat(locale, {
     maximumFractionDigits: 8,
   }).format(value);
 }

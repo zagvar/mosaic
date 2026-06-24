@@ -1,8 +1,11 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { AssetRules } from "@mosaic/core";
+import type { AssetRules, OrderSummary, PreparedOrder } from "@mosaic/core";
+import { createOrderSummary } from "@mosaic/core";
 import {
+  OrderReview,
   TradeTicket,
+  type OrderReviewClassNames,
   type TradeDraftValue,
   type TradeTicketClassNames,
 } from "@mosaic/react";
@@ -81,6 +84,22 @@ const tradeTicketClassNames: TradeTicketClassNames = {
   submitButton: "demo-submit-button",
 };
 
+const orderReviewClassNames: OrderReviewClassNames = {
+  root: "demo-order-review",
+  title: "demo-order-review-title",
+  details: "demo-order-review-details",
+  row: "demo-order-review-row",
+  term: "demo-order-review-term",
+  value: "demo-order-review-value",
+  warnings: "demo-order-review-warnings",
+  warningsTitle: "demo-order-review-warnings-title",
+  warningList: "demo-order-review-warning-list",
+  warning: "demo-order-review-warning",
+  actions: "demo-order-review-actions",
+  cancelButton: "demo-order-review-cancel",
+  confirmButton: "demo-order-review-confirm",
+};
+
 function App() {
   const [value, setValue] = useState<TradeDraftValue>({
     side: "buy",
@@ -88,6 +107,11 @@ function App() {
     tif: "day",
     limitPx: latestPrice,
   });
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
+    null,
+  );
 
   function applyLimitPrice(limitPx: number) {
     if (value.type !== "limit") return;
@@ -98,57 +122,101 @@ function App() {
     }));
   }
 
+  function reviewOrder(order: PreparedOrder) {
+    setConfirmationMessage(null);
+    setOrderSummary(
+      createOrderSummary(order, {
+        referencePx: latestPrice,
+      }),
+    );
+  }
+
+  async function confirmOrder(order: PreparedOrder) {
+    setIsConfirming(true);
+
+    try {
+      await simulateBrokerSubmission();
+      console.info("Order confirmed", order);
+      setOrderSummary(null);
+      setConfirmationMessage(
+        `${order.side === "buy" ? "Buy" : "Sell"} order confirmed for ${order.symbol}.`,
+      );
+    } finally {
+      setIsConfirming(false);
+    }
+  }
+
   return (
     <main>
       <h1>Mosaic</h1>
 
-      <div className="demo-market-prices">
-        <span className="demo-market-prices-label">Market prices</span>
+      {confirmationMessage === null ? null : (
+        <p className="demo-confirmation-status" role="status">
+          {confirmationMessage}
+        </p>
+      )}
 
-        <div className="demo-market-price-actions">
-          <button
-            type="button"
-            disabled={value.type !== "limit"}
-            onClick={() => applyLimitPrice(bidPrice)}
-          >
-            Bid {bidPrice}
-          </button>
+      {orderSummary === null ? (
+        <>
+          <div className="demo-market-prices">
+            <span className="demo-market-prices-label">Market prices</span>
 
-          <button
-            type="button"
-            disabled={value.type !== "limit"}
-            onClick={() => applyLimitPrice(latestPrice)}
-          >
-            Last {latestPrice}
-          </button>
+            <div className="demo-market-price-actions">
+              <button
+                type="button"
+                disabled={value.type !== "limit"}
+                onClick={() => applyLimitPrice(bidPrice)}
+              >
+                Bid {bidPrice}
+              </button>
 
-          <button
-            type="button"
-            disabled={value.type !== "limit"}
-            onClick={() => applyLimitPrice(askPrice)}
-          >
-            Ask {askPrice}
-          </button>
-        </div>
-      </div>
+              <button
+                type="button"
+                disabled={value.type !== "limit"}
+                onClick={() => applyLimitPrice(latestPrice)}
+              >
+                Last {latestPrice}
+              </button>
 
-      <TradeTicket
-        symbol="AAPL"
-        assetClass="equity"
-        assetRules={appleRules}
-        cashAvailable={1000}
-        assetQtyAvailable={10}
-        quoteCurrency="USD"
-        value={value}
-        onChange={setValue}
-        classNames={tradeTicketClassNames}
-        onSubmitDraft={(draft) => {
-          console.info("Draft submitted", draft);
-        }}
-        onValidationIssues={(issues) => {
-          console.info("Validation issues", issues);
-        }}
-      />
+              <button
+                type="button"
+                disabled={value.type !== "limit"}
+                onClick={() => applyLimitPrice(askPrice)}
+              >
+                Ask {askPrice}
+              </button>
+            </div>
+          </div>
+
+          <TradeTicket
+            symbol="AAPL"
+            assetClass="equity"
+            assetRules={appleRules}
+            cashAvailable={1000}
+            assetQtyAvailable={10}
+            quoteCurrency="USD"
+            value={value}
+            onChange={setValue}
+            classNames={tradeTicketClassNames}
+            onSubmitDraft={reviewOrder}
+            onValidationIssues={(issues) => {
+              console.info("Validation issues", issues);
+            }}
+          />
+        </>
+      ) : (
+        <OrderReview
+          summary={orderSummary}
+          quoteCurrency="USD"
+          quantityFractionDigits={appleRules.qtyPrecision}
+          priceFractionDigits={appleRules.pricePrecision}
+          notionalFractionDigits={appleRules.notionalPrecision}
+          isConfirming={isConfirming}
+          classNames={orderReviewClassNames}
+          onCancel={() => setOrderSummary(null)}
+          onConfirm={confirmOrder}
+        />
+      )}
 
       <section className="demo-draft-preview">
         <h2>Controlled value</h2>
@@ -156,6 +224,12 @@ function App() {
       </section>
     </main>
   );
+}
+
+function simulateBrokerSubmission() {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, 700);
+  });
 }
 
 createRoot(document.getElementById("root")!).render(

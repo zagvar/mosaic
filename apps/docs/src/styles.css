@@ -246,6 +246,13 @@ main {
   background: #374151;
 }
 
+.demo-submit-button:disabled,
+.demo-order-review-cancel:disabled,
+.demo-order-review-confirm:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .demo-amount-presets {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -330,4 +337,129 @@ main {
   background: white;
   color: #374151;
   font-size: 0.8125rem;
+}
+
+.demo-confirmation-status {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.875rem;
+}
+
+.demo-order-review {
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+}
+
+.demo-order-review-title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.demo-order-review-details {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.demo-order-review-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.demo-order-review-row:first-child {
+  padding-top: 0;
+}
+
+.demo-order-review-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.demo-order-review-term {
+  color: #6b7280;
+}
+
+.demo-order-review-value {
+  margin: 0;
+  color: #111827;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.demo-order-review-warnings {
+  padding: 12px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.demo-order-review-warnings-title {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+}
+
+.demo-order-review-warning-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.demo-order-review-warning {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.demo-order-review-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.demo-order-review-cancel,
+.demo-order-review-confirm {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.demo-order-review-cancel {
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+}
+
+.demo-order-review-confirm {
+  border: 1px solid #111827;
+  background: #111827;
+  color: white;
+}
+
+.demo-order-review-cancel:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.demo-order-review-confirm:hover:not(:disabled) {
+  background: #374151;
+}
+
+.demo-order-review-cancel:focus-visible,
+.demo-order-review-confirm:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }

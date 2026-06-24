@@ -339,6 +339,33 @@ describe("TradeTicket", () => {
     });
   });
 
+  it("submits a normalized order candidate for review", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+
+    renderTradeTicket({
+      defaultValue: {
+        side: "buy",
+        type: "market",
+        tif: "day",
+        notional: 100,
+        limitPx: 95,
+      },
+      onSubmitDraft: handleSubmit,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(handleSubmit).toHaveBeenCalledWith({
+      symbol: "AAPL",
+      assetClass: "equity",
+      side: "buy",
+      type: "market",
+      tif: "day",
+      notional: 100,
+    });
+  });
+
   it("reports successful submission and preserves values by default", async () => {
     const user = userEvent.setup();
     const handleSuccess = vi.fn();

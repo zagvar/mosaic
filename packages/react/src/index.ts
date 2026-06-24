@@ -48,3 +48,15 @@ export type {
   TifSelectMessages,
   TifSelectProps,
 } from "./tif-select";
+
+export {
+  defaultOrderReviewMessages,
+  OrderReview,
+} from "./order-review";
+
+export type {
+  OrderReviewClassNames,
+  OrderReviewMessages,
+  OrderReviewMessagesInput,
+  OrderReviewProps,
+} from "./order-review";

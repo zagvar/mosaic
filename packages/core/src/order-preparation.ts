@@ -1,0 +1,74 @@
+import type {
+  OrderDraft,
+  OrderValidationContext,
+} from "./order-schemas";
+import { orderDraftSchema } from "./order-schemas";
+import type { OrderValidationIssue } from "./order-validation";
+import { validateOrderDraft } from "./order-validation";
+
+/**
+ * Canonical order produced after draft parsing and validation.
+ *
+ * Preparation never rounds, snaps, or otherwise repairs invalid trading
+ * values. Invalid drafts return issues so the user can correct them explicitly.
+ */
+export type PreparedOrder = OrderDraft;
+
+export type OrderPreparationResult =
+  | {
+      valid: true;
+      order: PreparedOrder;
+      issues: [];
+    }
+  | {
+      valid: false;
+      issues: OrderValidationIssue[];
+    };
+
+/**
+ * Validates and normalizes a draft into the exact order candidate a host may
+ * review before sending it to a broker adapter.
+ *
+ * Normalization removes fields that are irrelevant to the selected order type,
+ * such as a stale limit price on a market order. It does not perform broker
+ * submission or mutate numeric values.
+ */
+export function prepareOrder(
+  draft: OrderDraft,
+  context: OrderValidationContext,
+): OrderPreparationResult {
+  const validation = validateOrderDraft(draft, context);
+
+  if (!validation.valid) {
+    return {
+      valid: false,
+      issues: validation.issues,
+    };
+  }
+
+  const parsedDraft = orderDraftSchema.parse(draft);
+
+  return {
+    valid: true,
+    order: normalizeOrder(parsedDraft),
+    issues: [],
+  };
+}
+
+function normalizeOrder(draft: OrderDraft): PreparedOrder {
+  return {
+    symbol: draft.symbol,
+    assetClass: draft.assetClass,
+    side: draft.side,
+    type: draft.type,
+    ...(draft.tif === undefined ? {} : { tif: draft.tif }),
+    ...(draft.qty === undefined ? {} : { qty: draft.qty }),
+    ...(draft.notional === undefined ? {} : { notional: draft.notional }),
+    ...(draft.type === "limit" && draft.limitPx !== undefined
+      ? { limitPx: draft.limitPx }
+      : {}),
+    ...(draft.extendedHours === undefined
+      ? {}
+      : { extendedHours: draft.extendedHours }),
+  };
+}

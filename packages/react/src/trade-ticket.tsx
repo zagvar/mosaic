@@ -3,12 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
-  OrderDraft,
   OrderSide,
   OrderType,
   OrderValidationIssue,
+  PreparedOrder,
   Tif,
 } from "@mosaic/core";
+import { prepareOrder } from "@mosaic/core";
 import { useLocale, VisuallyHidden } from "react-aria-components";
 import { OrderTypeToggle } from "./order-type-toggle";
 import { AvailableBalance } from "./internal/available-balance";
@@ -70,12 +71,12 @@ export interface TradeTicketProps {
   messages?: TradeTicketMessagesInput;
   classNames?: TradeTicketClassNames;
 
-  onSubmitDraft?: (draft: OrderDraft) => void | Promise<void>;
+  onSubmitDraft?: (order: PreparedOrder) => void | Promise<void>;
   onSubmitError?: (error: unknown) => void;
   onValidationIssues?: (issues: OrderValidationIssue[]) => void;
 
   resetOnSubmitSuccess?: boolean;
-  onSubmitSuccess?: (draft: OrderDraft) => void;
+  onSubmitSuccess?: (order: PreparedOrder) => void;
 }
 
 export function TradeTicket({
@@ -196,8 +197,10 @@ export function TradeTicket({
     clearSubmissionError();
     setHasSubmitted(true);
 
-    if (!trade.validation.valid) {
-      onValidationIssues?.(trade.validation.issues);
+    const preparation = prepareOrder(trade.draft, trade.context);
+
+    if (!preparation.valid) {
+      onValidationIssues?.(preparation.issues);
       return;
     }
 
@@ -208,15 +211,15 @@ export function TradeTicket({
     submissionInFlightRef.current = true;
     setInternalIsSubmitting(true);
 
-    const submittedDraft = trade.draft;
-    const submittedScopeKey = getSubmissionScopeKey(submittedDraft);
+    const preparedOrder = preparation.order;
+    const submittedScopeKey = getSubmissionScopeKey(preparedOrder);
 
     try {
-      await onSubmitDraft(submittedDraft);
+      await onSubmitDraft(preparedOrder);
       const submissionIsCurrent =
         submissionScopeKeyRef.current === submittedScopeKey;
 
-      onSubmitSuccess?.(submittedDraft);
+      onSubmitSuccess?.(preparedOrder);
 
       if (resetOnSubmitSuccess && submissionIsCurrent) {
         trade.reset();
@@ -442,15 +445,15 @@ function getFieldIssue(
   return issues.find((issue) => issue.path?.includes(field));
 }
 
-function getSubmissionScopeKey(draft: OrderDraft) {
+function getSubmissionScopeKey(order: PreparedOrder) {
   return JSON.stringify([
-    draft.assetClass,
-    draft.symbol,
-    draft.side,
-    draft.type,
-    draft.tif,
-    draft.qty,
-    draft.limitPx,
-    draft.notional,
+    order.assetClass,
+    order.symbol,
+    order.side,
+    order.type,
+    order.tif,
+    order.qty,
+    order.limitPx,
+    order.notional,
   ]);
 }

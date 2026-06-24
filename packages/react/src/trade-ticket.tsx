@@ -1,5 +1,5 @@
 import type { SubmitEvent } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
@@ -9,7 +9,7 @@ import type {
   OrderValidationIssue,
   Tif,
 } from "@mosaic/core";
-import { useLocale } from "react-aria-components";
+import { useLocale, VisuallyHidden } from "react-aria-components";
 import { OrderTypeToggle } from "./order-type-toggle";
 import { AvailableBalance } from "./internal/available-balance";
 import type { AvailableBalanceClassNames } from "./internal/available-balance";
@@ -42,6 +42,7 @@ export interface TradeTicketClassNames {
   numberField?: TradeNumberFieldClassNames;
   amountPresets?: AmountPresetsClassNames;
   alert?: string;
+  submissionError?: string;
   submitButton?: string;
 }
 
@@ -62,11 +63,19 @@ export interface TradeTicketProps {
   defaultLimitPx?: number;
   amountPresets?: number[];
 
+  isDisabled?: boolean;
+  isSubmitting?: boolean;
+  submissionError?: string | null;
+
   messages?: TradeTicketMessagesInput;
   classNames?: TradeTicketClassNames;
 
   onSubmitDraft?: (draft: OrderDraft) => void | Promise<void>;
+  onSubmitError?: (error: unknown) => void;
   onValidationIssues?: (issues: OrderValidationIssue[]) => void;
+
+  resetOnSubmitSuccess?: boolean;
+  onSubmitSuccess?: (draft: OrderDraft) => void;
 }
 
 export function TradeTicket({
@@ -82,22 +91,53 @@ export function TradeTicket({
   defaultTif,
   defaultLimitPx,
   amountPresets,
+  isDisabled = false,
+  isSubmitting = false,
+  submissionError: controlledSubmissionError,
   messages,
   classNames,
   onSubmitDraft,
+  onSubmitError,
   onValidationIssues,
+  onSubmitSuccess,
+  resetOnSubmitSuccess = false,
 }: TradeTicketProps) {
   const { locale } = useLocale();
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [internalIsSubmitting, setInternalIsSubmitting] = useState(false);
+  const [hasInternalSubmissionError, setHasInternalSubmissionError] =
+    useState(false);
+  const submissionInFlightRef = useRef(false);
+
+  const pending = isSubmitting || internalIsSubmitting;
+  const controlsDisabled = isDisabled || pending;
+
   const text = mergeTradeTicketMessages(messages);
+
+  const isSubmissionErrorControlled = controlledSubmissionError !== undefined;
+  const visibleSubmissionError = isSubmissionErrorControlled
+    ? controlledSubmissionError
+    : hasInternalSubmissionError
+      ? text.submissionError
+      : null;
 
   const initialTifProps =
     defaultTif === undefined ? {} : { initialTif: defaultTif };
   const controlledValueProps = value === undefined ? {} : { value };
   const defaultValueProps = defaultValue === undefined ? {} : { defaultValue };
-  const changeProps = onChange === undefined ? {} : { onChange };
   const defaultLimitPxProps =
     defaultLimitPx === undefined ? {} : { defaultLimitPx };
+
+  function clearSubmissionError() {
+    if (!isSubmissionErrorControlled) {
+      setHasInternalSubmissionError(false);
+    }
+  }
+
+  function handleDraftChange(nextValue: TradeDraftValue) {
+    clearSubmissionError();
+    onChange?.(nextValue);
+  }
 
   const trade = useTradeDraft({
     symbol,
@@ -105,16 +145,32 @@ export function TradeTicket({
     assetRules,
     cashAvailable,
     assetQtyAvailable,
+    onChange: handleDraftChange,
     ...controlledValueProps,
     ...defaultValueProps,
-    ...changeProps,
     ...initialTifProps,
     ...defaultLimitPxProps,
   });
 
+  const submissionScopeKey = getSubmissionScopeKey(trade.draft);
+  const submissionScopeKeyRef = useRef(submissionScopeKey);
+  submissionScopeKeyRef.current = submissionScopeKey;
+
   useEffect(() => {
     setHasSubmitted(false);
+    clearSubmissionError();
   }, [assetClass, symbol]);
+
+  useEffect(() => {
+    clearSubmissionError();
+  }, [
+    trade.side,
+    trade.type,
+    trade.tif,
+    trade.qty,
+    trade.limitPx,
+    trade.notional,
+  ]);
 
   function handleSideChange(nextSide: OrderSide) {
     if (nextSide === trade.side) return;
@@ -132,6 +188,12 @@ export function TradeTicket({
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (controlsDisabled || submissionInFlightRef.current) {
+      return;
+    }
+
+    clearSubmissionError();
     setHasSubmitted(true);
 
     if (!trade.validation.valid) {
@@ -139,7 +201,40 @@ export function TradeTicket({
       return;
     }
 
-    await onSubmitDraft?.(trade.draft);
+    if (onSubmitDraft === undefined) {
+      return;
+    }
+
+    submissionInFlightRef.current = true;
+    setInternalIsSubmitting(true);
+
+    const submittedDraft = trade.draft;
+    const submittedScopeKey = getSubmissionScopeKey(submittedDraft);
+
+    try {
+      await onSubmitDraft(submittedDraft);
+      const submissionIsCurrent =
+        submissionScopeKeyRef.current === submittedScopeKey;
+
+      onSubmitSuccess?.(submittedDraft);
+
+      if (resetOnSubmitSuccess && submissionIsCurrent) {
+        trade.reset();
+        setHasSubmitted(false);
+      }
+    } catch (error) {
+      if (
+        !isSubmissionErrorControlled &&
+        submissionScopeKeyRef.current === submittedScopeKey
+      ) {
+        setHasInternalSubmissionError(true);
+      }
+
+      onSubmitError?.(error);
+    } finally {
+      submissionInFlightRef.current = false;
+      setInternalIsSubmitting(false);
+    }
   }
 
   const validationMessageContext: TradeTicketValidationMessageBaseContext = {
@@ -214,15 +309,21 @@ export function TradeTicket({
       : { classNames: classNames.tifSelect };
 
   return (
-    <form className={classNames?.root} onSubmit={handleSubmit}>
+    <form
+      className={classNames?.root}
+      aria-busy={pending}
+      onSubmit={handleSubmit}
+    >
       <TradeSideToggle
         value={trade.side}
+        isDisabled={controlsDisabled}
         onChange={handleSideChange}
         {...sideToggleClassNameProps}
       />
 
       <OrderTypeToggle
         value={trade.type}
+        isDisabled={controlsDisabled}
         onChange={handleTypeChange}
         {...typeToggleClassNameProps}
       />
@@ -231,6 +332,7 @@ export function TradeTicket({
         <TifSelect
           allowedTifs={allowedTifs}
           value={trade.tif ?? null}
+          isDisabled={controlsDisabled}
           onChange={trade.setTif}
           messages={text.tif}
           {...tifSelectClassNameProps}
@@ -252,6 +354,7 @@ export function TradeTicket({
         <TradeDecimalField
           label={text.limitPx}
           {...limitPxProps}
+          isDisabled={controlsDisabled}
           onChange={trade.setLimitPx}
           precision={assetRules.pricePrecision}
           placeholder="0"
@@ -265,6 +368,7 @@ export function TradeTicket({
         <TradeDecimalField
           label={text.notional}
           {...notionalProps}
+          isDisabled={controlsDisabled}
           onChange={trade.setNotional}
           precision={assetRules.notionalPrecision}
           placeholder={formatMinimum(assetRules.minNotional, "0", {
@@ -279,6 +383,7 @@ export function TradeTicket({
         <TradeDecimalField
           label={text.qty}
           {...qtyProps}
+          isDisabled={controlsDisabled}
           onChange={trade.setQty}
           precision={assetRules.qtyPrecision}
           placeholder={formatMinimum(assetRules.minQty, "0", {
@@ -293,6 +398,7 @@ export function TradeTicket({
 
       <AmountPresets
         {...amountPresetValuesProps}
+        isDisabled={controlsDisabled}
         onSelect={trade.applyPercent}
         {...amountPresetsClassNameProps}
       />
@@ -303,8 +409,27 @@ export function TradeTicket({
         </p>
       ) : null}
 
-      <button className={classNames?.submitButton} type="submit">
-        {text.submit}
+      <VisuallyHidden>
+        <span role="status" aria-live="polite" aria-atomic="true">
+          {pending ? text.submitting : ""}
+        </span>
+      </VisuallyHidden>
+
+      {visibleSubmissionError ? (
+        <p
+          className={classNames?.submissionError ?? classNames?.alert}
+          role="alert"
+        >
+          {visibleSubmissionError}
+        </p>
+      ) : null}
+
+      <button
+        className={classNames?.submitButton}
+        type="submit"
+        disabled={controlsDisabled}
+      >
+        {pending ? text.submitting : text.submit}
       </button>
     </form>
   );
@@ -315,4 +440,17 @@ function getFieldIssue(
   field: "qty" | "limitPx" | "notional",
 ) {
   return issues.find((issue) => issue.path?.includes(field));
+}
+
+function getSubmissionScopeKey(draft: OrderDraft) {
+  return JSON.stringify([
+    draft.assetClass,
+    draft.symbol,
+    draft.side,
+    draft.type,
+    draft.tif,
+    draft.qty,
+    draft.limitPx,
+    draft.notional,
+  ]);
 }

@@ -29,6 +29,8 @@ export type TradeTicketValidationMessages = Partial<
 
 export interface TradeTicketMessages {
   submit: string;
+  submitting: string;
+  submissionError: string;
   qty: string;
   limitPx: string;
   notional: string;
@@ -46,6 +48,8 @@ export type TradeTicketMessagesInput = Partial<
 
 export const defaultTradeTicketMessages: TradeTicketMessages = {
   submit: "Preview order",
+  submitting: "Submitting...",
+  submissionError: "We couldn't submit your order. Please try again.",
   qty: "Quantity",
   limitPx: "Limit price",
   notional: "Total",

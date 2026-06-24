@@ -355,3 +355,37 @@ describe("useTradeDraft controlled state", () => {
     expect(result.current.limitPx).toBe(101);
   });
 });
+
+describe("useTradeDraft reset", () => {
+  it("resets transactional values while preserving order settings", () => {
+    const { result } = renderHook(() =>
+      useTradeDraft({
+        symbol: "AAPL",
+        assetClass: "equity",
+        assetRules,
+        cashAvailable: 1000,
+        assetQtyAvailable: 10,
+        initialSide: "sell",
+        initialType: "limit",
+        initialTif: "gtc",
+        defaultLimitPx: 100,
+      }),
+    );
+
+    act(() => {
+      result.current.setQty(2);
+      result.current.setLimitPx(125);
+    });
+
+    act(() => {
+      result.current.reset();
+    });
+
+    expect(result.current.value).toEqual({
+      side: "sell",
+      type: "limit",
+      tif: "gtc",
+      limitPx: 100,
+    });
+  });
+});

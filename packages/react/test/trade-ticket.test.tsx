@@ -1,9 +1,9 @@
+import { useState } from "react";
+import type { AssetRules } from "@mosaic/core";
+import { I18nProvider } from "react-aria-components";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { useState } from "react";
-import { I18nProvider } from "react-aria-components";
-import type { AssetRules } from "@mosaic/core";
 import { TradeTicket } from "../src/trade-ticket";
 import type { TradeDraftValue } from "../src/use-trade-draft";
 
@@ -94,28 +94,6 @@ describe("TradeTicket", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Asset rules do not match this order.",
     );
-  });
-
-  it("submits a valid limit order draft", async () => {
-    const user = userEvent.setup();
-    const handleSubmit = vi.fn();
-
-    renderTradeTicket({ onSubmitDraft: handleSubmit });
-
-    await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
-    await user.type(screen.getByRole("textbox", { name: "Limit price" }), "10");
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
-
-    expect(handleSubmit).toHaveBeenCalledTimes(1);
-    expect(handleSubmit).toHaveBeenCalledWith({
-      assetClass: "equity",
-      limitPx: 10,
-      qty: 1,
-      side: "buy",
-      symbol: "AAPL",
-      tif: "day",
-      type: "limit",
-    });
   });
 
   it("supports custom translated labels and validation messages", async () => {
@@ -338,6 +316,463 @@ describe("TradeTicket", () => {
       "101.25",
     );
   });
+
+  it("submits a valid limit order draft", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+
+    renderTradeTicket({ onSubmitDraft: handleSubmit });
+
+    await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
+    await user.type(screen.getByRole("textbox", { name: "Limit price" }), "10");
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+    expect(handleSubmit).toHaveBeenCalledWith({
+      assetClass: "equity",
+      limitPx: 10,
+      qty: 1,
+      side: "buy",
+      symbol: "AAPL",
+      tif: "day",
+      type: "limit",
+    });
+  });
+
+  it("reports successful submission and preserves values by default", async () => {
+    const user = userEvent.setup();
+    const handleSuccess = vi.fn();
+
+    renderTradeTicket({
+      defaultValue: {
+        side: "buy",
+        type: "limit",
+        tif: "day",
+        qty: 2,
+        limitPx: 125,
+      },
+      onSubmitDraft: vi.fn(),
+      onSubmitSuccess: handleSuccess,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(handleSuccess).toHaveBeenCalledTimes(1);
+    expect(handleSuccess).toHaveBeenCalledWith({
+      symbol: "AAPL",
+      assetClass: "equity",
+      side: "buy",
+      type: "limit",
+      tif: "day",
+      qty: 2,
+      limitPx: 125,
+    });
+
+    expect(screen.getByRole("textbox", { name: "Quantity" })).toHaveValue("2");
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "125",
+    );
+  });
+
+  it("resets transactional values after success when requested", async () => {
+    const user = userEvent.setup();
+
+    renderTradeTicket({
+      defaultValue: {
+        side: "sell",
+        type: "limit",
+        tif: "gtc",
+        qty: 2,
+        limitPx: 125,
+      },
+      defaultLimitPx: 100,
+      resetOnSubmitSuccess: true,
+      onSubmitDraft: vi.fn(),
+    });
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(screen.getByRole("radio", { name: "Sell" })).toBeChecked();
+
+    expect(
+      screen.getByRole("button", { name: /Time in force/i }),
+    ).toHaveTextContent("Good 'til canceled");
+
+    expect(screen.getByRole("textbox", { name: "Quantity" })).toHaveValue("");
+
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "100",
+    );
+  });
+
+  it("does not reset a newer controlled draft after a stale submission succeeds", async () => {
+    const user = userEvent.setup();
+    const deferred = createDeferredPromise();
+    const handleChange = vi.fn();
+    const handleSuccess = vi.fn();
+    const initialValue: TradeDraftValue = {
+      side: "buy",
+      type: "limit",
+      tif: "day",
+      qty: 1,
+      limitPx: 10,
+    };
+
+    const { rerender } = render(
+      <TradeTicket
+        symbol="AAPL"
+        assetClass="equity"
+        assetRules={equityRules}
+        cashAvailable={1000}
+        assetQtyAvailable={10}
+        value={initialValue}
+        onChange={handleChange}
+        onSubmitDraft={() => deferred.promise}
+        onSubmitSuccess={handleSuccess}
+        resetOnSubmitSuccess
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    rerender(
+      <TradeTicket
+        symbol="AAPL"
+        assetClass="equity"
+        assetRules={equityRules}
+        cashAvailable={1000}
+        assetQtyAvailable={10}
+        value={{
+          ...initialValue,
+          qty: 2,
+          limitPx: 11,
+        }}
+        onChange={handleChange}
+        onSubmitDraft={() => deferred.promise}
+        onSubmitSuccess={handleSuccess}
+        resetOnSubmitSuccess
+      />,
+    );
+
+    deferred.resolve();
+
+    expect(
+      await screen.findByRole("button", { name: "Preview order" }),
+    ).toBeEnabled();
+    expect(handleSuccess).toHaveBeenCalledWith({
+      symbol: "AAPL",
+      assetClass: "equity",
+      ...initialValue,
+    });
+    expect(handleChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("textbox", { name: "Quantity" })).toHaveValue("2");
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "11",
+    );
+  });
+
+  it("reflects externally controlled pending state", () => {
+    const { container } = renderTradeTicket({
+      defaultValue: {
+        side: "buy",
+        type: "limit",
+        tif: "day",
+        qty: 1,
+        limitPx: 10,
+      },
+      isSubmitting: true,
+    });
+
+    expect(container.querySelector("form")).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    expect(screen.getByRole("radio", { name: "Buy" })).toBeDisabled();
+    expect(screen.getByRole("textbox", { name: "Quantity" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Submitting..." }),
+    ).toBeDisabled();
+    expect(screen.getByRole("status")).toHaveTextContent("Submitting...");
+  });
+
+  it("disables controls and prevents duplicate submissions while pending", async () => {
+    const user = userEvent.setup();
+    const deferred = createDeferredPromise();
+    const handleSubmit = vi.fn(() => deferred.promise);
+
+    renderTradeTicket({
+      defaultValue: {
+        side: "buy",
+        type: "limit",
+        tif: "day",
+        qty: 1,
+        limitPx: 10,
+      },
+      onSubmitDraft: handleSubmit,
+    });
+
+    const submit = screen.getByRole("button", {
+      name: "Preview order",
+    });
+
+    await user.click(submit);
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole("button", { name: "Submitting..." }),
+    ).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Submitting..." }));
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Submitting...");
+
+    deferred.resolve();
+
+    expect(
+      await screen.findByRole("button", { name: "Preview order" }),
+    ).toBeEnabled();
+
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+  });
+
+  it("reports submission errors and restores the controls", async () => {
+    const user = userEvent.setup();
+    const error = new Error("Order rejected");
+    const handleError = vi.fn();
+
+    renderTradeTicket({
+      defaultValue: {
+        side: "buy",
+        type: "limit",
+        tif: "day",
+        qty: 1,
+        limitPx: 10,
+      },
+      onSubmitDraft: async () => {
+        throw error;
+      },
+      onSubmitError: handleError,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(handleError).toHaveBeenCalledWith(error);
+
+    expect(screen.getByRole("button", { name: "Preview order" })).toBeEnabled();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "We couldn't submit your order. Please try again.",
+    );
+  });
+
+  it("does not display an internal error for a stale submission", async () => {
+    const user = userEvent.setup();
+    const deferred = createDeferredPromise();
+    const error = new Error("Order rejected");
+    const handleError = vi.fn();
+    const initialValue: TradeDraftValue = {
+      side: "buy",
+      type: "limit",
+      tif: "day",
+      qty: 1,
+      limitPx: 10,
+    };
+
+    const { rerender } = render(
+      <TradeTicket
+        symbol="AAPL"
+        assetClass="equity"
+        assetRules={equityRules}
+        cashAvailable={1000}
+        assetQtyAvailable={10}
+        value={initialValue}
+        onChange={() => {}}
+        onSubmitDraft={() => deferred.promise}
+        onSubmitError={handleError}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    rerender(
+      <TradeTicket
+        symbol="AAPL"
+        assetClass="equity"
+        assetRules={equityRules}
+        cashAvailable={1000}
+        assetQtyAvailable={10}
+        value={{
+          ...initialValue,
+          limitPx: 11,
+        }}
+        onChange={() => {}}
+        onSubmitDraft={() => deferred.promise}
+        onSubmitError={handleError}
+      />,
+    );
+
+    deferred.reject(error);
+
+    expect(
+      await screen.findByRole("button", { name: "Preview order" }),
+    ).toBeEnabled();
+    expect(handleError).toHaveBeenCalledWith(error);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("supports a localized submission error message", async () => {
+    const user = userEvent.setup();
+
+    renderTradeTicket({
+      defaultValue: {
+        side: "buy",
+        type: "limit",
+        tif: "day",
+        qty: 1,
+        limitPx: 10,
+      },
+      messages: {
+        submissionError: "注文を送信できませんでした。",
+      },
+      onSubmitDraft: async () => {
+        throw new Error("Rejected");
+      },
+    });
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "注文を送信できませんでした。",
+    );
+  });
+
+  it("clears a submission error when the draft changes", async () => {
+    const user = userEvent.setup();
+
+    renderTradeTicket({
+      defaultValue: {
+        side: "buy",
+        type: "limit",
+        tif: "day",
+        qty: 1,
+        limitPx: 10,
+      },
+      onSubmitDraft: async () => {
+        throw new Error("Rejected");
+      },
+    });
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+    const quantity = screen.getByRole("textbox", {
+      name: "Quantity",
+    });
+
+    await user.clear(quantity);
+    await user.type(quantity, "2");
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("clears a submission error when a controlled value changes externally", async () => {
+    const user = userEvent.setup();
+    const initialValue: TradeDraftValue = {
+      side: "buy",
+      type: "limit",
+      tif: "day",
+      qty: 1,
+      limitPx: 10,
+    };
+
+    const { rerender } = render(
+      <TradeTicket
+        symbol="AAPL"
+        assetClass="equity"
+        assetRules={equityRules}
+        cashAvailable={1000}
+        assetQtyAvailable={10}
+        value={initialValue}
+        onChange={() => {}}
+        onSubmitDraft={async () => {
+          throw new Error("Rejected");
+        }}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+    rerender(
+      <TradeTicket
+        symbol="AAPL"
+        assetClass="equity"
+        assetRules={equityRules}
+        cashAvailable={1000}
+        assetQtyAvailable={10}
+        value={{
+          ...initialValue,
+          limitPx: 11,
+        }}
+        onChange={() => {}}
+        onSubmitDraft={async () => {
+          throw new Error("Rejected");
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("displays a host-controlled submission error", () => {
+    renderTradeTicket({
+      submissionError: "Broker rejected this order.",
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Broker rejected this order.",
+    );
+  });
+
+  it("does not clear a host-controlled submission error when the draft changes", async () => {
+    const user = userEvent.setup();
+
+    renderTradeTicket({
+      submissionError: "Broker rejected this order.",
+    });
+
+    await user.type(screen.getByRole("textbox", { name: "Quantity" }), "2");
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Broker rejected this order.",
+    );
+  });
+
+  // The host must clear it by changing the prop:
+  it("clears a host-controlled submission error when its prop becomes null", () => {
+    const { rerender } = renderTradeTicket({
+      submissionError: "Broker rejected this order.",
+    });
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    rerender(
+      <TradeTicket
+        symbol="AAPL"
+        assetClass="equity"
+        assetRules={equityRules}
+        cashAvailable={1000}
+        assetQtyAvailable={10}
+        submissionError={null}
+      />,
+    );
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
 });
 
 function renderTradeTicket(
@@ -413,4 +848,16 @@ function ControlledPriceTicket({ limitPx }: { limitPx: number }) {
       onChange={() => {}}
     />
   );
+}
+
+function createDeferredPromise() {
+  let resolve!: () => void;
+  let reject!: (reason?: unknown) => void;
+
+  const promise = new Promise<void>((nextResolve, nextReject) => {
+    resolve = nextResolve;
+    reject = nextReject;
+  });
+
+  return { promise, reject, resolve };
 }

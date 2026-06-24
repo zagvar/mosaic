@@ -80,6 +80,8 @@ export interface UseTradeDraftResult {
   draft: OrderDraft;
   context: OrderValidationContext;
   validation: OrderValidationResult;
+
+  reset: () => void;
 }
 
 interface CreateInitialTradeDraftValueOptions {
@@ -308,6 +310,17 @@ export function useTradeDraft({
     });
   }
 
+  function reset() {
+    updateValue((current) => ({
+      side: current.side,
+      type: current.type,
+      ...(current.tif === undefined ? {} : { tif: current.tif }),
+      ...(current.type === "limit" && defaultLimitPx !== undefined
+        ? { limitPx: defaultLimitPx }
+        : {}),
+    }));
+  }
+
   return {
     value,
     side,
@@ -326,6 +339,7 @@ export function useTradeDraft({
     draft,
     context,
     validation,
+    reset,
   };
 }
 

@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import type { AssetRules } from "@mosaic/core";
-import { describe, expect, it } from "vitest";
-import { useTradeDraft } from "../src/use-trade-draft";
+import { describe, expect, it, vi } from "vitest";
+import { useTradeDraft, type TradeDraftValue } from "../src/use-trade-draft";
 
 const assetRules: AssetRules = {
   assetClass: "equity",
@@ -74,12 +74,6 @@ describe("useTradeDraft transitions", () => {
 
     expect(result.current.notional).toBeUndefined();
     expect(result.current.qty).toBeUndefined();
-  });
-
-  it("selects the first allowed TIF by default", () => {
-    const { result } = renderTradeDraft();
-
-    expect(result.current.tif).toBe("day");
   });
 
   it("clears instrument-specific values when the asset changes", () => {
@@ -191,21 +185,6 @@ describe("useTradeDraft transitions", () => {
     expect(result.current.tif).toBe("ioc");
   });
 
-  it("initializes a limit order with the default limit price", () => {
-    const { result } = renderHook(() =>
-      useTradeDraft({
-        symbol: "AAPL",
-        assetClass: "equity",
-        assetRules,
-        cashAvailable: 1000,
-        assetQtyAvailable: 10,
-        defaultLimitPx: 195.5,
-      }),
-    );
-
-    expect(result.current.limitPx).toBe(195.5);
-  });
-
   it("restores the default price when changing back to a limit order", () => {
     const { result } = renderHook(() =>
       useTradeDraft({
@@ -230,5 +209,149 @@ describe("useTradeDraft transitions", () => {
     });
 
     expect(result.current.limitPx).toBe(195.5);
+  });
+});
+
+describe("useTradeDraft initialization", () => {
+  it("selects the first allowed TIF by default", () => {
+    const { result } = renderTradeDraft();
+
+    expect(result.current.tif).toBe("day");
+  });
+
+  it("initializes a limit order with the default limit price", () => {
+    const { result } = renderHook(() =>
+      useTradeDraft({
+        symbol: "AAPL",
+        assetClass: "equity",
+        assetRules,
+        cashAvailable: 1000,
+        assetQtyAvailable: 10,
+        defaultLimitPx: 195.5,
+      }),
+    );
+
+    expect(result.current.limitPx).toBe(195.5);
+  });
+
+  it("initializes uncontrolled state from defaultValue", () => {
+    const { result } = renderHook(() =>
+      useTradeDraft({
+        symbol: "AAPL",
+        assetClass: "equity",
+        assetRules,
+        cashAvailable: 1000,
+        assetQtyAvailable: 10,
+        defaultValue: {
+          side: "sell",
+          type: "market",
+          qty: 3,
+        },
+      }),
+    );
+
+    expect(result.current.value).toEqual({
+      side: "sell",
+      type: "market",
+      tif: "day",
+      qty: 3,
+    });
+  });
+});
+
+describe("useTradeDraft controlled state", () => {
+  it("uses an externally controlled value", () => {
+    const controlledValue: TradeDraftValue = {
+      side: "sell",
+      type: "market",
+      tif: "gtc",
+      qty: 2,
+    };
+
+    const { result } = renderHook(() =>
+      useTradeDraft({
+        symbol: "AAPL",
+        assetClass: "equity",
+        assetRules,
+        cashAvailable: 1000,
+        assetQtyAvailable: 10,
+        value: controlledValue,
+      }),
+    );
+
+    expect(result.current.value).toEqual(controlledValue);
+    expect(result.current.draft).toEqual({
+      symbol: "AAPL",
+      assetClass: "equity",
+      ...controlledValue,
+    });
+  });
+
+  it("emits one complete value for a controlled type transition", () => {
+    const handleChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      useTradeDraft({
+        symbol: "AAPL",
+        assetClass: "equity",
+        assetRules,
+        cashAvailable: 1000,
+        assetQtyAvailable: 10,
+        value: {
+          side: "buy",
+          type: "limit",
+          tif: "day",
+          qty: 2,
+          limitPx: 100,
+        },
+        onChange: handleChange,
+      }),
+    );
+
+    act(() => {
+      result.current.setType("market");
+    });
+
+    expect(handleChange).toHaveBeenCalledTimes(1);
+    expect(handleChange).toHaveBeenCalledWith({
+      side: "buy",
+      type: "market",
+      tif: "day",
+    });
+  });
+
+  it("reflects externally updated controlled values", () => {
+    const { result, rerender } = renderHook(
+      ({ value }) =>
+        useTradeDraft({
+          symbol: "AAPL",
+          assetClass: "equity",
+          assetRules,
+          cashAvailable: 1000,
+          assetQtyAvailable: 10,
+          value,
+        }),
+      {
+        initialProps: {
+          value: {
+            side: "buy",
+            type: "limit",
+            tif: "day",
+            limitPx: 100,
+          } satisfies TradeDraftValue,
+        },
+      },
+    );
+
+    rerender({
+      value: {
+        side: "buy",
+        type: "limit",
+        tif: "day",
+        limitPx: 101,
+      },
+    });
+
+    expect(result.current.limitPx).toBe(101);
   });
 });

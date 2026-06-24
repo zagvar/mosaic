@@ -19,6 +19,7 @@ export type {
 } from "./trade-side-toggle";
 
 export type {
+  TradeDraftValue,
   UseTradeDraftOptions,
   UseTradeDraftResult,
 } from "./use-trade-draft";

@@ -19,7 +19,7 @@ import type { TradeNumberFieldClassNames } from "./internal/trade-number-field";
 import { TradeSideToggle } from "./trade-side-toggle";
 import { TifSelect } from "./tif-select";
 import type { TifSelectClassNames } from "./tif-select";
-import { useTradeDraft } from "./use-trade-draft";
+import { useTradeDraft, type TradeDraftValue } from "./use-trade-draft";
 import { AmountPresets } from "./internal/amount-presets";
 import type { AmountPresetsClassNames } from "./internal/amount-presets";
 import {
@@ -49,14 +49,22 @@ export interface TradeTicketProps {
   symbol: string;
   assetClass: AssetClass;
   assetRules: AssetRules;
+
   cashAvailable: number;
   assetQtyAvailable: number;
   quoteCurrency?: string;
+
+  value?: TradeDraftValue;
+  defaultValue?: Partial<TradeDraftValue>;
+  onChange?: (value: TradeDraftValue) => void;
+
   defaultTif?: Tif;
   defaultLimitPx?: number;
   amountPresets?: number[];
+
   messages?: TradeTicketMessagesInput;
   classNames?: TradeTicketClassNames;
+
   onSubmitDraft?: (draft: OrderDraft) => void | Promise<void>;
   onValidationIssues?: (issues: OrderValidationIssue[]) => void;
 }
@@ -68,6 +76,9 @@ export function TradeTicket({
   cashAvailable,
   assetQtyAvailable,
   quoteCurrency = "USD",
+  value,
+  defaultValue,
+  onChange,
   defaultTif,
   defaultLimitPx,
   amountPresets,
@@ -82,6 +93,9 @@ export function TradeTicket({
 
   const initialTifProps =
     defaultTif === undefined ? {} : { initialTif: defaultTif };
+  const controlledValueProps = value === undefined ? {} : { value };
+  const defaultValueProps = defaultValue === undefined ? {} : { defaultValue };
+  const changeProps = onChange === undefined ? {} : { onChange };
   const defaultLimitPxProps =
     defaultLimitPx === undefined ? {} : { defaultLimitPx };
 
@@ -91,6 +105,9 @@ export function TradeTicket({
     assetRules,
     cashAvailable,
     assetQtyAvailable,
+    ...controlledValueProps,
+    ...defaultValueProps,
+    ...changeProps,
     ...initialTifProps,
     ...defaultLimitPxProps,
   });

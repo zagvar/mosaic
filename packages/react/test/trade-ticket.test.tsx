@@ -1,9 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { useState } from "react";
 import { I18nProvider } from "react-aria-components";
 import type { AssetRules } from "@mosaic/core";
 import { TradeTicket } from "../src/trade-ticket";
+import type { TradeDraftValue } from "../src/use-trade-draft";
 
 const equityRules: AssetRules = {
   assetClass: "equity",
@@ -272,6 +274,70 @@ describe("TradeTicket", () => {
       }),
     );
   });
+
+  it("initializes an uncontrolled ticket from defaultValue", () => {
+    renderTradeTicket({
+      defaultValue: {
+        side: "sell",
+        type: "limit",
+        tif: "gtc",
+        qty: 2,
+        limitPx: 100,
+      },
+    });
+
+    expect(screen.getByRole("radio", { name: "Sell" })).toBeChecked();
+
+    expect(screen.getByRole("textbox", { name: "Quantity" })).toHaveValue("2");
+
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "100",
+    );
+
+    expect(
+      screen.getByRole("button", { name: /Time in force/i }),
+    ).toHaveTextContent("Good 'til canceled");
+  });
+
+  it("supports externally controlled ticket state", async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<ControlledTradeTicket onChange={handleChange} />);
+
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "100",
+    );
+
+    await user.click(screen.getByRole("radio", { name: "Market" }));
+
+    expect(handleChange).toHaveBeenCalledTimes(1);
+    expect(handleChange).toHaveBeenLastCalledWith({
+      side: "buy",
+      type: "market",
+      tif: "day",
+    });
+
+    expect(
+      screen.queryByRole("textbox", { name: "Limit price" }),
+    ).not.toBeInTheDocument();
+
+    expect(screen.getByRole("textbox", { name: "Total" })).toBeInTheDocument();
+  });
+
+  it("reflects an externally controlled limit price", () => {
+    const { rerender } = render(<ControlledPriceTicket limitPx={100} />);
+
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "100",
+    );
+
+    rerender(<ControlledPriceTicket limitPx={101.25} />);
+
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "101.25",
+    );
+  });
 });
 
 function renderTradeTicket(
@@ -295,5 +361,56 @@ function renderTradeTicket(
     ) : (
       <I18nProvider locale={options.locale}>{ticket}</I18nProvider>
     ),
+  );
+}
+
+function ControlledTradeTicket({
+  onChange,
+}: {
+  onChange?: (value: TradeDraftValue) => void;
+}) {
+  const [value, setValue] = useState<TradeDraftValue>({
+    side: "buy",
+    type: "limit",
+    tif: "day",
+    limitPx: 100,
+  });
+
+  function handleChange(nextValue: TradeDraftValue) {
+    setValue(nextValue);
+    onChange?.(nextValue);
+  }
+
+  return (
+    <TradeTicket
+      symbol="AAPL"
+      assetClass="equity"
+      assetRules={equityRules}
+      cashAvailable={1000}
+      assetQtyAvailable={10}
+      value={value}
+      onChange={handleChange}
+    />
+  );
+}
+
+function ControlledPriceTicket({ limitPx }: { limitPx: number }) {
+  const value: TradeDraftValue = {
+    side: "buy",
+    type: "limit",
+    tif: "day",
+    limitPx,
+  };
+
+  return (
+    <TradeTicket
+      symbol="AAPL"
+      assetClass="equity"
+      assetRules={equityRules}
+      cashAvailable={1000}
+      assetQtyAvailable={10}
+      value={value}
+      onChange={() => {}}
+    />
   );
 }

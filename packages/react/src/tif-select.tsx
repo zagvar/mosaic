@@ -107,7 +107,7 @@ export function TifSelect({
       <Button {...classNameProps(classNames?.trigger)}>
         <SelectValue {...classNameProps(classNames?.value)} />
         <span aria-hidden="true" {...classNameProps(classNames?.indicator)}>
-          ▾
+          👇
         </span>
       </Button>
 

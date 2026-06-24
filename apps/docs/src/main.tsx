@@ -1,8 +1,11 @@
-import { StrictMode } from "react";
+import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { AssetRules } from "@mosaic/core";
-import { TradeTicket } from "@mosaic/react";
-import type { TradeTicketClassNames } from "@mosaic/react";
+import {
+  TradeTicket,
+  type TradeDraftValue,
+  type TradeTicketClassNames,
+} from "@mosaic/react";
 import "./styles.css";
 
 const appleRules: AssetRules = {
@@ -28,6 +31,11 @@ const appleRules: AssetRules = {
     allowedTifs: ["day", "gtc"],
   },
 };
+
+// simulate prices supplied by a quote stream or order book
+const latestPrice = 195.75;
+const bidPrice = 195.7;
+const askPrice = 195.8;
 
 const segmentedClassNames = {
   root: "demo-segmented-radio",
@@ -73,10 +81,56 @@ const tradeTicketClassNames: TradeTicketClassNames = {
   submitButton: "demo-submit-button",
 };
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+function App() {
+  const [value, setValue] = useState<TradeDraftValue>({
+    side: "buy",
+    type: "limit",
+    tif: "day",
+    limitPx: latestPrice,
+  });
+
+  function applyLimitPrice(limitPx: number) {
+    if (value.type !== "limit") return;
+
+    setValue((current) => ({
+      ...current,
+      limitPx,
+    }));
+  }
+
+  return (
     <main>
       <h1>Mosaic</h1>
+
+      <div className="demo-market-prices">
+        <span className="demo-market-prices-label">Market prices</span>
+
+        <div className="demo-market-price-actions">
+          <button
+            type="button"
+            disabled={value.type !== "limit"}
+            onClick={() => applyLimitPrice(bidPrice)}
+          >
+            Bid {bidPrice}
+          </button>
+
+          <button
+            type="button"
+            disabled={value.type !== "limit"}
+            onClick={() => applyLimitPrice(latestPrice)}
+          >
+            Last {latestPrice}
+          </button>
+
+          <button
+            type="button"
+            disabled={value.type !== "limit"}
+            onClick={() => applyLimitPrice(askPrice)}
+          >
+            Ask {askPrice}
+          </button>
+        </div>
+      </div>
 
       <TradeTicket
         symbol="AAPL"
@@ -85,7 +139,8 @@ createRoot(document.getElementById("root")!).render(
         cashAvailable={1000}
         assetQtyAvailable={10}
         quoteCurrency="USD"
-        defaultTif="day"
+        value={value}
+        onChange={setValue}
         classNames={tradeTicketClassNames}
         onSubmitDraft={(draft) => {
           console.info("Draft submitted", draft);
@@ -94,6 +149,17 @@ createRoot(document.getElementById("root")!).render(
           console.info("Validation issues", issues);
         }}
       />
+
+      <section className="demo-draft-preview">
+        <h2>Controlled value</h2>
+        <pre>{JSON.stringify(value, null, 2)}</pre>
+      </section>
     </main>
+  );
+}
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <App />
   </StrictMode>,
 );

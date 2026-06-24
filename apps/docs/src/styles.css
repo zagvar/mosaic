@@ -271,3 +271,63 @@ main {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
+
+.demo-market-prices {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.demo-market-prices-label,
+.demo-draft-preview h2 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.demo-market-price-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.demo-market-price-actions button {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.demo-market-price-actions button:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.demo-market-price-actions button:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.demo-market-price-actions button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.demo-draft-preview {
+  margin-top: 16px;
+}
+
+.demo-draft-preview pre {
+  margin: 8px 0 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 0.8125rem;
+}

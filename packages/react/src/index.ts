@@ -29,10 +29,7 @@ export { TradeTicket } from "./trade-ticket";
 
 export { defaultTradeTicketMessages } from "./trade-ticket-messages";
 
-export type {
-  TradeTicketClassNames,
-  TradeTicketProps,
-} from "./trade-ticket";
+export type { TradeTicketClassNames, TradeTicketProps } from "./trade-ticket";
 
 export type {
   TradeTicketMessages,
@@ -42,3 +39,11 @@ export type {
   TradeTicketValidationMessageContext,
   TradeTicketValidationMessages,
 } from "./trade-ticket-messages";
+
+export { defaultTifSelectMessages, TifSelect } from "./tif-select";
+
+export type {
+  TifSelectClassNames,
+  TifSelectMessages,
+  TifSelectProps,
+} from "./tif-select";

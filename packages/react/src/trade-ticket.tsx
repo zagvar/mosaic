@@ -1,9 +1,11 @@
 import type { SubmitEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
   OrderDraft,
+  OrderSide,
+  OrderType,
   OrderValidationIssue,
   Tif,
 } from "@mosaic/core";
@@ -15,6 +17,8 @@ import type { SegmentedRadioGroupClassNames } from "./internal/segmented-radio-g
 import { TradeDecimalField } from "./internal/trade-decimal-field";
 import type { TradeNumberFieldClassNames } from "./internal/trade-number-field";
 import { TradeSideToggle } from "./trade-side-toggle";
+import { TifSelect } from "./tif-select";
+import type { TifSelectClassNames } from "./tif-select";
 import { useTradeDraft } from "./use-trade-draft";
 import { AmountPresets } from "./internal/amount-presets";
 import type { AmountPresetsClassNames } from "./internal/amount-presets";
@@ -34,6 +38,7 @@ export interface TradeTicketClassNames {
   availableBalance?: AvailableBalanceClassNames;
   sideToggle?: SegmentedRadioGroupClassNames;
   typeToggle?: SegmentedRadioGroupClassNames;
+  tifSelect?: TifSelectClassNames;
   numberField?: TradeNumberFieldClassNames;
   amountPresets?: AmountPresetsClassNames;
   alert?: string;
@@ -48,6 +53,7 @@ export interface TradeTicketProps {
   assetQtyAvailable: number;
   quoteCurrency?: string;
   defaultTif?: Tif;
+  defaultLimitPx?: number;
   amountPresets?: number[];
   messages?: TradeTicketMessagesInput;
   classNames?: TradeTicketClassNames;
@@ -63,6 +69,7 @@ export function TradeTicket({
   assetQtyAvailable,
   quoteCurrency = "USD",
   defaultTif,
+  defaultLimitPx,
   amountPresets,
   messages,
   classNames,
@@ -75,6 +82,8 @@ export function TradeTicket({
 
   const initialTifProps =
     defaultTif === undefined ? {} : { initialTif: defaultTif };
+  const defaultLimitPxProps =
+    defaultLimitPx === undefined ? {} : { defaultLimitPx };
 
   const trade = useTradeDraft({
     symbol,
@@ -83,7 +92,26 @@ export function TradeTicket({
     cashAvailable,
     assetQtyAvailable,
     ...initialTifProps,
+    ...defaultLimitPxProps,
   });
+
+  useEffect(() => {
+    setHasSubmitted(false);
+  }, [assetClass, symbol]);
+
+  function handleSideChange(nextSide: OrderSide) {
+    if (nextSide === trade.side) return;
+
+    setHasSubmitted(false);
+    trade.setSide(nextSide);
+  }
+
+  function handleTypeChange(nextType: OrderType) {
+    if (nextType === trade.type) return;
+
+    setHasSubmitted(false);
+    trade.setType(nextType);
+  }
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -162,20 +190,35 @@ export function TradeTicket({
     classNames?.amountPresets === undefined
       ? {}
       : { classNames: classNames.amountPresets };
+  const allowedTifs = [...new Set(assetRules.allowedTifs ?? [])];
+  const tifSelectClassNameProps =
+    classNames?.tifSelect === undefined
+      ? {}
+      : { classNames: classNames.tifSelect };
 
   return (
     <form className={classNames?.root} onSubmit={handleSubmit}>
       <TradeSideToggle
         value={trade.side}
-        onChange={trade.setSide}
+        onChange={handleSideChange}
         {...sideToggleClassNameProps}
       />
 
       <OrderTypeToggle
         value={trade.type}
-        onChange={trade.setType}
+        onChange={handleTypeChange}
         {...typeToggleClassNameProps}
       />
+
+      {allowedTifs.length > 1 ? (
+        <TifSelect
+          allowedTifs={allowedTifs}
+          value={trade.tif ?? null}
+          onChange={trade.setTif}
+          messages={text.tif}
+          {...tifSelectClassNameProps}
+        />
+      ) : null}
 
       <AvailableBalance
         side={trade.side}

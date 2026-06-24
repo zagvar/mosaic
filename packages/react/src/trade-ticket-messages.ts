@@ -3,6 +3,8 @@ import type {
   OrderValidationCode,
   OrderValidationIssue,
 } from "@mosaic/core";
+import { defaultTifSelectMessages } from "./tif-select";
+import type { TifSelectMessages } from "./tif-select";
 
 export interface TradeTicketValidationMessageContext {
   issue: OrderValidationIssue;
@@ -31,12 +33,14 @@ export interface TradeTicketMessages {
   limitPx: string;
   notional: string;
   available: string;
+  tif: TifSelectMessages;
   validation: TradeTicketValidationMessages;
 }
 
 export type TradeTicketMessagesInput = Partial<
-  Omit<TradeTicketMessages, "validation">
+  Omit<TradeTicketMessages, "tif" | "validation">
 > & {
+  tif?: Partial<TifSelectMessages>;
   validation?: TradeTicketValidationMessages;
 };
 
@@ -46,6 +50,7 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
   limitPx: "Limit price",
   notional: "Total",
   available: "Available",
+  tif: defaultTifSelectMessages,
   validation: {
     invalid_order: "Order details are invalid.",
     invalid_context: "Trading context is invalid.",
@@ -92,6 +97,20 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
         : `Maximum total is ${formatRuleNumber(assetRules.maxNotional, {
             locale,
             maximumFractionDigits: assetRules.notionalPrecision,
+          })} ${quoteCurrency}.`,
+    limit_px_below_min: ({ assetRules, quoteCurrency, locale }) =>
+      assetRules.minPrice === undefined
+        ? "Limit price is below the minimum."
+        : `Minimum limit price is ${formatRuleNumber(assetRules.minPrice, {
+            locale,
+            maximumFractionDigits: assetRules.pricePrecision,
+          })} ${quoteCurrency}.`,
+    limit_px_above_max: ({ assetRules, quoteCurrency, locale }) =>
+      assetRules.maxPrice === undefined
+        ? "Limit price is above the maximum."
+        : `Maximum limit price is ${formatRuleNumber(assetRules.maxPrice, {
+            locale,
+            maximumFractionDigits: assetRules.pricePrecision,
           })} ${quoteCurrency}.`,
     qty_precision_exceeded: "Quantity has too many decimal places.",
     limit_px_precision_exceeded: "Limit price has too many decimal places.",
@@ -141,6 +160,10 @@ export function mergeTradeTicketMessages(
   return {
     ...defaultTradeTicketMessages,
     ...messages,
+    tif: {
+      ...defaultTradeTicketMessages.tif,
+      ...messages?.tif,
+    },
     validation: {
       ...defaultTradeTicketMessages.validation,
       ...messages?.validation,
@@ -159,7 +182,9 @@ export function getValidationMessage(
 
   if (message === undefined) return undefined;
 
-  return typeof message === "function" ? message({ ...context, issue }) : message;
+  return typeof message === "function"
+    ? message({ ...context, issue })
+    : message;
 }
 
 export function getErrorMessageProps(
@@ -177,7 +202,9 @@ export function formatMinimum(
   fallback: string,
   options: { locale: string; maximumFractionDigits: number },
 ) {
-  return value === undefined ? fallback : `Min ${formatRuleNumber(value, options)}`;
+  return value === undefined
+    ? fallback
+    : `Min ${formatRuleNumber(value, options)}`;
 }
 
 export function formatRuleNumber(

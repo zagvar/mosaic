@@ -206,6 +206,22 @@ export function validateOrderDraft(
   }
 
   if (
+    order.limitPx !== undefined &&
+    rules.minPrice !== undefined &&
+    isLessThan(order.limitPx, rules.minPrice)
+  ) {
+    addIssue(issues, "limit_px_below_min", ["limitPx"]);
+  }
+
+  if (
+    order.limitPx !== undefined &&
+    rules.maxPrice !== undefined &&
+    isGreaterThan(order.limitPx, rules.maxPrice)
+  ) {
+    addIssue(issues, "limit_px_above_max", ["limitPx"]);
+  }
+
+  if (
     order.side === "buy" &&
     order.type === "limit" &&
     order.qty !== undefined &&

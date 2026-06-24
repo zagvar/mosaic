@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
@@ -20,6 +20,7 @@ export interface UseTradeDraftOptions {
   initialSide?: OrderSide;
   initialType?: OrderType;
   initialTif?: Tif;
+  defaultLimitPx?: number;
 }
 
 export interface UseTradeDraftResult {
@@ -57,13 +58,35 @@ export function useTradeDraft({
   initialSide = "buy",
   initialType = "limit",
   initialTif,
+  defaultLimitPx,
 }: UseTradeDraftOptions): UseTradeDraftResult {
   const [side, setSide] = useState<OrderSide>(initialSide);
   const [type, setType] = useState<OrderType>(initialType);
-  const [tif, setTif] = useState<Tif | undefined>(initialTif);
+  const [tif, setTif] = useState<Tif | undefined>(() =>
+    getValidTif(initialTif, assetRules.allowedTifs),
+  );
   const [qty, setQty] = useState<number | undefined>();
-  const [limitPx, setLimitPx] = useState<number | undefined>();
+  const [limitPx, setLimitPx] = useState<number | undefined>(() =>
+    initialType === "limit" ? defaultLimitPx : undefined,
+  );
   const [notional, setNotional] = useState<number | undefined>();
+
+  const assetKey = `${assetClass}:${symbol}`;
+  const prevAssetKey = useRef(assetKey);
+
+  useEffect(() => {
+    if (prevAssetKey.current === assetKey) return;
+
+    prevAssetKey.current = assetKey;
+
+    setQty(undefined);
+    setNotional(undefined);
+    setLimitPx(type === "limit" ? defaultLimitPx : undefined);
+  }, [assetKey, defaultLimitPx, type]);
+
+  useEffect(() => {
+    setTif((currentTif) => getValidTif(currentTif, assetRules.allowedTifs));
+  }, [assetRules.allowedTifs]);
 
   const draft = useMemo<OrderDraft>(() => {
     return {
@@ -89,6 +112,34 @@ export function useTradeDraft({
   const validation = useMemo(() => {
     return validateOrderDraft(draft, context);
   }, [context, draft]);
+
+  function handleSideChange(nextSide: OrderSide) {
+    if (nextSide === side) return;
+
+    setSide(nextSide);
+
+    if (type === "market") {
+      setQty(undefined);
+      setNotional(undefined);
+    }
+  }
+
+  function handleTypeChange(nextType: OrderType) {
+    if (nextType === type) return;
+
+    setType(nextType);
+    setNotional(undefined);
+
+    if (nextType === "limit") {
+      setLimitPx(defaultLimitPx);
+    } else {
+      setLimitPx(undefined);
+    }
+
+    if (side === "buy") {
+      setQty(undefined);
+    }
+  }
 
   function applyPercent(percent: number) {
     const ratio = percent / 100;
@@ -126,25 +177,18 @@ export function useTradeDraft({
 
   return {
     side,
-    setSide,
-
+    setSide: handleSideChange,
     type,
-    setType,
-
+    setType: handleTypeChange,
     tif,
     setTif,
-
     qty,
     setQty,
-
     limitPx,
     setLimitPx,
-
     notional,
     setNotional,
-
     applyPercent,
-
     draft,
     context,
     validation,
@@ -155,4 +199,17 @@ function roundToPrecision(value: number, precision: number) {
   const factor = 10 ** precision;
 
   return Math.floor(value * factor) / factor;
+}
+
+function getValidTif(
+  tif: Tif | undefined,
+  allowedTifs: Tif[] | undefined,
+): Tif | undefined {
+  if (allowedTifs === undefined) return tif;
+
+  if (tif !== undefined && allowedTifs.includes(tif)) {
+    return tif;
+  }
+
+  return allowedTifs[0];
 }

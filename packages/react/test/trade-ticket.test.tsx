@@ -14,6 +14,8 @@ const equityRules: AssetRules = {
   notionalOrderTypes: ["market"],
   minQty: 0.000001,
   minNotional: 1,
+  minPrice: 0.01,
+  maxPrice: 1000,
   qtyPrecision: 6,
   pricePrecision: 2,
   notionalPrecision: 2,
@@ -42,6 +44,23 @@ describe("TradeTicket", () => {
     await user.click(screen.getByRole("button", { name: "Preview order" }));
 
     expect(screen.getByText("Enter a limit price.")).toBeInTheDocument();
+  });
+
+  it("shows a limit price field error when price exceeds the maximum", async () => {
+    const user = userEvent.setup();
+
+    renderTradeTicket();
+
+    await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
+    await user.type(
+      screen.getByRole("textbox", { name: "Limit price" }),
+      "1001",
+    );
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(
+      screen.getByText("Maximum limit price is 1000 USD."),
+    ).toBeInTheDocument();
   });
 
   it("shows a total field error for market buys below the minimum notional", async () => {
@@ -92,6 +111,7 @@ describe("TradeTicket", () => {
       qty: 1,
       side: "buy",
       symbol: "AAPL",
+      tif: "day",
       type: "limit",
     });
   });
@@ -179,7 +199,78 @@ describe("TradeTicket", () => {
     await user.type(screen.getByRole("textbox", { name: "Total" }), "1000");
     await user.click(screen.getByRole("button", { name: "Preview order" }));
 
-    expect(screen.getByText("Minimum total is 1000,5 USD.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Minimum total is 1000,5 USD."),
+    ).toBeInTheDocument();
+  });
+
+  it("hides submitted validation errors after changing order type", async () => {
+    const user = userEvent.setup();
+
+    renderTradeTicket();
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(screen.getByText("Enter a quantity or total.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("radio", { name: "Market" }));
+
+    expect(
+      screen.queryByText("Enter a quantity or total."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("hides submitted validation errors after changing side", async () => {
+    const user = userEvent.setup();
+
+    renderTradeTicket();
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(screen.getByText("Enter a quantity or total.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("radio", { name: "Sell" }));
+
+    expect(
+      screen.queryByText("Enter a quantity or total."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("prefills the limit price from the host", () => {
+    renderTradeTicket({
+      defaultLimitPx: 195.5,
+    });
+
+    expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
+      "195.5",
+    );
+  });
+
+  it("allows selecting a time in force", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+
+    renderTradeTicket({ onSubmitDraft: handleSubmit });
+
+    await user.click(screen.getByRole("button", { name: /Time in force/i }));
+
+    await user.click(
+      screen.getByRole("option", {
+        name: "Good 'til canceled",
+      }),
+    );
+
+    await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
+
+    await user.type(screen.getByRole("textbox", { name: "Limit price" }), "10");
+
+    await user.click(screen.getByRole("button", { name: "Preview order" }));
+
+    expect(handleSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tif: "gtc",
+      }),
+    );
   });
 });
 

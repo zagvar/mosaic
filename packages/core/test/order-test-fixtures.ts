@@ -9,6 +9,8 @@ export const equityRules: AssetRules = {
   notionalOrderTypes: ["market"],
   minQty: 0.000001,
   minNotional: 1,
+  minPrice: 0.01,
+  maxPrice: 1000,
   qtyPrecision: 6,
   pricePrecision: 2,
   notionalPrecision: 2,

@@ -42,6 +42,9 @@ export const assetRulesSchema = z.object({
   minNotional: positiveNumberSchema.optional(),
   maxNotional: positiveNumberSchema.optional(),
 
+  minPrice: positiveNumberSchema.optional(),
+  maxPrice: positiveNumberSchema.optional(),
+
   qtyPrecision: z.number().int().min(0).max(18).default(6),
   pricePrecision: z.number().int().min(0).max(18).default(2),
   notionalPrecision: z.number().int().min(0).max(18).default(2),
@@ -113,6 +116,8 @@ export const orderValidationCodeSchema = z.enum([
   "qty_above_max",
   "notional_below_min",
   "notional_above_max",
+  "limit_px_below_min",
+  "limit_px_above_max",
   "qty_precision_exceeded",
   "limit_px_precision_exceeded",
   "notional_precision_exceeded",

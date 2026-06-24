@@ -250,6 +250,48 @@ describe("validateOrderDraft", () => {
     );
   });
 
+  it("rejects limit prices below the minimum price", () => {
+    expectIssue(
+      {
+        symbol: "AAPL",
+        assetClass: "equity",
+        side: "buy",
+        type: "limit",
+        qty: 1,
+        limitPx: 0.001,
+        tif: "day",
+      },
+      "limit_px_below_min",
+      equityContext({
+        assetRules: {
+          ...equityRules,
+          minPrice: 0.01,
+        },
+      }),
+    );
+  });
+
+  it("rejects limit prices above the maximum price", () => {
+    expectIssue(
+      {
+        symbol: "AAPL",
+        assetClass: "equity",
+        side: "buy",
+        type: "limit",
+        qty: 1,
+        limitPx: 1001,
+        tif: "day",
+      },
+      "limit_px_above_max",
+      equityContext({
+        assetRules: {
+          ...equityRules,
+          maxPrice: 1000,
+        },
+      }),
+    );
+  });
+
   it("rejects limit prices not aligned to the tick size", () => {
     expectIssue(
       {

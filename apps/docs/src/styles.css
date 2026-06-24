@@ -89,10 +89,90 @@ main {
 }
 
 .demo-segmented-radio-button[data-focus-visible],
+.demo-tif-select-trigger[data-focus-visible],
 .demo-number-field-input[data-focus-visible],
 .demo-submit-button:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
+}
+
+.demo-tif-select {
+  position: relative;
+  display: grid;
+  gap: 8px;
+}
+
+.demo-tif-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #111827;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.demo-tif-select-trigger[data-open] {
+  border-color: #111827;
+}
+
+.demo-tif-select-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demo-tif-select-indicator {
+  flex: none;
+  color: #6b7280;
+}
+
+.demo-tif-select-trigger[data-open] .demo-tif-select-indicator {
+  transform: rotate(180deg);
+}
+
+.demo-tif-select-popover {
+  z-index: 10;
+  width: var(--trigger-width);
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 10px 24px rgb(17 24 39 / 12%);
+}
+
+.demo-tif-select-listbox {
+  box-sizing: border-box;
+  max-height: inherit;
+  overflow: auto;
+  padding: 4px;
+  outline: none;
+}
+
+.demo-tif-select-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: #374151;
+  cursor: default;
+  outline: none;
+}
+
+.demo-tif-select-item[data-focused] {
+  background: #f3f4f6;
+}
+
+.demo-tif-select-item[data-selected] {
+  background: #111827;
+  color: white;
 }
 
 .demo-available-balance {

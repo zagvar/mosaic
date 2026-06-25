@@ -2,10 +2,10 @@ import { I18nProvider } from "react-aria-components";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import type { OrderSummary, PreparedOrder } from "@mosaic/core";
+import type { OrderIntent, OrderSummary } from "@mosaic/core";
 import { OrderReview } from "../src/order-review";
 
-const limitOrder: PreparedOrder = {
+const limitOrder: OrderIntent = {
   symbol: "AAPL",
   assetClass: "equity",
   side: "buy",
@@ -71,6 +71,47 @@ describe("OrderReview", () => {
     expect(screen.getByText("Yes")).toBeInTheDocument();
   });
 
+  it("renders host-provided estimated fees", () => {
+    renderOrderReview({
+      ...limitSummary,
+      fees: [
+        {
+          type: "commission",
+          amount: 0.25,
+          currency: "USD",
+        },
+        {
+          type: "regulatory",
+          amount: 0.01,
+          currency: "USD",
+        },
+      ],
+    });
+
+    expect(screen.getByText("Estimated fee: Commission")).toBeInTheDocument();
+    expect(
+      screen.getByText("Estimated fee: Regulatory fee"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("0.25 USD")).toBeInTheDocument();
+    expect(screen.getByText("0.01 USD")).toBeInTheDocument();
+  });
+
+  it("uses per-fee precision for non-quote currencies", () => {
+    renderOrderReview({
+      ...limitSummary,
+      fees: [
+        {
+          type: "commission",
+          amount: 0.000001,
+          currency: "BTC",
+          fractionDigits: 8,
+        },
+      ],
+    });
+
+    expect(screen.getByText("0.000001 BTC")).toBeInTheDocument();
+  });
+
   it("reports cancel and confirm actions", async () => {
     const user = userEvent.setup();
     const handleCancel = vi.fn();
@@ -108,10 +149,37 @@ describe("OrderReview", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("1,25 AAPL")).toBeInTheDocument();
     expect(screen.getByText("125,13 USD")).toBeInTheDocument();
-    expect(screen.getByText("表示された合計は見積もりです。")).toBeInTheDocument();
+    expect(
+      screen.getByText("表示された合計は見積もりです。"),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "注文を確定" }),
     ).toBeInTheDocument();
+  });
+
+  it("supports localized fee labels", () => {
+    renderOrderReview(
+      {
+        ...limitSummary,
+        fees: [
+          {
+            type: "commission",
+            amount: 0.25,
+            currency: "USD",
+          },
+        ],
+      },
+      {
+        messages: {
+          estimatedFee: (feeType) => `${feeType}の概算`,
+          feeType: {
+            commission: "取引手数料",
+          },
+        },
+      },
+    );
+
+    expect(screen.getByText("取引手数料の概算")).toBeInTheDocument();
   });
 
   it("disables actions and exposes busy state while confirming", () => {
@@ -128,6 +196,82 @@ describe("OrderReview", () => {
       screen.getByRole("button", { name: "Confirming..." }),
     ).toBeDisabled();
   });
+
+  it("displays a controlled confirmation error without hiding the order", () => {
+    renderOrderReview(limitSummary, {
+      confirmationError: "The broker rejected this order.",
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The broker rejected this order.",
+    );
+    expect(screen.getByText("1.25 AAPL")).toBeInTheDocument();
+    expect(screen.getByText("100.1 USD")).toBeInTheDocument();
+  });
+
+  it("maps a structured execution error to a default message", () => {
+    renderOrderReview(limitSummary, {
+      confirmationError: {
+        code: "market_closed",
+      },
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The market is closed for this order.",
+    );
+  });
+
+  it("supports localized structured execution errors", () => {
+    renderOrderReview(limitSummary, {
+      confirmationError: {
+        code: "broker_rejected",
+      },
+      messages: {
+        confirmationError: {
+          broker_rejected: "ブローカーが注文を拒否しました。",
+        },
+      },
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "ブローカーが注文を拒否しました。",
+    );
+  });
+
+  it("allows confirmation to be retried after an error", async () => {
+    const user = userEvent.setup();
+    const handleConfirm = vi.fn();
+
+    renderOrderReview(limitSummary, {
+      confirmationError: "The broker rejected this order.",
+      onConfirm: handleConfirm,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Confirm order" }));
+
+    expect(handleConfirm).toHaveBeenCalledWith(limitOrder);
+  });
+
+  it("removes a controlled confirmation error when the host clears it", () => {
+    const { rerender } = renderOrderReview(limitSummary, {
+      confirmationError: "The broker rejected this order.",
+    });
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    rerender(
+      <OrderReview
+        summary={limitSummary}
+        quoteCurrency="USD"
+        confirmationError={null}
+        onCancel={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
 });
 
 function renderOrderReview(

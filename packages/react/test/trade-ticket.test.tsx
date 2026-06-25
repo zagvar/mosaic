@@ -125,6 +125,7 @@ describe("TradeTicket", () => {
         limitPx: "指値価格",
         notional: "合計",
         available: "利用可能",
+        minimum: (formattedValue) => `最小 ${formattedValue}`,
         validation: {
           qty_or_notional_required: "数量または合計を入力してください。",
           limit_px_required: "指値価格を入力してください。",
@@ -137,7 +138,10 @@ describe("TradeTicket", () => {
     await user.click(screen.getByRole("button", { name: "注文を確認" }));
 
     expect(screen.getByText("利用可能")).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "数量" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "数量" })).toHaveAttribute(
+      "placeholder",
+      "最小 0.000001",
+    );
     expect(
       screen.getByText("数量または合計を入力してください。"),
     ).toBeInTheDocument();
@@ -181,6 +185,19 @@ describe("TradeTicket", () => {
 
     expect(
       screen.getByText("Minimum total is 1000,5 USD."),
+    ).toBeInTheDocument();
+  });
+
+  it("formats amount presets using the React Aria locale", () => {
+    const formattedPercent = new Intl.NumberFormat("de-DE", {
+      maximumFractionDigits: 2,
+      style: "percent",
+    }).format(0.25);
+
+    renderTradeTicket({}, { locale: "de-DE" });
+
+    expect(
+      screen.getByRole("button", { name: formattedPercent }),
     ).toBeInTheDocument();
   });
 
@@ -230,7 +247,7 @@ describe("TradeTicket", () => {
     const user = userEvent.setup();
     const handleSubmit = vi.fn();
 
-    renderTradeTicket({ onSubmitDraft: handleSubmit });
+    renderTradeTicket({ onSubmit: handleSubmit });
 
     await user.click(screen.getByRole("button", { name: /Time in force/i }));
 
@@ -321,7 +338,7 @@ describe("TradeTicket", () => {
     const user = userEvent.setup();
     const handleSubmit = vi.fn();
 
-    renderTradeTicket({ onSubmitDraft: handleSubmit });
+    renderTradeTicket({ onSubmit: handleSubmit });
 
     await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
     await user.type(screen.getByRole("textbox", { name: "Limit price" }), "10");
@@ -351,7 +368,7 @@ describe("TradeTicket", () => {
         notional: 100,
         limitPx: 95,
       },
-      onSubmitDraft: handleSubmit,
+      onSubmit: handleSubmit,
     });
 
     await user.click(screen.getByRole("button", { name: "Preview order" }));
@@ -378,7 +395,7 @@ describe("TradeTicket", () => {
         qty: 2,
         limitPx: 125,
       },
-      onSubmitDraft: vi.fn(),
+      onSubmit: vi.fn(),
       onSubmitSuccess: handleSuccess,
     });
 
@@ -414,7 +431,7 @@ describe("TradeTicket", () => {
       },
       defaultLimitPx: 100,
       resetOnSubmitSuccess: true,
-      onSubmitDraft: vi.fn(),
+      onSubmit: vi.fn(),
     });
 
     await user.click(screen.getByRole("button", { name: "Preview order" }));
@@ -454,7 +471,7 @@ describe("TradeTicket", () => {
         assetQtyAvailable={10}
         value={initialValue}
         onChange={handleChange}
-        onSubmitDraft={() => deferred.promise}
+        onSubmit={() => deferred.promise}
         onSubmitSuccess={handleSuccess}
         resetOnSubmitSuccess
       />,
@@ -475,7 +492,7 @@ describe("TradeTicket", () => {
           limitPx: 11,
         }}
         onChange={handleChange}
-        onSubmitDraft={() => deferred.promise}
+        onSubmit={() => deferred.promise}
         onSubmitSuccess={handleSuccess}
         resetOnSubmitSuccess
       />,
@@ -535,7 +552,7 @@ describe("TradeTicket", () => {
         qty: 1,
         limitPx: 10,
       },
-      onSubmitDraft: handleSubmit,
+      onSubmit: handleSubmit,
     });
 
     const submit = screen.getByRole("button", {
@@ -577,7 +594,7 @@ describe("TradeTicket", () => {
         qty: 1,
         limitPx: 10,
       },
-      onSubmitDraft: async () => {
+      onSubmit: async () => {
         throw error;
       },
       onSubmitError: handleError,
@@ -616,7 +633,7 @@ describe("TradeTicket", () => {
         assetQtyAvailable={10}
         value={initialValue}
         onChange={() => {}}
-        onSubmitDraft={() => deferred.promise}
+        onSubmit={() => deferred.promise}
         onSubmitError={handleError}
       />,
     );
@@ -635,7 +652,7 @@ describe("TradeTicket", () => {
           limitPx: 11,
         }}
         onChange={() => {}}
-        onSubmitDraft={() => deferred.promise}
+        onSubmit={() => deferred.promise}
         onSubmitError={handleError}
       />,
     );
@@ -663,7 +680,7 @@ describe("TradeTicket", () => {
       messages: {
         submissionError: "注文を送信できませんでした。",
       },
-      onSubmitDraft: async () => {
+      onSubmit: async () => {
         throw new Error("Rejected");
       },
     });
@@ -686,7 +703,7 @@ describe("TradeTicket", () => {
         qty: 1,
         limitPx: 10,
       },
-      onSubmitDraft: async () => {
+      onSubmit: async () => {
         throw new Error("Rejected");
       },
     });
@@ -724,7 +741,7 @@ describe("TradeTicket", () => {
         assetQtyAvailable={10}
         value={initialValue}
         onChange={() => {}}
-        onSubmitDraft={async () => {
+        onSubmit={async () => {
           throw new Error("Rejected");
         }}
       />,
@@ -746,7 +763,7 @@ describe("TradeTicket", () => {
           limitPx: 11,
         }}
         onChange={() => {}}
-        onSubmitDraft={async () => {
+        onSubmit={async () => {
           throw new Error("Rejected");
         }}
       />,

@@ -35,6 +35,7 @@ export type { TradeTicketClassNames, TradeTicketProps } from "./trade-ticket";
 export type {
   TradeTicketMessages,
   TradeTicketMessagesInput,
+  TradeTicketMinimumMessage,
   TradeTicketValidationMessage,
   TradeTicketValidationMessageBaseContext,
   TradeTicketValidationMessageContext,

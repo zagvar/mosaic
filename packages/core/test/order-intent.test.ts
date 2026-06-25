@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { prepareOrder } from "../src/order";
+import { createOrderIntent } from "../src/order";
 import { equityContext } from "./order-test-fixtures";
 
-describe("prepareOrder", () => {
+describe("createOrderIntent", () => {
   it("returns a canonical valid limit order", () => {
-    const result = prepareOrder(
+    const result = createOrderIntent(
       {
         symbol: "AAPL",
         assetClass: "equity",
@@ -33,7 +33,7 @@ describe("prepareOrder", () => {
   });
 
   it("removes a stale limit price from a market order", () => {
-    const result = prepareOrder(
+    const result = createOrderIntent(
       {
         symbol: "AAPL",
         assetClass: "equity",
@@ -61,7 +61,7 @@ describe("prepareOrder", () => {
   });
 
   it("does not silently normalize an invalid increment", () => {
-    const result = prepareOrder(
+    const result = createOrderIntent(
       {
         symbol: "AAPL",
         assetClass: "equity",

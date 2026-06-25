@@ -1,4 +1,5 @@
 import { classNameProps } from "./class-name";
+import { useLocale } from "react-aria-components";
 
 export interface AmountPresetsClassNames {
   root?: string;
@@ -20,6 +21,8 @@ export function AmountPresets({
   isDisabled = false,
   classNames,
 }: AmountPresetsProps) {
+  const { locale } = useLocale();
+
   return (
     <div {...classNameProps(classNames?.root)}>
       {values.map((value) => (
@@ -30,9 +33,16 @@ export function AmountPresets({
           onClick={() => onSelect(value)}
           {...classNameProps(classNames?.button)}
         >
-          {value}%
+          {formatPercent(value, locale)}
         </button>
       ))}
     </div>
   );
+}
+
+function formatPercent(value: number, locale: string) {
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 2,
+    style: "percent",
+  }).format(value / 100);
 }

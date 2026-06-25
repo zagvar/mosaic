@@ -1,8 +1,11 @@
 import { useId } from "react";
 import type {
+  OrderExecutionError,
+  OrderExecutionErrorCode,
+  OrderFeeType,
+  OrderIntent,
   OrderSummary,
   OrderWarningCode,
-  PreparedOrder,
   Tif,
 } from "@mosaic/core";
 import { useLocale } from "react-aria-components";
@@ -22,6 +25,7 @@ export interface OrderReviewClassNames {
   actions?: string;
   cancelButton?: string;
   confirmButton?: string;
+  confirmationError?: string;
 }
 
 export interface OrderReviewMessages {
@@ -38,10 +42,13 @@ export interface OrderReviewMessages {
   notional: string;
   limitPx: string;
   estimatedNotional: string;
+  estimatedFee: (feeType: string) => string;
+  feeType: Record<OrderFeeType, string>;
   extendedHours: string;
   yes: string;
   warnings: string;
   warning: Record<OrderWarningCode, string>;
+  confirmationError: Record<OrderExecutionErrorCode, string>;
   tifValue: Record<Tif, string>;
   cancel: string;
   confirm: string;
@@ -49,9 +56,14 @@ export interface OrderReviewMessages {
 }
 
 export type OrderReviewMessagesInput = Partial<
-  Omit<OrderReviewMessages, "warning" | "tifValue">
+  Omit<
+    OrderReviewMessages,
+    "warning" | "confirmationError" | "feeType" | "tifValue"
+  >
 > & {
   warning?: Partial<OrderReviewMessages["warning"]>;
+  confirmationError?: Partial<OrderReviewMessages["confirmationError"]>;
+  feeType?: Partial<OrderReviewMessages["feeType"]>;
   tifValue?: Partial<OrderReviewMessages["tifValue"]>;
 };
 
@@ -65,8 +77,9 @@ export interface OrderReviewProps {
   notionalFractionDigits?: number;
   isDisabled?: boolean;
   isConfirming?: boolean;
+  confirmationError?: string | OrderExecutionError | null;
   onCancel: () => void;
-  onConfirm: (order: PreparedOrder) => void;
+  onConfirm: (order: OrderIntent) => void;
 }
 
 export const defaultOrderReviewMessages: OrderReviewMessages = {
@@ -83,6 +96,14 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
   notional: "Total",
   limitPx: "Limit price",
   estimatedNotional: "Estimated total",
+  estimatedFee: (feeType) => `Estimated fee: ${feeType}`,
+  feeType: {
+    commission: "Commission",
+    regulatory: "Regulatory fee",
+    clearing: "Clearing fee",
+    tax: "Tax",
+    other: "Other fee",
+  },
   extendedHours: "Extended hours",
   yes: "Yes",
   warnings: "Important information",
@@ -93,6 +114,20 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
       "Extended-hours orders may have lower liquidity and wider spreads.",
     market_price_not_guaranteed:
       "A market order's execution price is not guaranteed.",
+  },
+  confirmationError: {
+    unknown: "We couldn't confirm this order. Please try again.",
+    network_error: "The broker could not be reached. Please try again.",
+    broker_rejected: "The broker rejected this order.",
+    insufficient_buying_power:
+      "Buying power is no longer sufficient for this order.",
+    insufficient_asset_qty:
+      "Available quantity is no longer sufficient for this order.",
+    market_closed: "The market is closed for this order.",
+    price_changed: "The price changed. Review the order before trying again.",
+    quote_expired: "The quote expired. Return to the ticket and review it.",
+    order_not_allowed: "This order is not allowed by the broker.",
+    rate_limited: "Too many requests were made. Please wait and try again.",
   },
   tifValue: {
     day: "Day",
@@ -117,6 +152,7 @@ export function OrderReview({
   notionalFractionDigits = 2,
   isDisabled = false,
   isConfirming = false,
+  confirmationError,
   onCancel,
   onConfirm,
 }: OrderReviewProps) {
@@ -125,6 +161,10 @@ export function OrderReview({
   const text = mergeOrderReviewMessages(messages);
   const { order } = summary;
   const controlsDisabled = isDisabled || isConfirming;
+  const confirmationErrorMessage = getConfirmationErrorMessage(
+    confirmationError,
+    text.confirmationError,
+  );
 
   return (
     <section
@@ -208,6 +248,20 @@ export function OrderReview({
           />
         )}
 
+        {summary.fees?.map((fee, index) => (
+          <ReviewRow
+            key={`${fee.type}:${fee.currency}:${index}`}
+            label={text.estimatedFee(text.feeType[fee.type])}
+            value={formatQuoteAmount(
+              fee.amount,
+              fee.currency,
+              locale,
+              fee.fractionDigits ?? notionalFractionDigits,
+            )}
+            classNames={classNames}
+          />
+        ))}
+
         {order.extendedHours ? (
           <ReviewRow
             label={text.extendedHours}
@@ -224,16 +278,19 @@ export function OrderReview({
           </h3>
           <ul {...classNameProps(classNames?.warningList)}>
             {summary.warnings.map((warning) => (
-              <li
-                key={warning.code}
-                {...classNameProps(classNames?.warning)}
-              >
+              <li key={warning.code} {...classNameProps(classNames?.warning)}>
                 {text.warning[warning.code]}
               </li>
             ))}
           </ul>
         </div>
       )}
+
+      {confirmationErrorMessage ? (
+        <p role="alert" {...classNameProps(classNames?.confirmationError)}>
+          {confirmationErrorMessage}
+        </p>
+      ) : null}
 
       <div {...classNameProps(classNames?.actions)}>
         <button
@@ -284,6 +341,14 @@ function mergeOrderReviewMessages(
       ...defaultOrderReviewMessages.warning,
       ...messages?.warning,
     },
+    confirmationError: {
+      ...defaultOrderReviewMessages.confirmationError,
+      ...messages?.confirmationError,
+    },
+    feeType: {
+      ...defaultOrderReviewMessages.feeType,
+      ...messages?.feeType,
+    },
     tifValue: {
       ...defaultOrderReviewMessages.tifValue,
       ...messages?.tifValue,
@@ -291,7 +356,20 @@ function mergeOrderReviewMessages(
   };
 }
 
-function formatNumber(value: number, locale: string, maximumFractionDigits: number) {
+function getConfirmationErrorMessage(
+  error: string | OrderExecutionError | null | undefined,
+  messages: Record<OrderExecutionErrorCode, string>,
+) {
+  if (error === null || error === undefined) return undefined;
+
+  return typeof error === "string" ? error : messages[error.code];
+}
+
+function formatNumber(
+  value: number,
+  locale: string,
+  maximumFractionDigits: number,
+) {
   return new Intl.NumberFormat(locale, {
     maximumFractionDigits,
     useGrouping: true,

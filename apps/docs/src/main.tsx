@@ -1,6 +1,11 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { AssetRules, OrderSummary, PreparedOrder } from "@mosaic/core";
+import type {
+  AssetRules,
+  OrderExecutionError,
+  OrderIntent,
+  OrderSummary,
+} from "@mosaic/core";
 import { createOrderSummary } from "@mosaic/core";
 import {
   OrderReview,
@@ -98,6 +103,7 @@ const orderReviewClassNames: OrderReviewClassNames = {
   actions: "demo-order-review-actions",
   cancelButton: "demo-order-review-cancel",
   confirmButton: "demo-order-review-confirm",
+  confirmationError: "demo-order-review-error",
 };
 
 function App() {
@@ -109,9 +115,12 @@ function App() {
   });
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmationError, setConfirmationError] =
+    useState<OrderExecutionError | null>(null);
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
     null,
   );
+  const [confirmationAttempts, setConfirmationAttempts] = useState(0);
 
   function applyLimitPrice(limitPx: number) {
     if (value.type !== "limit") return;
@@ -122,25 +131,40 @@ function App() {
     }));
   }
 
-  function reviewOrder(order: PreparedOrder) {
+  // Simulates fee estimates returned by a backend broker-preview endpoint.
+  function reviewOrder(order: OrderIntent) {
     setConfirmationMessage(null);
+    setConfirmationError(null);
+    setConfirmationAttempts(0);
     setOrderSummary(
       createOrderSummary(order, {
         referencePx: latestPrice,
+        fees: [
+          {
+            type: "commission",
+            amount: 0.25,
+            currency: "USD",
+          },
+        ],
       }),
     );
   }
 
-  async function confirmOrder(order: PreparedOrder) {
+  async function confirmOrder(order: OrderIntent) {
     setIsConfirming(true);
+    setConfirmationError(null);
 
     try {
-      await simulateBrokerSubmission();
+      await simulateBrokerSubmission(confirmationAttempts);
+      setConfirmationAttempts((attempts) => attempts + 1);
       console.info("Order confirmed", order);
       setOrderSummary(null);
       setConfirmationMessage(
         `${order.side === "buy" ? "Buy" : "Sell"} order confirmed for ${order.symbol}.`,
       );
+    } catch {
+      setConfirmationAttempts((attempts) => attempts + 1);
+      setConfirmationError({ code: "broker_rejected" });
     } finally {
       setIsConfirming(false);
     }
@@ -198,7 +222,7 @@ function App() {
             value={value}
             onChange={setValue}
             classNames={tradeTicketClassNames}
-            onSubmitDraft={reviewOrder}
+            onSubmit={reviewOrder}
             onValidationIssues={(issues) => {
               console.info("Validation issues", issues);
             }}
@@ -212,8 +236,12 @@ function App() {
           priceFractionDigits={appleRules.pricePrecision}
           notionalFractionDigits={appleRules.notionalPrecision}
           isConfirming={isConfirming}
+          confirmationError={confirmationError}
           classNames={orderReviewClassNames}
-          onCancel={() => setOrderSummary(null)}
+          onCancel={() => {
+            setConfirmationError(null);
+            setOrderSummary(null);
+          }}
           onConfirm={confirmOrder}
         />
       )}
@@ -226,9 +254,16 @@ function App() {
   );
 }
 
-function simulateBrokerSubmission() {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, 700);
+function simulateBrokerSubmission(attempt: number) {
+  return new Promise<void>((resolve, reject) => {
+    window.setTimeout(() => {
+      if (attempt === 0) {
+        reject(new Error("Demo broker rejection"));
+        return;
+      }
+
+      resolve();
+    }, 700);
   });
 }
 

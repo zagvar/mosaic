@@ -6,10 +6,10 @@ import type {
   OrderSide,
   OrderType,
   OrderValidationIssue,
-  PreparedOrder,
+  OrderIntent,
   Tif,
 } from "@mosaic/core";
-import { prepareOrder } from "@mosaic/core";
+import { createOrderIntent } from "@mosaic/core";
 import { useLocale, VisuallyHidden } from "react-aria-components";
 import { OrderTypeToggle } from "./order-type-toggle";
 import { AvailableBalance } from "./internal/available-balance";
@@ -71,12 +71,12 @@ export interface TradeTicketProps {
   messages?: TradeTicketMessagesInput;
   classNames?: TradeTicketClassNames;
 
-  onSubmitDraft?: (order: PreparedOrder) => void | Promise<void>;
+  onSubmit?: (order: OrderIntent) => void | Promise<void>;
   onSubmitError?: (error: unknown) => void;
   onValidationIssues?: (issues: OrderValidationIssue[]) => void;
 
   resetOnSubmitSuccess?: boolean;
-  onSubmitSuccess?: (order: PreparedOrder) => void;
+  onSubmitSuccess?: (order: OrderIntent) => void;
 }
 
 export function TradeTicket({
@@ -97,7 +97,7 @@ export function TradeTicket({
   submissionError: controlledSubmissionError,
   messages,
   classNames,
-  onSubmitDraft,
+  onSubmit,
   onSubmitError,
   onValidationIssues,
   onSubmitSuccess,
@@ -197,29 +197,29 @@ export function TradeTicket({
     clearSubmissionError();
     setHasSubmitted(true);
 
-    const preparation = prepareOrder(trade.draft, trade.context);
+    const result = createOrderIntent(trade.draft, trade.context);
 
-    if (!preparation.valid) {
-      onValidationIssues?.(preparation.issues);
+    if (!result.valid) {
+      onValidationIssues?.(result.issues);
       return;
     }
 
-    if (onSubmitDraft === undefined) {
+    if (onSubmit === undefined) {
       return;
     }
 
     submissionInFlightRef.current = true;
     setInternalIsSubmitting(true);
 
-    const preparedOrder = preparation.order;
-    const submittedScopeKey = getSubmissionScopeKey(preparedOrder);
+    const orderIntent = result.order;
+    const submittedScopeKey = getSubmissionScopeKey(orderIntent);
 
     try {
-      await onSubmitDraft(preparedOrder);
+      await onSubmit(orderIntent);
       const submissionIsCurrent =
         submissionScopeKeyRef.current === submittedScopeKey;
 
-      onSubmitSuccess?.(preparedOrder);
+      onSubmitSuccess?.(orderIntent);
 
       if (resetOnSubmitSuccess && submissionIsCurrent) {
         trade.reset();
@@ -377,6 +377,7 @@ export function TradeTicket({
           placeholder={formatMinimum(assetRules.minNotional, "0", {
             locale,
             maximumFractionDigits: assetRules.notionalPrecision,
+            message: text.minimum,
           })}
           suffix={quoteCurrency}
           {...numberFieldClassNameProps}
@@ -392,6 +393,7 @@ export function TradeTicket({
           placeholder={formatMinimum(assetRules.minQty, "0", {
             locale,
             maximumFractionDigits: assetRules.qtyPrecision,
+            message: text.minimum,
           })}
           suffix={symbol}
           {...numberFieldClassNameProps}
@@ -445,7 +447,7 @@ function getFieldIssue(
   return issues.find((issue) => issue.path?.includes(field));
 }
 
-function getSubmissionScopeKey(order: PreparedOrder) {
+function getSubmissionScopeKey(order: OrderIntent) {
   return JSON.stringify([
     order.assetClass,
     order.symbol,

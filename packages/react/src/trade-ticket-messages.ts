@@ -27,6 +27,8 @@ export type TradeTicketValidationMessages = Partial<
   Record<OrderValidationCode, TradeTicketValidationMessage>
 >;
 
+export type TradeTicketMinimumMessage = (formattedValue: string) => string;
+
 export interface TradeTicketMessages {
   submit: string;
   submitting: string;
@@ -35,6 +37,7 @@ export interface TradeTicketMessages {
   limitPx: string;
   notional: string;
   available: string;
+  minimum: TradeTicketMinimumMessage;
   tif: TifSelectMessages;
   validation: TradeTicketValidationMessages;
 }
@@ -54,6 +57,7 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
   limitPx: "Limit price",
   notional: "Total",
   available: "Available",
+  minimum: (formattedValue) => `Min ${formattedValue}`,
   tif: defaultTifSelectMessages,
   validation: {
     invalid_order: "Order details are invalid.",
@@ -204,11 +208,15 @@ export function getErrorMessageProps(
 export function formatMinimum(
   value: number | undefined,
   fallback: string,
-  options: { locale: string; maximumFractionDigits: number },
+  options: {
+    locale: string;
+    maximumFractionDigits: number;
+    message: TradeTicketMinimumMessage;
+  },
 ) {
   return value === undefined
     ? fallback
-    : `Min ${formatRuleNumber(value, options)}`;
+    : options.message(formatRuleNumber(value, options));
 }
 
 export function formatRuleNumber(

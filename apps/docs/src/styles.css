@@ -91,6 +91,7 @@ main {
 .demo-segmented-radio-button[data-focus-visible],
 .demo-tif-select-trigger[data-focus-visible],
 .demo-number-field-input[data-focus-visible],
+.demo-quote:focus-visible,
 .demo-submit-button:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
@@ -280,26 +281,32 @@ main {
   outline-offset: 2px;
 }
 
-.demo-market-prices {
+.demo-quote-display {
   display: grid;
   gap: 8px;
   margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
 }
 
-.demo-market-prices-label,
+.demo-quote-symbol,
 .demo-draft-preview h2 {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
 }
 
-.demo-market-price-actions {
+.demo-quote-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.demo-market-price-actions button {
+.demo-quote {
+  display: grid;
+  gap: 2px;
   min-width: 0;
   padding: 8px;
   border: 1px solid #d1d5db;
@@ -308,23 +315,36 @@ main {
   color: #374151;
   font: inherit;
   font-size: 0.8125rem;
+  text-align: left;
+}
+
+button.demo-quote {
   cursor: pointer;
 }
 
-.demo-market-price-actions button:hover:not(:disabled) {
+button.demo-quote:hover:not(:disabled) {
   background: #f3f4f6;
 }
 
-.demo-market-price-actions button:disabled {
+button.demo-quote:disabled {
   color: #9ca3af;
   cursor: not-allowed;
 }
 
-.demo-market-price-actions button:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
+.demo-quote-label,
+.demo-quote-quantity,
+.demo-quote-spread {
+  color: #6b7280;
 }
 
+.demo-quote-price {
+  color: #111827;
+  font-weight: 700;
+}
+
+.demo-quote-spread {
+  font-size: 0.75rem;
+}
 .demo-draft-preview {
   margin-top: 16px;
 }

@@ -36,6 +36,34 @@ export const marketReferenceSchema = z.object({
   displaySource: z.string().trim().min(1).max(64).optional(),
 });
 
+/**
+ * Sanitized top-of-book data suitable for quote displays and ticket helpers.
+ */
+export const marketQuoteSchema = z
+  .object({
+    symbol: z.string().min(1).max(32),
+    assetClass: assetClassSchema,
+    bidPx: z.number().positive(),
+    bidQty: z.number().positive().optional(),
+    askPx: z.number().positive(),
+    askQty: z.number().positive().optional(),
+    lastPx: z.number().positive().optional(),
+    observedAt: z.number().int().nonnegative(),
+    receivedAt: z.number().int().nonnegative().optional(),
+    mode: marketDataModeSchema.optional(),
+    displaySource: z.string().trim().min(1).max(64).optional(),
+  })
+  .superRefine((quote, context) => {
+    if (quote.bidPx > quote.askPx) {
+      context.addIssue({
+        code: "custom",
+        message: "bidPx must not be greater than askPx",
+        path: ["bidPx"],
+      });
+    }
+  });
+
 export type MarketPriceKind = z.infer<typeof marketPriceKindSchema>;
 export type MarketDataMode = z.infer<typeof marketDataModeSchema>;
 export type MarketReference = z.infer<typeof marketReferenceSchema>;
+export type MarketQuote = z.infer<typeof marketQuoteSchema>;

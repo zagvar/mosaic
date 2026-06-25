@@ -2,6 +2,7 @@ import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type {
   AssetRules,
+  MarketQuote,
   OrderExecutionError,
   OrderIntent,
   OrderSummary,
@@ -9,8 +10,10 @@ import type {
 import { createOrderSummary } from "@mosaic/core";
 import {
   OrderReview,
+  QuoteDisplay,
   TradeTicket,
   type OrderReviewClassNames,
+  type QuoteDisplayClassNames,
   type TradeDraftValue,
   type TradeTicketClassNames,
 } from "@mosaic/react";
@@ -44,6 +47,19 @@ const appleRules: AssetRules = {
 const latestPrice = 195.75;
 const bidPrice = 195.7;
 const askPrice = 195.8;
+
+const appleQuote: MarketQuote = {
+  symbol: "AAPL",
+  assetClass: "equity",
+  bidPx: bidPrice,
+  bidQty: 120,
+  askPx: askPrice,
+  askQty: 95,
+  lastPx: latestPrice,
+  observedAt: Date.now(),
+  mode: "real_time",
+  displaySource: "Demo feed",
+};
 
 const segmentedClassNames = {
   root: "demo-segmented-radio",
@@ -87,6 +103,17 @@ const tradeTicketClassNames: TradeTicketClassNames = {
   },
   alert: "demo-alert",
   submitButton: "demo-submit-button",
+};
+
+const quoteDisplayClassNames: QuoteDisplayClassNames = {
+  root: "demo-quote-display",
+  symbol: "demo-quote-symbol",
+  quotes: "demo-quote-grid",
+  quote: "demo-quote",
+  label: "demo-quote-label",
+  price: "demo-quote-price",
+  quantity: "demo-quote-quantity",
+  spread: "demo-quote-spread",
 };
 
 const orderReviewClassNames: OrderReviewClassNames = {
@@ -183,35 +210,15 @@ function App() {
 
       {orderSummary === null ? (
         <>
-          <div className="demo-market-prices">
-            <span className="demo-market-prices-label">Market prices</span>
-
-            <div className="demo-market-price-actions">
-              <button
-                type="button"
-                disabled={value.type !== "limit"}
-                onClick={() => applyLimitPrice(bidPrice)}
-              >
-                Bid {bidPrice}
-              </button>
-
-              <button
-                type="button"
-                disabled={value.type !== "limit"}
-                onClick={() => applyLimitPrice(latestPrice)}
-              >
-                Last {latestPrice}
-              </button>
-
-              <button
-                type="button"
-                disabled={value.type !== "limit"}
-                onClick={() => applyLimitPrice(askPrice)}
-              >
-                Ask {askPrice}
-              </button>
-            </div>
-          </div>
+          <QuoteDisplay
+            quote={appleQuote}
+            quoteCurrency="USD"
+            priceFractionDigits={appleRules.pricePrecision}
+            quantityFractionDigits={appleRules.qtyPrecision}
+            isDisabled={value.type !== "limit"}
+            classNames={quoteDisplayClassNames}
+            onSelectPrice={applyLimitPrice}
+          />
 
           <TradeTicket
             symbol="AAPL"

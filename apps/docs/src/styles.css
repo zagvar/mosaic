@@ -248,6 +248,7 @@ main {
 
 .demo-submit-button:disabled,
 .demo-order-review-cancel:disabled,
+.demo-order-review-refresh:disabled,
 .demo-order-review-confirm:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -435,11 +436,12 @@ main {
 
 .demo-order-review-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px;
 }
 
 .demo-order-review-cancel,
+.demo-order-review-refresh,
 .demo-order-review-confirm {
   padding: 10px 14px;
   border-radius: 8px;
@@ -454,6 +456,12 @@ main {
   color: #374151;
 }
 
+.demo-order-review-refresh {
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #111827;
+}
+
 .demo-order-review-confirm {
   border: 1px solid #111827;
   background: #111827;
@@ -464,11 +472,16 @@ main {
   background: #f3f4f6;
 }
 
+.demo-order-review-refresh:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
 .demo-order-review-confirm:hover:not(:disabled) {
   background: #374151;
 }
 
 .demo-order-review-cancel:focus-visible,
+.demo-order-review-refresh:focus-visible,
 .demo-order-review-confirm:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;

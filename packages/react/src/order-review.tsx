@@ -1,5 +1,7 @@
 import { useId } from "react";
 import type {
+  MarketDataMode,
+  MarketPriceKind,
   OrderExecutionError,
   OrderExecutionErrorCode,
   OrderFeeType,
@@ -24,6 +26,7 @@ export interface OrderReviewClassNames {
   warning?: string;
   actions?: string;
   cancelButton?: string;
+  refreshButton?: string;
   confirmButton?: string;
   confirmationError?: string;
 }
@@ -41,8 +44,16 @@ export interface OrderReviewMessages {
   qty: string;
   notional: string;
   limitPx: string;
+  estimatedFillPx: string;
   estimatedNotional: string;
+  marketReference: (priceKind: string) => string;
+  marketPriceKind: Record<MarketPriceKind, string>;
+  marketDataMode: string;
+  marketDataModeValue: Record<MarketDataMode, string>;
+  marketDataSource: string;
+  marketObservedAt: string;
   estimatedFee: (feeType: string) => string;
+  highSlippage: (formattedPercent: string) => string;
   feeType: Record<OrderFeeType, string>;
   extendedHours: string;
   yes: string;
@@ -51,6 +62,8 @@ export interface OrderReviewMessages {
   confirmationError: Record<OrderExecutionErrorCode, string>;
   tifValue: Record<Tif, string>;
   cancel: string;
+  refreshPreview: string;
+  refreshingPreview: string;
   confirm: string;
   confirming: string;
 }
@@ -58,18 +71,26 @@ export interface OrderReviewMessages {
 export type OrderReviewMessagesInput = Partial<
   Omit<
     OrderReviewMessages,
-    "warning" | "confirmationError" | "feeType" | "tifValue"
+    | "warning"
+    | "confirmationError"
+    | "feeType"
+    | "marketPriceKind"
+    | "marketDataModeValue"
+    | "tifValue"
   >
 > & {
   warning?: Partial<OrderReviewMessages["warning"]>;
   confirmationError?: Partial<OrderReviewMessages["confirmationError"]>;
   feeType?: Partial<OrderReviewMessages["feeType"]>;
+  marketPriceKind?: Partial<OrderReviewMessages["marketPriceKind"]>;
+  marketDataModeValue?: Partial<OrderReviewMessages["marketDataModeValue"]>;
   tifValue?: Partial<OrderReviewMessages["tifValue"]>;
 };
 
 export interface OrderReviewProps {
   summary: OrderSummary;
   quoteCurrency: string;
+  marketReferenceDisplay?: "hidden" | "price" | "full";
   messages?: OrderReviewMessagesInput;
   classNames?: OrderReviewClassNames;
   quantityFractionDigits?: number;
@@ -77,8 +98,10 @@ export interface OrderReviewProps {
   notionalFractionDigits?: number;
   isDisabled?: boolean;
   isConfirming?: boolean;
+  isRefreshingPreview?: boolean;
   confirmationError?: string | OrderExecutionError | null;
   onCancel: () => void;
+  onRefreshPreview?: (order: OrderIntent) => void;
   onConfirm: (order: OrderIntent) => void;
 }
 
@@ -95,8 +118,27 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
   qty: "Quantity",
   notional: "Total",
   limitPx: "Limit price",
+  estimatedFillPx: "Estimated fill price",
   estimatedNotional: "Estimated total",
+  marketReference: (priceKind) => `${priceKind} reference price`,
+  marketPriceKind: {
+    bid: "Bid",
+    ask: "Ask",
+    last: "Last",
+    mid: "Mid",
+    mark: "Mark",
+  },
+  marketDataMode: "Market data",
+  marketDataModeValue: {
+    real_time: "Real-time",
+    delayed: "Delayed",
+    indicative: "Indicative",
+  },
+  marketDataSource: "Data source",
+  marketObservedAt: "Price observed",
   estimatedFee: (feeType) => `Estimated fee: ${feeType}`,
+  highSlippage: (formattedPercent) =>
+    `Estimated price movement is ${formattedPercent}.`,
   feeType: {
     commission: "Commission",
     regulatory: "Regulatory fee",
@@ -114,6 +156,15 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
       "Extended-hours orders may have lower liquidity and wider spreads.",
     market_price_not_guaranteed:
       "A market order's execution price is not guaranteed.",
+    market_data_stale:
+      "The market price used for this review may be out of date.",
+    market_data_delayed: "The market price used for this review is delayed.",
+    market_data_indicative:
+      "The market price used for this review is indicative.",
+    slippage_high:
+      "Estimated slippage is above the configured review threshold.",
+    preview_expired:
+      "This order preview has expired. Refresh it before confirming.",
   },
   confirmationError: {
     unknown: "We couldn't confirm this order. Please try again.",
@@ -138,6 +189,8 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
     fok: "Fill or kill",
   },
   cancel: "Back",
+  refreshPreview: "Refresh preview",
+  refreshingPreview: "Refreshing...",
   confirm: "Confirm order",
   confirming: "Confirming...",
 };
@@ -145,6 +198,7 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
 export function OrderReview({
   summary,
   quoteCurrency,
+  marketReferenceDisplay = "hidden",
   messages,
   classNames,
   quantityFractionDigits = 8,
@@ -152,15 +206,20 @@ export function OrderReview({
   notionalFractionDigits = 2,
   isDisabled = false,
   isConfirming = false,
+  isRefreshingPreview = false,
   confirmationError,
   onCancel,
+  onRefreshPreview,
   onConfirm,
 }: OrderReviewProps) {
   const { locale } = useLocale();
   const titleId = useId();
   const text = mergeOrderReviewMessages(messages);
   const { order } = summary;
-  const controlsDisabled = isDisabled || isConfirming;
+  const previewExpired = hasWarning(summary, "preview_expired");
+  const controlsDisabled =
+    isDisabled || isConfirming || isRefreshingPreview;
+  const confirmDisabled = controlsDisabled || previewExpired;
   const confirmationErrorMessage = getConfirmationErrorMessage(
     confirmationError,
     text.confirmationError,
@@ -168,7 +227,7 @@ export function OrderReview({
 
   return (
     <section
-      aria-busy={isConfirming}
+      aria-busy={isConfirming || isRefreshingPreview}
       aria-labelledby={titleId}
       {...classNameProps(classNames?.root)}
     >
@@ -235,6 +294,20 @@ export function OrderReview({
           />
         )}
 
+        {order.type !== "market" ||
+        summary.quotePreview?.estimatedFillPx === undefined ? null : (
+          <ReviewRow
+            label={text.estimatedFillPx}
+            value={formatQuoteAmount(
+              summary.quotePreview.estimatedFillPx,
+              quoteCurrency,
+              locale,
+              priceFractionDigits,
+            )}
+            classNames={classNames}
+          />
+        )}
+
         {summary.estimatedNotional === undefined ? null : (
           <ReviewRow
             label={text.estimatedNotional}
@@ -246,6 +319,53 @@ export function OrderReview({
             )}
             classNames={classNames}
           />
+        )}
+
+        {summary.marketReference === undefined ||
+        marketReferenceDisplay === "hidden" ? null : (
+          <>
+            <ReviewRow
+              label={text.marketReference(
+                text.marketPriceKind[summary.marketReference.kind],
+              )}
+              value={formatQuoteAmount(
+                summary.marketReference.px,
+                quoteCurrency,
+                locale,
+                priceFractionDigits,
+              )}
+              classNames={classNames}
+            />
+
+            {marketReferenceDisplay !== "full" ||
+            summary.marketReference.mode === undefined ? null : (
+              <ReviewRow
+                label={text.marketDataMode}
+                value={text.marketDataModeValue[summary.marketReference.mode]}
+                classNames={classNames}
+              />
+            )}
+
+            {marketReferenceDisplay !== "full" ||
+            summary.marketReference.displaySource === undefined ? null : (
+              <ReviewRow
+                label={text.marketDataSource}
+                value={summary.marketReference.displaySource}
+                classNames={classNames}
+              />
+            )}
+
+            {marketReferenceDisplay === "full" ? (
+              <ReviewRow
+                label={text.marketObservedAt}
+                value={formatDateTime(
+                  summary.marketReference.observedAt,
+                  locale,
+                )}
+                classNames={classNames}
+              />
+            ) : null}
+          </>
         )}
 
         {summary.fees?.map((fee, index) => (
@@ -279,7 +399,7 @@ export function OrderReview({
           <ul {...classNameProps(classNames?.warningList)}>
             {summary.warnings.map((warning) => (
               <li key={warning.code} {...classNameProps(classNames?.warning)}>
-                {text.warning[warning.code]}
+                {getWarningMessage(warning.code, summary, text, locale)}
               </li>
             ))}
           </ul>
@@ -301,9 +421,23 @@ export function OrderReview({
         >
           {text.cancel}
         </button>
+
+        {previewExpired && onRefreshPreview !== undefined ? (
+          <button
+            type="button"
+            disabled={controlsDisabled}
+            onClick={() => onRefreshPreview(order)}
+            {...classNameProps(classNames?.refreshButton)}
+          >
+            {isRefreshingPreview
+              ? text.refreshingPreview
+              : text.refreshPreview}
+          </button>
+        ) : null}
+
         <button
           type="button"
-          disabled={controlsDisabled}
+          disabled={confirmDisabled}
           onClick={() => onConfirm(order)}
           {...classNameProps(classNames?.confirmButton)}
         >
@@ -349,6 +483,14 @@ function mergeOrderReviewMessages(
       ...defaultOrderReviewMessages.feeType,
       ...messages?.feeType,
     },
+    marketPriceKind: {
+      ...defaultOrderReviewMessages.marketPriceKind,
+      ...messages?.marketPriceKind,
+    },
+    marketDataModeValue: {
+      ...defaultOrderReviewMessages.marketDataModeValue,
+      ...messages?.marketDataModeValue,
+    },
     tifValue: {
       ...defaultOrderReviewMessages.tifValue,
       ...messages?.tifValue,
@@ -363,6 +505,28 @@ function getConfirmationErrorMessage(
   if (error === null || error === undefined) return undefined;
 
   return typeof error === "string" ? error : messages[error.code];
+}
+
+function getWarningMessage(
+  code: OrderWarningCode,
+  summary: OrderSummary,
+  messages: OrderReviewMessages,
+  locale: string,
+) {
+  if (
+    code === "slippage_high" &&
+    summary.quotePreview?.slippageBps !== undefined
+  ) {
+    return messages.highSlippage(
+      formatBasisPoints(summary.quotePreview.slippageBps, locale),
+    );
+  }
+
+  return messages.warning[code];
+}
+
+function hasWarning(summary: OrderSummary, code: OrderWarningCode) {
+  return summary.warnings.some((warning) => warning.code === code);
 }
 
 function formatNumber(
@@ -383,4 +547,18 @@ function formatQuoteAmount(
   maximumFractionDigits: number,
 ) {
   return `${formatNumber(value, locale, maximumFractionDigits)} ${quoteCurrency}`;
+}
+
+function formatDateTime(value: number, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  }).format(value);
+}
+
+function formatBasisPoints(value: number, locale: string) {
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 2,
+    style: "percent",
+  }).format(value / 10_000);
 }

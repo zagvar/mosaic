@@ -102,6 +102,7 @@ const orderReviewClassNames: OrderReviewClassNames = {
   warning: "demo-order-review-warning",
   actions: "demo-order-review-actions",
   cancelButton: "demo-order-review-cancel",
+  refreshButton: "demo-order-review-refresh",
   confirmButton: "demo-order-review-confirm",
   confirmationError: "demo-order-review-error",
 };
@@ -115,6 +116,7 @@ function App() {
   });
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isRefreshingPreview, setIsRefreshingPreview] = useState(false);
   const [confirmationError, setConfirmationError] =
     useState<OrderExecutionError | null>(null);
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
@@ -131,23 +133,22 @@ function App() {
     }));
   }
 
-  // Simulates fee estimates returned by a backend broker-preview endpoint.
   function reviewOrder(order: OrderIntent) {
     setConfirmationMessage(null);
     setConfirmationError(null);
     setConfirmationAttempts(0);
-    setOrderSummary(
-      createOrderSummary(order, {
-        referencePx: latestPrice,
-        fees: [
-          {
-            type: "commission",
-            amount: 0.25,
-            currency: "USD",
-          },
-        ],
-      }),
-    );
+    setOrderSummary(createDemoOrderSummary(order));
+  }
+
+  async function refreshPreview(order: OrderIntent) {
+    setIsRefreshingPreview(true);
+
+    try {
+      await simulatePreviewRequest();
+      setOrderSummary(createDemoOrderSummary(order));
+    } finally {
+      setIsRefreshingPreview(false);
+    }
   }
 
   async function confirmOrder(order: OrderIntent) {
@@ -236,12 +237,14 @@ function App() {
           priceFractionDigits={appleRules.pricePrecision}
           notionalFractionDigits={appleRules.notionalPrecision}
           isConfirming={isConfirming}
+          isRefreshingPreview={isRefreshingPreview}
           confirmationError={confirmationError}
           classNames={orderReviewClassNames}
           onCancel={() => {
             setConfirmationError(null);
             setOrderSummary(null);
           }}
+          onRefreshPreview={refreshPreview}
           onConfirm={confirmOrder}
         />
       )}
@@ -252,6 +255,57 @@ function App() {
       </section>
     </main>
   );
+}
+
+function createDemoOrderSummary(order: OrderIntent) {
+  const now = Date.now();
+  const referencePx = order.side === "buy" ? askPrice : bidPrice;
+  const referenceKind = order.side === "buy" ? "ask" : "bid";
+  const estimatedFillPx =
+    order.type === "market"
+      ? referencePx + (order.side === "buy" ? 0.02 : -0.02)
+      : undefined;
+  const estimatedNotional =
+    order.notional ??
+    (order.qty === undefined
+      ? undefined
+      : order.qty * (estimatedFillPx ?? order.limitPx ?? referencePx));
+
+  return createOrderSummary(order, {
+    marketReference: {
+      symbol: order.symbol,
+      assetClass: order.assetClass,
+      px: referencePx,
+      kind: referenceKind,
+      observedAt: now,
+      mode: "real_time",
+      displaySource: "Demo feed",
+    },
+    staleAfterMs: 15_000,
+    quotePreview: {
+      previewId: `demo-${now}`,
+      ...(estimatedFillPx === undefined ? {} : { estimatedFillPx }),
+      ...(estimatedNotional === undefined ? {} : { estimatedNotional }),
+      slippageBps: order.type === "market" ? 10 : 0,
+      fees: [
+        {
+          type: "commission",
+          amount: 0.25,
+          currency: "USD",
+        },
+      ],
+      observedAt: now,
+      expiresAt: now + 30_000,
+    },
+    highSlippageBps: 50,
+    now,
+  });
+}
+
+function simulatePreviewRequest() {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, 500);
+  });
 }
 
 function simulateBrokerSubmission(attempt: number) {

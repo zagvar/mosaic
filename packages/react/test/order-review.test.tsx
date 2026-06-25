@@ -71,6 +71,165 @@ describe("OrderReview", () => {
     expect(screen.getByText("Yes")).toBeInTheDocument();
   });
 
+  it("renders a backend estimated fill price for market orders", () => {
+    renderOrderReview({
+      order: {
+        symbol: "AAPL",
+        assetClass: "equity",
+        side: "buy",
+        type: "market",
+        tif: "day",
+        qty: 2,
+      },
+      quotePreview: {
+        previewId: "preview-123",
+        estimatedFillPx: 195.82,
+        observedAt: 1000,
+      },
+      warnings: [{ code: "market_price_not_guaranteed" }],
+    });
+
+    expect(screen.getByText("Estimated fill price")).toBeInTheDocument();
+    expect(screen.getByText("195.82 USD")).toBeInTheDocument();
+  });
+
+  it("does not render an estimated fill price for limit orders", () => {
+    renderOrderReview({
+      ...limitSummary,
+      quotePreview: {
+        previewId: "preview-123",
+        estimatedFillPx: 100,
+        observedAt: 1000,
+      },
+    });
+
+    expect(screen.queryByText("Estimated fill price")).not.toBeInTheDocument();
+  });
+
+  it("renders high slippage as a localized percentage", () => {
+    renderOrderReview(
+      {
+        order: {
+          symbol: "AAPL",
+          assetClass: "equity",
+          side: "buy",
+          type: "market",
+          tif: "day",
+          qty: 2,
+        },
+        quotePreview: {
+          previewId: "preview-123",
+          slippageBps: 65,
+          observedAt: 1000,
+        },
+        warnings: [{ code: "slippage_high" }],
+      },
+      {},
+      "de-DE",
+    );
+
+    const formattedPercent = new Intl.NumberFormat("de-DE", {
+      maximumFractionDigits: 2,
+      style: "percent",
+    }).format(0.0065);
+
+    expect(
+      screen.getByText((content) => {
+        return (
+          content.startsWith("Estimated price movement is ") &&
+          content.replace(/\s/g, "").includes(formattedPercent.replace(/\s/g, ""))
+        );
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("hides market reference details by default", () => {
+    renderOrderReview({
+      ...limitSummary,
+      marketReference: {
+        symbol: "AAPL",
+        assetClass: "equity",
+        px: 100.25,
+        kind: "ask",
+        observedAt: 1000,
+        mode: "real_time",
+        displaySource: "SIP",
+      },
+    });
+
+    expect(screen.queryByText("Ask reference price")).not.toBeInTheDocument();
+    expect(screen.queryByText("SIP")).not.toBeInTheDocument();
+  });
+
+  it("can render only the market reference price", () => {
+    renderOrderReview(
+      {
+        ...limitSummary,
+        marketReference: {
+          symbol: "AAPL",
+          assetClass: "equity",
+          px: 100.25,
+          kind: "ask",
+          observedAt: 1000,
+          mode: "real_time",
+          displaySource: "SIP",
+        },
+      },
+      {
+        marketReferenceDisplay: "price",
+      },
+    );
+
+    expect(screen.getByText("Ask reference price")).toBeInTheDocument();
+    expect(screen.getByText("100.25 USD")).toBeInTheDocument();
+    expect(screen.queryByText("Real-time")).not.toBeInTheDocument();
+    expect(screen.queryByText("SIP")).not.toBeInTheDocument();
+  });
+
+  it("can render full market reference details and freshness warnings", () => {
+    const observedAt = Date.UTC(2026, 5, 25, 10, 30, 0);
+    const formattedObservedAt = new Intl.DateTimeFormat("en-US", {
+      dateStyle: "medium",
+      timeStyle: "medium",
+    }).format(observedAt);
+
+    renderOrderReview(
+      {
+        ...limitSummary,
+        marketReference: {
+          symbol: "AAPL",
+          assetClass: "equity",
+          px: 100.25,
+          kind: "ask",
+          observedAt,
+          mode: "delayed",
+          displaySource: "SIP",
+        },
+        warnings: [
+          { code: "market_data_delayed" },
+          { code: "market_data_stale" },
+        ],
+      },
+      {
+        marketReferenceDisplay: "full",
+      },
+    );
+
+    expect(screen.getByText("Ask reference price")).toBeInTheDocument();
+    expect(screen.getByText("100.25 USD")).toBeInTheDocument();
+    expect(screen.getByText("Delayed")).toBeInTheDocument();
+    expect(screen.getByText("SIP")).toBeInTheDocument();
+    expect(screen.getByText(formattedObservedAt)).toBeInTheDocument();
+    expect(
+      screen.getByText("The market price used for this review is delayed."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "The market price used for this review may be out of date.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("renders host-provided estimated fees", () => {
     renderOrderReview({
       ...limitSummary,
@@ -172,14 +331,47 @@ describe("OrderReview", () => {
       {
         messages: {
           estimatedFee: (feeType) => `${feeType}の概算`,
-          feeType: {
-            commission: "取引手数料",
+        feeType: {
+          commission: "取引手数料",
+        },
+      },
+    },
+  );
+
+    expect(screen.getByText("取引手数料の概算")).toBeInTheDocument();
+  });
+
+  it("supports localized market reference labels", () => {
+    renderOrderReview(
+      {
+        ...limitSummary,
+        marketReference: {
+          symbol: "AAPL",
+          assetClass: "equity",
+          px: 100.25,
+          kind: "ask",
+          observedAt: 1000,
+          mode: "real_time",
+        },
+      },
+      {
+        marketReferenceDisplay: "full",
+        messages: {
+          marketReference: (priceKind) => `${priceKind}の参考価格`,
+          marketPriceKind: {
+            ask: "売気配",
+          },
+          marketDataMode: "市場データ",
+          marketDataModeValue: {
+            real_time: "リアルタイム",
           },
         },
       },
     );
 
-    expect(screen.getByText("取引手数料の概算")).toBeInTheDocument();
+    expect(screen.getByText("売気配の参考価格")).toBeInTheDocument();
+    expect(screen.getByText("市場データ")).toBeInTheDocument();
+    expect(screen.getByText("リアルタイム")).toBeInTheDocument();
   });
 
   it("disables actions and exposes busy state while confirming", () => {
@@ -195,6 +387,69 @@ describe("OrderReview", () => {
     expect(
       screen.getByRole("button", { name: "Confirming..." }),
     ).toBeDisabled();
+  });
+
+  it("disables confirmation and allows refresh when the preview expires", async () => {
+    const user = userEvent.setup();
+    const handleRefresh = vi.fn();
+
+    renderOrderReview(
+      {
+        ...limitSummary,
+        quotePreview: {
+          previewId: "preview-expired",
+          observedAt: 1000,
+          expiresAt: 2000,
+        },
+        warnings: [
+          { code: "estimated_notional" },
+          { code: "preview_expired" },
+        ],
+      },
+      {
+        onRefreshPreview: handleRefresh,
+      },
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Confirm order" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText(
+        "This order preview has expired. Refresh it before confirming.",
+      ),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Refresh preview" }));
+
+    expect(handleRefresh).toHaveBeenCalledWith(limitOrder);
+  });
+
+  it("exposes preview refresh busy state", () => {
+    const { container } = renderOrderReview(
+      {
+        ...limitSummary,
+        quotePreview: {
+          previewId: "preview-expired",
+          observedAt: 1000,
+          expiresAt: 2000,
+        },
+        warnings: [{ code: "preview_expired" }],
+      },
+      {
+        isRefreshingPreview: true,
+        onRefreshPreview: () => {},
+      },
+    );
+
+    expect(container.querySelector("section")).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    expect(
+      screen.getByRole("button", { name: "Refreshing..." }),
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Back" })).toBeDisabled();
   });
 
   it("displays a controlled confirmation error without hiding the order", () => {

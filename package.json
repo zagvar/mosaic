@@ -1,7 +1,7 @@
 {
   "name": "mosaic",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Accessible, composable trading UI components and utilities.",
   "license": "MIT",
   "type": "module",
@@ -21,6 +21,14 @@
     "accessibility"
   ],
   "author": "zayau",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zagvar/mosaic.git"
+  },
+  "homepage": "https://github.com/zagvar/mosaic#readme",
+  "bugs": {
+    "url": "https://github.com/zagvar/mosaic/issues"
+  },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

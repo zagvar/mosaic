@@ -32,7 +32,7 @@ describe("TradeTicket", () => {
 
     renderTradeTicket();
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByText("Enter a quantity or total.")).toBeInTheDocument();
   });
@@ -43,7 +43,7 @@ describe("TradeTicket", () => {
     renderTradeTicket();
 
     await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByText("Enter a limit price.")).toBeInTheDocument();
   });
@@ -58,7 +58,7 @@ describe("TradeTicket", () => {
       screen.getByRole("textbox", { name: "Limit price" }),
       "1001",
     );
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(
       screen.getByText("Maximum limit price is 1000 USD."),
@@ -72,7 +72,7 @@ describe("TradeTicket", () => {
 
     await user.click(screen.getByRole("radio", { name: "Market" }));
     await user.type(screen.getByRole("textbox", { name: "Total" }), "0.5");
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByText("Minimum total is 1 USD.")).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe("TradeTicket", () => {
 
     await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
     await user.type(screen.getByRole("textbox", { name: "Limit price" }), "10");
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Asset rules do not match this order.",
@@ -161,7 +161,7 @@ describe("TradeTicket", () => {
 
     await user.click(screen.getByRole("radio", { name: "Market" }));
     await user.type(screen.getByRole("textbox", { name: "Total" }), "0.5");
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByText("Min total: 1 USD")).toBeInTheDocument();
   });
@@ -181,7 +181,7 @@ describe("TradeTicket", () => {
 
     await user.click(screen.getByRole("radio", { name: "Market" }));
     await user.type(screen.getByRole("textbox", { name: "Total" }), "1000");
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(
       screen.getByText("Minimum total is 1000,5 USD."),
@@ -206,7 +206,7 @@ describe("TradeTicket", () => {
 
     renderTradeTicket();
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByText("Enter a quantity or total.")).toBeInTheDocument();
 
@@ -222,7 +222,7 @@ describe("TradeTicket", () => {
 
     renderTradeTicket();
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByText("Enter a quantity or total.")).toBeInTheDocument();
 
@@ -261,7 +261,7 @@ describe("TradeTicket", () => {
 
     await user.type(screen.getByRole("textbox", { name: "Limit price" }), "10");
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(handleSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -342,7 +342,7 @@ describe("TradeTicket", () => {
 
     await user.type(screen.getByRole("textbox", { name: "Quantity" }), "1");
     await user.type(screen.getByRole("textbox", { name: "Limit price" }), "10");
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);
     expect(handleSubmit).toHaveBeenCalledWith({
@@ -371,7 +371,7 @@ describe("TradeTicket", () => {
       onSubmit: handleSubmit,
     });
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(handleSubmit).toHaveBeenCalledWith({
       symbol: "AAPL",
@@ -399,7 +399,7 @@ describe("TradeTicket", () => {
       onSubmitSuccess: handleSuccess,
     });
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(handleSuccess).toHaveBeenCalledTimes(1);
     expect(handleSuccess).toHaveBeenCalledWith({
@@ -434,7 +434,7 @@ describe("TradeTicket", () => {
       onSubmit: vi.fn(),
     });
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(screen.getByRole("radio", { name: "Sell" })).toBeChecked();
 
@@ -477,7 +477,7 @@ describe("TradeTicket", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     rerender(
       <TradeTicket
@@ -501,7 +501,7 @@ describe("TradeTicket", () => {
     deferred.resolve();
 
     expect(
-      await screen.findByRole("button", { name: "Preview order" }),
+      await screen.findByRole("button", { name: "Review order" }),
     ).toBeEnabled();
     expect(handleSuccess).toHaveBeenCalledWith({
       symbol: "AAPL",
@@ -556,7 +556,7 @@ describe("TradeTicket", () => {
     });
 
     const submit = screen.getByRole("button", {
-      name: "Preview order",
+      name: "Review order",
     });
 
     await user.click(submit);
@@ -575,7 +575,7 @@ describe("TradeTicket", () => {
     deferred.resolve();
 
     expect(
-      await screen.findByRole("button", { name: "Preview order" }),
+      await screen.findByRole("button", { name: "Review order" }),
     ).toBeEnabled();
 
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
@@ -600,11 +600,11 @@ describe("TradeTicket", () => {
       onSubmitError: handleError,
     });
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(handleError).toHaveBeenCalledWith(error);
 
-    expect(screen.getByRole("button", { name: "Preview order" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Review order" })).toBeEnabled();
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "We couldn't submit your order. Please try again.",
@@ -638,7 +638,7 @@ describe("TradeTicket", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     rerender(
       <TradeTicket
@@ -660,7 +660,7 @@ describe("TradeTicket", () => {
     deferred.reject(error);
 
     expect(
-      await screen.findByRole("button", { name: "Preview order" }),
+      await screen.findByRole("button", { name: "Review order" }),
     ).toBeEnabled();
     expect(handleError).toHaveBeenCalledWith(error);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -685,7 +685,7 @@ describe("TradeTicket", () => {
       },
     });
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "注文を送信できませんでした。",
@@ -708,7 +708,7 @@ describe("TradeTicket", () => {
       },
     });
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(await screen.findByRole("alert")).toBeInTheDocument();
 
@@ -747,7 +747,7 @@ describe("TradeTicket", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Preview order" }));
+    await user.click(screen.getByRole("button", { name: "Review order" }));
 
     expect(await screen.findByRole("alert")).toBeInTheDocument();
 

@@ -4,15 +4,31 @@ import type {
   OrderBookUpdate,
 } from "./order-book";
 
+/** Reasons an update cannot be safely applied to the current snapshot. */
 export type OrderBookUpdateFailure =
   | "instrument_mismatch"
   | "stale_sequence"
   | "sequence_gap";
 
+/** Result of reconciling an order-book update with a local snapshot. */
 export type OrderBookUpdateResult =
   | { applied: true; snapshot: OrderBookSnapshot }
   | { applied: false; reason: OrderBookUpdateFailure };
 
+/**
+ * Reconciles an incremental or resetting update with a local order book.
+ *
+ * The reducer rejects stale, discontinuous, and cross-instrument events rather
+ * than risking a silently inaccurate book. Callers should fetch a fresh
+ * snapshot after `sequence_gap`.
+ *
+ * Update semantics:
+ *
+ * - A positive quantity inserts or replaces a price level.
+ * - A zero quantity removes a price level.
+ * - `reset: true` replaces both sides using only levels in the update.
+ * - Bids remain descending and asks remain ascending.
+ */
 export function applyOrderBookUpdate(
   snapshot: OrderBookSnapshot,
   update: OrderBookUpdate,

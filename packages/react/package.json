@@ -1,6 +1,6 @@
 {
   "name": "@mosaic/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Accessible React components for Mosaic trading interfaces.",
   "license": "MIT",
   "type": "module",
@@ -34,6 +34,21 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
-  "keywords": [],
-  "author": "zayau"
+  "keywords": [
+    "trading",
+    "react",
+    "accessibility",
+    "order-entry",
+    "order-book"
+  ],
+  "author": "zayau",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zagvar/mosaic.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/zagvar/mosaic#readme",
+  "bugs": {
+    "url": "https://github.com/zagvar/mosaic/issues"
+  }
 }

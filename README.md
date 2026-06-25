@@ -1,33 +1,155 @@
 # Mosaic
 
-Accessible, composable trading UI components and utilities.
+Accessible, composable building blocks for broker- and exchange-neutral trading
+interfaces.
 
-Mosaic is a small monorepo for broker- and exchange-neutral trading interfaces.
-The core package provides framework-free order schemas and validation. The React
-package provides accessible primitives and a composed trade ticket.
+Mosaic separates trading-domain behavior from presentation. The core package
+provides schemas, validation, order preparation, quote previews, fees, and
+order-book reconciliation. The React package provides accessible components and
+hooks that host applications can style with their own design system.
+
+> **Project status:** pre-release and source-first. The packages are not
+> published to npm yet. Clone the repository to explore the API and run the
+> interactive demo.
+
+## Features
+
+- Equity and crypto order rules
+- Market and limit order tickets
+- Quantity and notional order entry
+- Tick-size, lot-size, precision, balance, and boundary validation
+- Time-in-force selection
+- Controlled and uncontrolled trade-draft state
+- Localizable message-object APIs and locale-aware number formatting
+- Order review, warnings, fee estimates, and confirmation states
+- Quote display and selectable order-book levels
+- Snapshot and incremental order-book reconciliation
+- Accessible interaction primitives powered by React Aria
+- Styling through explicit slot class names
 
 ## Packages
 
-- `@mosaic/core`: order schemas, asset rules, decimal-safe validation
-- `@mosaic/react`: React components and hooks
-- `@mosaic/docs`: local demo app
+| Package | Purpose |
+| --- | --- |
+| [`@mosaic/core`](packages/core) | Framework-free trading schemas, validation, summaries, and reducers |
+| [`@mosaic/react`](packages/react) | Accessible React components and state hooks |
+| `@mosaic/docs` | Private Vite demo with an MSW market-data simulation |
+
+## Try It Locally
+
+Requirements:
+
+- Node.js compatible with Vite 8
+- pnpm 11
+
+```bash
+git clone https://github.com/zagvar/mosaic.git
+cd mosaic
+pnpm install
+pnpm dev
+```
+
+The demo includes:
+
+- an AAPL quote-driven equity ticket
+- a BTC/USD order book backed by mocked HTTP and WebSocket data
+- selecting quote or order-book prices into a limit order
+- order review and confirmation
+
+## Basic Composition
+
+```tsx
+import { TradeTicket } from "@mosaic/react";
+
+<TradeTicket
+  symbol="BTC/USD"
+  assetClass="crypto"
+  assetRules={assetRules}
+  cashAvailable={10_000}
+  assetQtyAvailable={0.5}
+  quoteCurrency="USD"
+  onSubmit={(order) => setOrderForReview(order)}
+/>;
+```
+
+`TradeTicket` creates a validated `OrderIntent`. The host application is
+responsible for obtaining any server-authoritative preview, displaying
+`OrderReview`, and submitting the confirmed order to its backend.
+
+## Design Principles
+
+### Behavior, Not Branding
+
+Mosaic provides behavior, validation, accessibility, state, and semantic
+markup. Host applications provide presentation through slot `classNames`.
+
+This works with plain CSS, CSS Modules, Tailwind, vanilla-extract, Panda,
+Emotion, shadcn-style utilities, and company design systems.
+
+### Backend Authority
+
+Frontend validation improves usability but is not a security boundary. A
+backend should revalidate account state, market state, permissions, order
+rules, fees, and buying power before placing an order.
+
+### Provider-Neutral Data
+
+Broker and exchange payloads should be adapted at the application boundary.
+Mosaic contracts intentionally avoid exposing provider-specific transport or
+backend implementation details.
+
+### Host-Controlled Review Presentation
+
+`OrderReview` renders review content but does not force a modal. Applications
+may place it inline, in a side panel, modal, sheet, or route while preserving
+the same order-review behavior.
+
+## Internationalization
+
+Components accept plain message objects rather than depending on a translation
+framework. They can be populated by i18next, React Intl, Lingui, JSON files, or
+a company translation service.
+
+React Aria locale context drives locale-aware number and date formatting.
+
+## Accessibility
+
+Mosaic uses semantic HTML and React Aria for keyboard interaction, focus
+behavior, labeling, validation state, and assistive-technology support.
+Applications remain responsible for accessible color contrast and styling.
+
+## Architecture
+
+- [Order-book snapshots, incremental updates, and synchronization](docs/order-book.md)
 
 ## Development
 
 ```bash
-pnpm install
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
-Run the docs app:
+Run only one package:
 
 ```bash
-pnpm dev
+pnpm --filter @mosaic/core test
+pnpm --filter @mosaic/react test
+pnpm --filter @mosaic/docs build
 ```
 
-## Design Direction
+## Repository Structure
 
-Mosaic focuses on behavior, validation, and accessibility. Host applications
-provide presentation through slot class names and their own design systems.
+```text
+apps/docs/       interactive demo and MSW handlers
+packages/core/   framework-free domain contracts
+packages/react/  accessible React components
+docs/            public architecture documentation
+```
+
+## License
+
+[MIT](LICENSE)
+
+Mosaic is UI infrastructure, not a broker, exchange, or source of financial
+advice.

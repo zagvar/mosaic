@@ -1,146 +1,50 @@
-import { StrictMode, useState } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type {
-  AssetRules,
-  MarketQuote,
   OrderExecutionError,
   OrderIntent,
   OrderSummary,
 } from "@mosaic/core";
-import { createOrderSummary } from "@mosaic/core";
 import {
+  OrderBook,
   OrderReview,
   QuoteDisplay,
   TradeTicket,
-  type OrderReviewClassNames,
-  type QuoteDisplayClassNames,
   type TradeDraftValue,
-  type TradeTicketClassNames,
 } from "@mosaic/react";
+import {
+  appleQuote,
+  appleRules,
+  bitcoinRules,
+  latestPrice,
+  orderBookClassNames,
+  orderReviewClassNames,
+  quoteDisplayClassNames,
+  tradeTicketClassNames,
+} from "./demo-config";
+import { createDemoOrderSummary } from "./demo-order-summary";
+import { bitcoinBookSnapshot } from "./mocks/order-book-data";
+import { useOrderBookFeed } from "./use-order-book-feed";
 import "./styles.css";
 
-const appleRules: AssetRules = {
-  assetClass: "equity",
-  symbol: "AAPL",
-  allowedOrderTypes: ["market", "limit"],
-  allowedTifs: ["day", "gtc", "opg", "cls", "ioc", "fok"],
-  supportsNotional: true,
-  notionalOrderTypes: ["market"],
-  minQty: 0.000001,
-  minNotional: 1,
-  minPrice: 0.01,
-  maxPrice: 1000,
-  qtyPrecision: 6,
-  pricePrecision: 2,
-  notionalPrecision: 2,
-  lotSize: 0.000001,
-  tickSize: 0.01,
-  quoteIncrement: 0.01,
-  extendedHours: {
-    allowed: true,
-    allowedOrderTypes: ["limit"],
-    allowedTifs: ["day", "gtc"],
-  },
-};
-
-// simulate prices supplied by a quote stream or order book
-const latestPrice = 195.75;
-const bidPrice = 195.7;
-const askPrice = 195.8;
-
-const appleQuote: MarketQuote = {
-  symbol: "AAPL",
-  assetClass: "equity",
-  bidPx: bidPrice,
-  bidQty: 120,
-  askPx: askPrice,
-  askQty: 95,
-  lastPx: latestPrice,
-  observedAt: Date.now(),
-  mode: "real_time",
-  displaySource: "Demo feed",
-};
-
-const segmentedClassNames = {
-  root: "demo-segmented-radio",
-  label: "demo-field-label",
-  options: "demo-segmented-radio-options",
-  field: "demo-segmented-radio-field",
-  button: "demo-segmented-radio-button",
-};
-
-const tradeTicketClassNames: TradeTicketClassNames = {
-  root: "demo-trade-ticket",
-  availableBalance: {
-    root: "demo-available-balance",
-    label: "demo-available-balance-label",
-    value: "demo-available-balance-value",
-  },
-  sideToggle: segmentedClassNames,
-  typeToggle: segmentedClassNames,
-  tifSelect: {
-    root: "demo-tif-select",
-    label: "demo-field-label",
-    trigger: "demo-tif-select-trigger",
-    value: "demo-tif-select-value",
-    indicator: "demo-tif-select-indicator",
-    popover: "demo-tif-select-popover",
-    listBox: "demo-tif-select-listbox",
-    item: "demo-tif-select-item",
-  },
-  numberField: {
-    root: "demo-number-field",
-    label: "demo-field-label",
-    control: "demo-number-field-control",
-    input: "demo-number-field-input",
-    suffix: "demo-number-field-suffix",
-    description: "demo-field-description",
-    error: "demo-field-error",
-  },
-  amountPresets: {
-    root: "demo-amount-presets",
-    button: "demo-amount-preset-button",
-  },
-  alert: "demo-alert",
-  submitButton: "demo-submit-button",
-};
-
-const quoteDisplayClassNames: QuoteDisplayClassNames = {
-  root: "demo-quote-display",
-  symbol: "demo-quote-symbol",
-  quotes: "demo-quote-grid",
-  quote: "demo-quote",
-  label: "demo-quote-label",
-  price: "demo-quote-price",
-  quantity: "demo-quote-quantity",
-  spread: "demo-quote-spread",
-};
-
-const orderReviewClassNames: OrderReviewClassNames = {
-  root: "demo-order-review",
-  title: "demo-order-review-title",
-  details: "demo-order-review-details",
-  row: "demo-order-review-row",
-  term: "demo-order-review-term",
-  value: "demo-order-review-value",
-  warnings: "demo-order-review-warnings",
-  warningsTitle: "demo-order-review-warnings-title",
-  warningList: "demo-order-review-warning-list",
-  warning: "demo-order-review-warning",
-  actions: "demo-order-review-actions",
-  cancelButton: "demo-order-review-cancel",
-  refreshButton: "demo-order-review-refresh",
-  confirmButton: "demo-order-review-confirm",
-  confirmationError: "demo-order-review-error",
-};
+type DemoInstrument = "equity" | "crypto";
 
 function App() {
-  const [value, setValue] = useState<TradeDraftValue>({
+  const [instrument, setInstrument] = useState<DemoInstrument>("equity");
+  const [equityValue, setEquityValue] = useState<TradeDraftValue>({
     side: "buy",
     type: "limit",
     tif: "day",
     limitPx: latestPrice,
   });
+  const [cryptoValue, setCryptoValue] = useState<TradeDraftValue>({
+    side: "buy",
+    type: "limit",
+    tif: "gtc",
+    limitPx: bitcoinBookSnapshot.asks[0]!.px,
+  });
+  const { snapshot: bitcoinBook, status: bitcoinBookStatus } =
+    useOrderBookFeed("BTC/USD");
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isRefreshingPreview, setIsRefreshingPreview] = useState(false);
@@ -149,12 +53,38 @@ function App() {
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
     null,
   );
-  const [confirmationAttempts, setConfirmationAttempts] = useState(0);
 
-  function applyLimitPrice(limitPx: number) {
-    if (value.type !== "limit") return;
+  const activeValue = instrument === "equity" ? equityValue : cryptoValue;
+  const activeRules = instrument === "equity" ? appleRules : bitcoinRules;
 
-    setValue((current) => ({
+  useEffect(() => {
+    if (confirmationMessage === null) return;
+
+    const timeout = window.setTimeout(() => {
+      setConfirmationMessage(null);
+    }, 6000);
+
+    return () => window.clearTimeout(timeout);
+  }, [confirmationMessage]);
+
+  function selectInstrument(nextInstrument: DemoInstrument) {
+    setInstrument(nextInstrument);
+    setConfirmationMessage(null);
+  }
+
+  function applyEquityLimitPrice(limitPx: number) {
+    if (equityValue.type !== "limit") return;
+
+    setEquityValue((current) => ({
+      ...current,
+      limitPx,
+    }));
+  }
+
+  function applyCryptoLimitPrice(limitPx: number) {
+    if (cryptoValue.type !== "limit") return;
+
+    setCryptoValue((current) => ({
       ...current,
       limitPx,
     }));
@@ -163,8 +93,9 @@ function App() {
   function reviewOrder(order: OrderIntent) {
     setConfirmationMessage(null);
     setConfirmationError(null);
-    setConfirmationAttempts(0);
-    setOrderSummary(createDemoOrderSummary(order));
+    setOrderSummary(
+      createDemoOrderSummary(order, bitcoinBook ?? bitcoinBookSnapshot),
+    );
   }
 
   async function refreshPreview(order: OrderIntent) {
@@ -172,7 +103,9 @@ function App() {
 
     try {
       await simulatePreviewRequest();
-      setOrderSummary(createDemoOrderSummary(order));
+      setOrderSummary(
+        createDemoOrderSummary(order, bitcoinBook ?? bitcoinBookSnapshot),
+      );
     } finally {
       setIsRefreshingPreview(false);
     }
@@ -183,16 +116,14 @@ function App() {
     setConfirmationError(null);
 
     try {
-      await simulateBrokerSubmission(confirmationAttempts);
-      setConfirmationAttempts((attempts) => attempts + 1);
+      await simulateBrokerSubmission();
       console.info("Order confirmed", order);
       setOrderSummary(null);
       setConfirmationMessage(
         `${order.side === "buy" ? "Buy" : "Sell"} order confirmed for ${order.symbol}.`,
       );
     } catch {
-      setConfirmationAttempts((attempts) => attempts + 1);
-      setConfirmationError({ code: "broker_rejected" });
+      setConfirmationError({ code: "network_error" });
     } finally {
       setIsConfirming(false);
     }
@@ -202,111 +133,115 @@ function App() {
     <main>
       <h1>Mosaic</h1>
 
+      {orderSummary === null ? (
+        <div className="demo-instrument-switcher" aria-label="Instrument">
+          <button
+            type="button"
+            aria-pressed={instrument === "equity"}
+            onClick={() => selectInstrument("equity")}
+          >
+            AAPL
+          </button>
+          <button
+            type="button"
+            aria-pressed={instrument === "crypto"}
+            onClick={() => selectInstrument("crypto")}
+          >
+            BTC/USD
+          </button>
+        </div>
+      ) : null}
+
       {confirmationMessage === null ? null : (
-        <p className="demo-confirmation-status" role="status">
-          {confirmationMessage}
-        </p>
+        <div className="demo-confirmation-status">
+          <span role="status">{confirmationMessage}</span>
+          <button
+            type="button"
+            aria-label="Dismiss confirmation"
+            onClick={() => setConfirmationMessage(null)}
+          >
+            X
+          </button>
+        </div>
       )}
 
-      {orderSummary === null ? (
-        <>
-          <QuoteDisplay
-            quote={appleQuote}
-            quoteCurrency="USD"
-            priceFractionDigits={appleRules.pricePrecision}
-            quantityFractionDigits={appleRules.qtyPrecision}
-            isDisabled={value.type !== "limit"}
-            classNames={quoteDisplayClassNames}
-            onSelectPrice={applyLimitPrice}
-          />
+      <div className="demo-trading-workspace">
+        <div className="demo-market-panel">
+          {instrument === "equity" ? (
+            <QuoteDisplay
+              quote={appleQuote}
+              quoteCurrency="USD"
+              priceFractionDigits={appleRules.pricePrecision}
+              quantityFractionDigits={appleRules.qtyPrecision}
+              isDisabled={
+                orderSummary !== null || equityValue.type !== "limit"
+              }
+              classNames={quoteDisplayClassNames}
+              onSelectPrice={applyEquityLimitPrice}
+            />
+          ) : bitcoinBook === null ? (
+            <p className="demo-market-status" role="status">
+              Loading order book...
+            </p>
+          ) : (
+            <OrderBook
+              snapshot={bitcoinBook}
+              quoteCurrency="USD"
+              depth={12}
+              priceFractionDigits={bitcoinRules.pricePrecision}
+              quantityFractionDigits={bitcoinRules.qtyPrecision}
+              isDisabled={
+                orderSummary !== null || cryptoValue.type !== "limit"
+              }
+              classNames={orderBookClassNames}
+              onSelectPrice={applyCryptoLimitPrice}
+            />
+          )}
+          {instrument === "crypto" && bitcoinBookStatus === "error" ? (
+            <p className="demo-market-error" role="alert">
+              The demo market-data feed is unavailable.
+            </p>
+          ) : null}
+        </div>
 
+        {orderSummary === null ? (
           <TradeTicket
-            symbol="AAPL"
-            assetClass="equity"
-            assetRules={appleRules}
-            cashAvailable={1000}
-            assetQtyAvailable={10}
+            symbol={activeRules.symbol}
+            assetClass={activeRules.assetClass}
+            assetRules={activeRules}
+            cashAvailable={instrument === "equity" ? 1000 : 10_000}
+            assetQtyAvailable={instrument === "equity" ? 10 : 0.5}
             quoteCurrency="USD"
-            value={value}
-            onChange={setValue}
+            value={activeValue}
+            onChange={instrument === "equity" ? setEquityValue : setCryptoValue}
             classNames={tradeTicketClassNames}
             onSubmit={reviewOrder}
             onValidationIssues={(issues) => {
               console.info("Validation issues", issues);
             }}
           />
-        </>
-      ) : (
-        <OrderReview
-          summary={orderSummary}
-          quoteCurrency="USD"
-          quantityFractionDigits={appleRules.qtyPrecision}
-          priceFractionDigits={appleRules.pricePrecision}
-          notionalFractionDigits={appleRules.notionalPrecision}
-          isConfirming={isConfirming}
-          isRefreshingPreview={isRefreshingPreview}
-          confirmationError={confirmationError}
-          classNames={orderReviewClassNames}
-          onCancel={() => {
-            setConfirmationError(null);
-            setOrderSummary(null);
-          }}
-          onRefreshPreview={refreshPreview}
-          onConfirm={confirmOrder}
-        />
-      )}
-
-      <section className="demo-draft-preview">
-        <h2>Controlled value</h2>
-        <pre>{JSON.stringify(value, null, 2)}</pre>
-      </section>
+        ) : (
+          <OrderReview
+            summary={orderSummary}
+            quoteCurrency="USD"
+            quantityFractionDigits={activeRules.qtyPrecision}
+            priceFractionDigits={activeRules.pricePrecision}
+            notionalFractionDigits={activeRules.notionalPrecision}
+            isConfirming={isConfirming}
+            isRefreshingPreview={isRefreshingPreview}
+            confirmationError={confirmationError}
+            classNames={orderReviewClassNames}
+            onCancel={() => {
+              setConfirmationError(null);
+              setOrderSummary(null);
+            }}
+            onRefreshPreview={refreshPreview}
+            onConfirm={confirmOrder}
+          />
+        )}
+      </div>
     </main>
   );
-}
-
-function createDemoOrderSummary(order: OrderIntent) {
-  const now = Date.now();
-  const referencePx = order.side === "buy" ? askPrice : bidPrice;
-  const referenceKind = order.side === "buy" ? "ask" : "bid";
-  const estimatedFillPx =
-    order.type === "market"
-      ? referencePx + (order.side === "buy" ? 0.02 : -0.02)
-      : undefined;
-  const estimatedNotional =
-    order.notional ??
-    (order.qty === undefined
-      ? undefined
-      : order.qty * (estimatedFillPx ?? order.limitPx ?? referencePx));
-
-  return createOrderSummary(order, {
-    marketReference: {
-      symbol: order.symbol,
-      assetClass: order.assetClass,
-      px: referencePx,
-      kind: referenceKind,
-      observedAt: now,
-      mode: "real_time",
-      displaySource: "Demo feed",
-    },
-    staleAfterMs: 15_000,
-    quotePreview: {
-      previewId: `demo-${now}`,
-      ...(estimatedFillPx === undefined ? {} : { estimatedFillPx }),
-      ...(estimatedNotional === undefined ? {} : { estimatedNotional }),
-      slippageBps: order.type === "market" ? 10 : 0,
-      fees: [
-        {
-          type: "commission",
-          amount: 0.25,
-          currency: "USD",
-        },
-      ],
-      observedAt: now,
-      expiresAt: now + 30_000,
-    },
-    highSlippageBps: 50,
-    now,
-  });
 }
 
 function simulatePreviewRequest() {
@@ -315,18 +250,27 @@ function simulatePreviewRequest() {
   });
 }
 
-function simulateBrokerSubmission(attempt: number) {
-  return new Promise<void>((resolve, reject) => {
+function simulateBrokerSubmission() {
+  return new Promise<void>((resolve) => {
     window.setTimeout(() => {
-      if (attempt === 0) {
-        reject(new Error("Demo broker rejection"));
-        return;
-      }
-
       resolve();
     }, 700);
   });
 }
+
+/**
+ * Starts Mock Service Worker before the app makes its initial market-data
+ * request.
+ */
+async function enableMocking(): Promise<void> {
+  const { worker } = await import("./mocks/browser");
+
+  await worker.start({
+    onUnhandledRequest: "bypass",
+  });
+}
+
+await enableMocking();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

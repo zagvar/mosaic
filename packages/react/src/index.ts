@@ -50,14 +50,19 @@ export type {
   TifSelectProps,
 } from "./tif-select";
 
-export { defaultOrderReviewMessages, OrderReview } from "./order-review";
+export { OrderReview } from "./order-review";
+
+export { defaultOrderReviewMessages } from "./order-review-messages";
 
 export type {
   OrderReviewClassNames,
-  OrderReviewMessages,
-  OrderReviewMessagesInput,
   OrderReviewProps,
 } from "./order-review";
+
+export type {
+  OrderReviewMessages,
+  OrderReviewMessagesInput,
+} from "./order-review-messages";
 
 export { defaultQuoteDisplayMessages, QuoteDisplay } from "./quote-display";
 

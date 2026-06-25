@@ -50,7 +50,7 @@ export type TradeTicketMessagesInput = Partial<
 };
 
 export const defaultTradeTicketMessages: TradeTicketMessages = {
-  submit: "Preview order",
+  submit: "Review order",
   submitting: "Submitting...",
   submissionError: "We couldn't submit your order. Please try again.",
   qty: "Quantity",

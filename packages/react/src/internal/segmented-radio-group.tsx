@@ -70,6 +70,7 @@ export function SegmentedRadioGroup<TValue extends string>({
           return (
             <RadioField
               key={option.value}
+              data-value={option.value}
               {...classNameProps(classNames?.field)}
               value={option.value}
               {...optionDisabledProps}

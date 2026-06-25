@@ -1,6 +1,6 @@
 {
   "name": "@mosaic/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Framework-free utilities and schemas for Mosaic trading components.",
   "license": "MIT",
   "type": "module",
@@ -20,8 +20,23 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "keywords": [],
+  "keywords": [
+    "trading",
+    "stocks",
+    "crypto",
+    "order-book",
+    "validation"
+  ],
   "author": "zayau",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zagvar/mosaic.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/zagvar/mosaic#readme",
+  "bugs": {
+    "url": "https://github.com/zagvar/mosaic/issues"
+  },
   "dependencies": {
     "big.js": "^7.0.1",
     "zod": "^4.4.3"

@@ -1,4 +1,5 @@
 import type { OrderBookSnapshot } from "@mosaic/core";
+import type { CSSProperties } from "react";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
 
@@ -11,13 +12,13 @@ export interface OrderBookClassNames {
   title?: string;
   table?: string;
   side?: string;
-  sideTitle?: string;
   columnHeaders?: string;
   columnHeader?: string;
   levels?: string;
   level?: string;
   bidLevel?: string;
   askLevel?: string;
+  depthBar?: string;
   price?: string;
   quantity?: string;
   total?: string;
@@ -96,6 +97,10 @@ export function OrderBook({
 
   const bids = addCumulativeTotals(snapshot.bids.slice(0, depth));
   const asks = addCumulativeTotals(snapshot.asks.slice(0, depth));
+  const maxTotal = Math.max(
+    bids.at(-1)?.total ?? 0,
+    asks.at(-1)?.total ?? 0,
+  );
 
   const bestBid = bids[0]?.px;
   const bestAsk = asks[0]?.px;
@@ -116,42 +121,53 @@ export function OrderBook({
       <header {...classNameProps(classNames?.header)}>
         <h2 {...classNameProps(classNames?.title)}>{text.title}</h2>
 
-        {spread === undefined ? null : (
-          <span {...classNameProps(classNames?.spread)}>
-            {text.spread}: {formatNumber(spread, locale, priceFractionDigits)}{" "}
-            {quoteCurrency}
-          </span>
-        )}
       </header>
 
       {empty ? (
         <p {...classNameProps(classNames?.empty)}>{text.empty}</p>
       ) : (
         <div {...classNameProps(classNames?.table)}>
+          <ColumnHeaders
+            quoteCurrency={quoteCurrency}
+            showTotals={showTotals}
+            messages={text}
+            classNames={classNames}
+          />
+
           <BookSide
             side="ask"
             title={text.asks}
-            levels={asks}
-            quoteCurrency={quoteCurrency}
+            levels={[...asks].reverse()}
             locale={locale}
             priceFractionDigits={priceFractionDigits}
             quantityFractionDigits={quantityFractionDigits}
             showTotals={showTotals}
+            maxTotal={maxTotal}
             isDisabled={isDisabled}
             messages={text}
             classNames={classNames}
             onSelectPrice={onSelectPrice}
           />
 
+          {spread === undefined ? null : (
+            <div {...classNameProps(classNames?.spread)}>
+              <span>{text.spread}</span>
+              <strong>
+                {formatNumber(spread, locale, priceFractionDigits)}{" "}
+                {quoteCurrency}
+              </strong>
+            </div>
+          )}
+
           <BookSide
             side="bid"
             title={text.bids}
             levels={bids}
-            quoteCurrency={quoteCurrency}
             locale={locale}
             priceFractionDigits={priceFractionDigits}
             quantityFractionDigits={quantityFractionDigits}
             showTotals={showTotals}
+            maxTotal={maxTotal}
             isDisabled={isDisabled}
             messages={text}
             classNames={classNames}
@@ -160,6 +176,34 @@ export function OrderBook({
         </div>
       )}
     </section>
+  );
+}
+
+function ColumnHeaders({
+  quoteCurrency,
+  showTotals,
+  messages,
+  classNames,
+}: {
+  quoteCurrency: string;
+  showTotals: boolean;
+  messages: OrderBookMessages;
+  classNames: OrderBookClassNames | undefined;
+}) {
+  return (
+    <div aria-hidden="true" {...classNameProps(classNames?.columnHeaders)}>
+      <span {...classNameProps(classNames?.columnHeader)}>
+        {messages.price} ({quoteCurrency})
+      </span>
+      <span {...classNameProps(classNames?.columnHeader)}>
+        {messages.quantity}
+      </span>
+      {showTotals ? (
+        <span {...classNameProps(classNames?.columnHeader)}>
+          {messages.total}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -183,11 +227,11 @@ function BookSide({
   side,
   title,
   levels,
-  quoteCurrency,
   locale,
   priceFractionDigits,
   quantityFractionDigits,
   showTotals,
+  maxTotal,
   isDisabled,
   messages,
   classNames,
@@ -196,34 +240,18 @@ function BookSide({
   side: OrderBookSide;
   title: string;
   levels: DisplayLevel[];
-  quoteCurrency: string;
   locale: string;
   priceFractionDigits: number;
   quantityFractionDigits: number;
   showTotals: boolean;
+  maxTotal: number;
   isDisabled: boolean;
   messages: OrderBookMessages;
   classNames: OrderBookClassNames | undefined;
   onSelectPrice: ((px: number, side: OrderBookSide) => void) | undefined;
 }) {
   return (
-    <section {...classNameProps(classNames?.side)}>
-      <h3 {...classNameProps(classNames?.sideTitle)}>{title}</h3>
-
-      <div aria-hidden="true" {...classNameProps(classNames?.columnHeaders)}>
-        <span {...classNameProps(classNames?.columnHeader)}>
-          {messages.price} ({quoteCurrency})
-        </span>
-        <span {...classNameProps(classNames?.columnHeader)}>
-          {messages.quantity}
-        </span>
-        {showTotals ? (
-          <span {...classNameProps(classNames?.columnHeader)}>
-            {messages.total}
-          </span>
-        ) : null}
-      </div>
-
+    <section aria-label={title} {...classNameProps(classNames?.side)}>
       <div {...classNameProps(classNames?.levels)}>
         {levels.map((level) => (
           <BookLevel
@@ -234,6 +262,7 @@ function BookSide({
             priceFractionDigits={priceFractionDigits}
             quantityFractionDigits={quantityFractionDigits}
             showTotal={showTotals}
+            maxTotal={maxTotal}
             isDisabled={isDisabled}
             messages={messages}
             classNames={classNames}
@@ -252,6 +281,7 @@ function BookLevel({
   priceFractionDigits,
   quantityFractionDigits,
   showTotal,
+  maxTotal,
   isDisabled,
   messages,
   classNames,
@@ -263,15 +293,22 @@ function BookLevel({
   priceFractionDigits: number;
   quantityFractionDigits: number;
   showTotal: boolean;
+  maxTotal: number;
   isDisabled: boolean;
   messages: OrderBookMessages;
   classNames: OrderBookClassNames | undefined;
   onSelectPrice: ((px: number, side: OrderBookSide) => void) | undefined;
 }) {
   const formattedPrice = formatNumber(level.px, locale, priceFractionDigits);
+  const depthPercent = maxTotal === 0 ? 0 : (level.total / maxTotal) * 100;
 
   const content = (
     <>
+      <span
+        aria-hidden="true"
+        style={{ width: `${depthPercent}%` } satisfies CSSProperties}
+        {...classNameProps(classNames?.depthBar)}
+      />
       <span {...classNameProps(classNames?.price)}>{formattedPrice}</span>
 
       <span {...classNameProps(classNames?.quantity)}>

@@ -16,9 +16,69 @@ body {
 }
 
 main {
-  max-width: 420px;
+  max-width: 920px;
   margin: 48px auto;
   padding: 0 20px;
+}
+
+.demo-instrument-switcher {
+  display: inline-flex;
+  margin-bottom: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.demo-instrument-switcher button {
+  min-width: 96px;
+  padding: 8px 12px;
+  border: 0;
+  background: white;
+  color: #374151;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.demo-instrument-switcher button + button {
+  border-left: 1px solid #d1d5db;
+}
+
+.demo-instrument-switcher button[aria-pressed="true"] {
+  background: #111827;
+  color: white;
+}
+
+.demo-instrument-switcher button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -3px;
+}
+
+.demo-trading-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.demo-market-panel {
+  min-width: 0;
+}
+
+.demo-market-status,
+.demo-market-error {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  color: #6b7280;
+}
+
+.demo-market-error {
+  margin-top: 8px;
+  border-color: #fecaca;
+  color: #b91c1c;
 }
 
 .demo-trade-ticket {
@@ -86,6 +146,54 @@ main {
   border-color: #111827;
   background: #111827;
   color: white;
+}
+
+.demo-side-toggle-field[data-value="buy"]
+  .demo-segmented-radio-button {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.demo-side-toggle-field[data-value="buy"]
+  .demo-segmented-radio-button:hover:not([data-selected]) {
+  background: #dcfce7;
+}
+
+.demo-side-toggle-field[data-value="sell"]
+  .demo-segmented-radio-button {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.demo-side-toggle-field[data-value="sell"]
+  .demo-segmented-radio-button:hover:not([data-selected]) {
+  background: #fee2e2;
+}
+
+.demo-side-toggle-field[data-value="buy"]
+  .demo-segmented-radio-button[data-selected] {
+  border-color: #047857;
+  background: #047857;
+  color: white;
+}
+
+.demo-side-toggle-field[data-value="buy"]
+  .demo-segmented-radio-button[data-selected]:hover {
+  background: #065f46;
+}
+
+.demo-side-toggle-field[data-value="sell"]
+  .demo-segmented-radio-button[data-selected] {
+  border-color: #b91c1c;
+  background: #b91c1c;
+  color: white;
+}
+
+.demo-side-toggle-field[data-value="sell"]
+  .demo-segmented-radio-button[data-selected]:hover {
+  background: #991b1b;
 }
 
 .demo-segmented-radio-button[data-focus-visible],
@@ -284,15 +392,13 @@ main {
 .demo-quote-display {
   display: grid;
   gap: 8px;
-  margin-bottom: 16px;
   padding: 12px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: white;
 }
 
-.demo-quote-symbol,
-.demo-draft-preview h2 {
+.demo-quote-symbol {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
@@ -345,22 +451,152 @@ button.demo-quote:disabled {
 .demo-quote-spread {
   font-size: 0.75rem;
 }
-.demo-draft-preview {
-  margin-top: 16px;
+
+.demo-order-book {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
 }
 
-.demo-draft-preview pre {
-  margin: 8px 0 0;
-  overflow: auto;
-  padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
+.demo-order-book-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.demo-order-book-title {
+  margin: 0;
+}
+
+.demo-order-book-title {
+  font-size: 1rem;
+}
+
+.demo-order-book-spread,
+.demo-order-book-column {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.demo-order-book-table {
+  display: grid;
+  gap: 4px;
+}
+
+.demo-order-book-side {
+  min-width: 0;
+}
+
+.demo-order-book-columns,
+.demo-order-book-level {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: center;
+}
+
+.demo-order-book-columns {
+  padding: 0 8px 6px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.demo-order-book-column:not(:first-child),
+.demo-order-book-quantity,
+.demo-order-book-total {
+  text-align: right;
+}
+
+.demo-order-book-level {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  padding: 5px 8px;
+  background: transparent;
   color: #374151;
+  font: inherit;
   font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.demo-order-book-depth {
+  position: absolute;
+  z-index: -1;
+  inset: 1px 0 1px auto;
+  pointer-events: none;
+}
+
+.demo-order-book-bid .demo-order-book-depth {
+  background: #d1fae5;
+}
+
+.demo-order-book-ask .demo-order-book-depth {
+  background: #fee2e2;
+}
+
+.demo-order-book-level:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.demo-order-book-level:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.demo-order-book-level:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.demo-order-book-bid .demo-order-book-price {
+  color: #047857;
+}
+
+.demo-order-book-ask .demo-order-book-price {
+  color: #b91c1c;
+}
+
+.demo-order-book-price {
+  font-weight: 700;
+}
+
+.demo-order-book-quantity,
+.demo-order-book-total {
+  color: #6b7280;
+}
+
+.demo-order-book-spread {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 2px 0;
+  padding: 8px;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.demo-order-book-spread strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.demo-order-book-empty {
+  margin: 0;
+  color: #6b7280;
 }
 
 .demo-confirmation-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin: 0 0 16px;
   padding: 10px 12px;
   border: 1px solid #86efac;
@@ -368,6 +604,30 @@ button.demo-quote:disabled {
   background: #f0fdf4;
   color: #166534;
   font-size: 0.875rem;
+}
+
+.demo-confirmation-status button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.demo-confirmation-status button:hover {
+  background: #dcfce7;
+}
+
+.demo-confirmation-status button:focus-visible {
+  outline: 2px solid #166534;
+  outline-offset: 1px;
 }
 
 .demo-order-review {
@@ -505,4 +765,15 @@ button.demo-quote:disabled {
 .demo-order-review-confirm:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  main {
+    max-width: 480px;
+    margin-top: 24px;
+  }
+
+  .demo-trading-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

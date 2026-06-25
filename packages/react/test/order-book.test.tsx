@@ -23,27 +23,30 @@ const snapshot: OrderBookSnapshot = {
 
 const classNames = {
   side: "book-side",
-  sideTitle: "book-side-title",
+  columnHeaders: "book-column-headers",
   columnHeader: "book-column-header",
   levels: "book-levels",
   level: "book-level",
   bidLevel: "book-bid-level",
   askLevel: "book-ask-level",
+  depthBar: "book-depth-bar",
   price: "book-price",
   quantity: "book-quantity",
   total: "book-total",
 };
 
 describe("OrderBook", () => {
-  it("renders asks, bids, and the spread", () => {
+  it("renders a shared header, asks, spread, and bids", () => {
     const { container } = renderOrderBook();
 
     expect(
       screen.getByRole("heading", { name: "Order book" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Asks" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Bids" })).toBeInTheDocument();
-    expect(screen.getByText("Spread: 1 USD")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Asks" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Bids" })).toBeInTheDocument();
+    expect(screen.getByText("Spread")).toBeInTheDocument();
+    expect(screen.getByText("1 USD")).toBeInTheDocument();
+    expect(container.querySelectorAll(".book-column-headers")).toHaveLength(1);
 
     const askRows =
       container.querySelectorAll<HTMLElement>(".book-ask-level");
@@ -52,7 +55,8 @@ describe("OrderBook", () => {
 
     expect(askRows).toHaveLength(3);
     expect(bidRows).toHaveLength(3);
-    expect(within(askRows[0]!).getByText("101")).toBeInTheDocument();
+    expect(within(askRows[0]!).getByText("103")).toBeInTheDocument();
+    expect(within(askRows[2]!).getByText("101")).toBeInTheDocument();
     expect(within(bidRows[0]!).getByText("100")).toBeInTheDocument();
   });
 
@@ -64,9 +68,9 @@ describe("OrderBook", () => {
     const bidRows =
       container.querySelectorAll<HTMLElement>(".book-bid-level");
 
-    expect(askRows[0]!.querySelector(".book-total")).toHaveTextContent("1");
+    expect(askRows[0]!.querySelector(".book-total")).toHaveTextContent("7");
     expect(askRows[1]!.querySelector(".book-total")).toHaveTextContent("3");
-    expect(askRows[2]!.querySelector(".book-total")).toHaveTextContent("7");
+    expect(askRows[2]!.querySelector(".book-total")).toHaveTextContent("1");
 
     expect(bidRows[0]!.querySelector(".book-total")).toHaveTextContent("1.5");
     expect(bidRows[1]!.querySelector(".book-total")).toHaveTextContent("4");
@@ -132,8 +136,8 @@ describe("OrderBook", () => {
     expect(
       screen.getByText("No order-book levels available."),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Asks" })).not.toBeInTheDocument();
-    expect(screen.queryByText(/^Spread:/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Asks" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Spread")).not.toBeInTheDocument();
   });
 
   it("hides cumulative totals when requested", () => {
@@ -159,12 +163,29 @@ describe("OrderBook", () => {
     expect(
       screen.getByRole("heading", { name: "Orderbuch" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Kauf" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Verkauf" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Spanne: 1 USD")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Kauf" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Verkauf" })).toBeInTheDocument();
+    expect(screen.getByText("Spanne")).toBeInTheDocument();
+    expect(screen.getByText("1 USD")).toBeInTheDocument();
     expect(screen.getAllByText("1,5")).toHaveLength(2);
+  });
+
+  it("exposes proportional cumulative depth bars", () => {
+    const { container } = renderOrderBook();
+    const askRows =
+      container.querySelectorAll<HTMLElement>(".book-ask-level");
+    const bidRows =
+      container.querySelectorAll<HTMLElement>(".book-bid-level");
+
+    expect(
+      askRows[0]!.querySelector<HTMLElement>(".book-depth-bar"),
+    ).toHaveStyle({ width: "77.77777777777779%" });
+    expect(
+      askRows[2]!.querySelector<HTMLElement>(".book-depth-bar"),
+    ).toHaveStyle({ width: "11.11111111111111%" });
+    expect(
+      bidRows[2]!.querySelector<HTMLElement>(".book-depth-bar"),
+    ).toHaveStyle({ width: "100%" });
   });
 
   it("exposes the selected layout as a styling hook", () => {

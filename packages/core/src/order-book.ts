@@ -6,17 +6,32 @@ const identitySchema = z.object({
   assetClass: assetClassSchema,
 });
 
+/**
+ * Validates one aggregated price level in a complete order-book snapshot.
+ *
+ * `qty` is the total resting quantity at `px`, not an individual order.
+ */
 export const orderBookLevelSchema = z.object({
   px: z.number().positive(),
   qty: z.number().positive(),
   orderCount: z.number().int().nonnegative().optional(),
 });
 
+/**
+ * Validates one changed price level in an incremental update.
+ *
+ * A zero quantity removes the level from the locally maintained book.
+ */
 export const orderBookUpdateLevelSchema = orderBookLevelSchema.extend({
-  // Zero removes this price level.
   qty: z.number().nonnegative(),
 });
 
+/**
+ * Validates a complete, sorted view of an order book at one point in time.
+ *
+ * Snapshots establish or replace local state. Providers commonly deliver them
+ * over HTTP before incremental WebSocket updates are applied.
+ */
 export const orderBookSnapshotSchema = identitySchema
   .extend({
     bids: z.array(orderBookLevelSchema).max(5_000),
@@ -27,6 +42,12 @@ export const orderBookSnapshotSchema = identitySchema
   })
   .superRefine(validateSnapshot);
 
+/**
+ * Validates a provider-neutral batch of changed bid and ask levels.
+ *
+ * The arrays contain only levels changed by the event unless `reset` is true.
+ * One event may contain zero, one, or many changes on either side.
+ */
 export const orderBookUpdateSchema = identitySchema.extend({
   bids: z.array(orderBookUpdateLevelSchema).max(5_000).default([]),
   asks: z.array(orderBookUpdateLevelSchema).max(5_000).default([]),
@@ -89,6 +110,11 @@ function validateLevels(
   }
 }
 
+/** One aggregated price level in a complete order-book snapshot. */
 export type OrderBookLevel = z.infer<typeof orderBookLevelSchema>;
+
+/** A complete local order-book state, ordered best price first on each side. */
 export type OrderBookSnapshot = z.infer<typeof orderBookSnapshotSchema>;
+
+/** A provider-neutral incremental or resetting order-book event. */
 export type OrderBookUpdate = z.infer<typeof orderBookUpdateSchema>;

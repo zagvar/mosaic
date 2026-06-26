@@ -2,6 +2,7 @@ import type { OrderBookSnapshot } from "@mosaic/core";
 import type { CSSProperties } from "react";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
+import { formatDecimal } from "./internal/format";
 
 export type OrderBookSide = "bid" | "ask";
 export type OrderBookLayout = "stacked" | "split";
@@ -120,7 +121,6 @@ export function OrderBook({
     >
       <header {...classNameProps(classNames?.header)}>
         <h2 {...classNameProps(classNames?.title)}>{text.title}</h2>
-
       </header>
 
       {empty ? (
@@ -153,7 +153,7 @@ export function OrderBook({
             <div {...classNameProps(classNames?.spread)}>
               <span>{text.spread}</span>
               <strong>
-                {formatNumber(spread, locale, priceFractionDigits)}{" "}
+                {formatDecimal(spread, locale, priceFractionDigits)}{" "}
                 {quoteCurrency}
               </strong>
             </div>
@@ -299,7 +299,7 @@ function BookLevel({
   classNames: OrderBookClassNames | undefined;
   onSelectPrice: ((px: number, side: OrderBookSide) => void) | undefined;
 }) {
-  const formattedPrice = formatNumber(level.px, locale, priceFractionDigits);
+  const formattedPrice = formatDecimal(level.px, locale, priceFractionDigits);
   const depthPercent = maxTotal === 0 ? 0 : (level.total / maxTotal) * 100;
 
   const content = (
@@ -312,12 +312,12 @@ function BookLevel({
       <span {...classNameProps(classNames?.price)}>{formattedPrice}</span>
 
       <span {...classNameProps(classNames?.quantity)}>
-        {formatNumber(level.qty, locale, quantityFractionDigits)}
+        {formatDecimal(level.qty, locale, quantityFractionDigits)}
       </span>
 
       {showTotal ? (
         <span {...classNameProps(classNames?.total)}>
-          {formatNumber(level.total, locale, quantityFractionDigits)}
+          {formatDecimal(level.total, locale, quantityFractionDigits)}
         </span>
       ) : null}
     </>
@@ -353,15 +353,4 @@ function joinClassNames(...values: Array<string | undefined>) {
   const className = values.filter(Boolean).join(" ");
 
   return className === "" ? undefined : className;
-}
-
-function formatNumber(
-  value: number,
-  locale: string,
-  maximumFractionDigits: number,
-) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits,
-    useGrouping: true,
-  }).format(value);
 }

@@ -16,7 +16,7 @@ export const handlers = [
   http.get("/api/demo/order-book", ({ request }) => {
     const symbol = new URL(request.url).searchParams.get("symbol");
 
-    if (symbol !== "BTC/USD") {
+    if (symbol !== "BTC/USDT") {
       return HttpResponse.json(
         { message: "Unknown demo instrument." },
         { status: 404 },
@@ -29,7 +29,7 @@ export const handlers = [
   http.get("/api/demo/recent-trades", ({ request }) => {
     const symbol = new URL(request.url).searchParams.get("symbol");
 
-    if (symbol !== "BTC/USD") {
+    if (symbol !== "BTC/USDT") {
       return HttpResponse.json(
         { message: "Unknown demo instrument." },
         { status: 404 },

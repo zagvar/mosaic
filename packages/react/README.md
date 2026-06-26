@@ -14,6 +14,8 @@ Accessible, minimally styled React trading components for Mosaic.
 - `OrderReview`
 - `QuoteDisplay`
 - `OrderBook`
+- `RecentTrades`
+- `TradingChart`
 - `useTradeDraft`
 
 ## Styling
@@ -51,3 +53,10 @@ number and date formatting.
 application-supplied `OrderSummary` and confirmation state. The host controls
 backend preview requests, final submission, error mapping, and whether review
 appears inline, in a panel, modal, sheet, or route.
+
+## Market Data
+
+`QuoteDisplay`, `OrderBook`, `RecentTrades`, and `TradingChart` are display
+components. Host applications own data fetching, WebSocket subscriptions,
+provider adapters, stale-data policy, and any backend validation before order
+placement.

@@ -8,11 +8,11 @@ Initial public milestone.
 
 - Framework-free order schemas, validation, summaries, fee estimates, and
   order-book reconciliation
-- Accessible React trade ticket, order review, quote display, order book, and
-  supporting controls
+- Accessible React trade ticket, order review, quote display, order book,
+  recent trades, trading chart, and supporting controls
 - Plain message-object internationalization APIs
 - Slot-based styling APIs
 - Equity and crypto demo flows
-- MSW-backed HTTP snapshot and WebSocket order-book simulation
+- MSW-backed HTTP snapshot and WebSocket market-data simulation
 - Unit tests for core and React behavior
 - Public order-book architecture documentation

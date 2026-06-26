@@ -4,6 +4,7 @@ import type {
   OrderSummary,
   OrderWarningCode,
 } from "@mosaic/core";
+import { formatBasisPoints, formatDecimal } from "./internal/format";
 import type { OrderReviewMessages } from "./order-review-messages";
 
 export function getConfirmationErrorMessage(
@@ -42,10 +43,7 @@ export function formatNumber(
   locale: string,
   maximumFractionDigits: number,
 ) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits,
-    useGrouping: true,
-  }).format(value);
+  return formatDecimal(value, locale, maximumFractionDigits);
 }
 
 export function formatQuoteAmount(
@@ -62,11 +60,4 @@ export function formatDateTime(value: number, locale: string) {
     dateStyle: "medium",
     timeStyle: "medium",
   }).format(value);
-}
-
-function formatBasisPoints(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 2,
-    style: "percent",
-  }).format(value / 10_000);
 }

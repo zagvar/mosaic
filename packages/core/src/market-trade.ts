@@ -1,12 +1,7 @@
 import { z } from "zod";
-import { assetClassSchema } from "./order-schemas";
+import { marketIdentitySchema } from "./market-identity";
 
 export const tradeSideSchema = z.enum(["buy", "sell", "unknown"]);
-
-const identitySchema = z.object({
-  symbol: z.string().min(1).max(32),
-  assetClass: assetClassSchema,
-});
 
 /**
  * Validates one executed market trade.
@@ -15,7 +10,7 @@ const identitySchema = z.object({
  * buy means the taker bought into resting asks; sell means the taker sold
  * into resting bids. Some providers omit this, so use "unknown".
  */
-export const marketTradeSchema = identitySchema.extend({
+export const marketTradeSchema = marketIdentitySchema.extend({
   tradeId: z.string().min(1).max(128).optional(),
   px: z.number().positive(),
   qty: z.number().positive(),
@@ -24,14 +19,14 @@ export const marketTradeSchema = identitySchema.extend({
   sequence: z.number().int().nonnegative().optional(),
 });
 
-export const marketTradesSnapshotSchema = identitySchema.extend({
+export const marketTradesSnapshotSchema = marketIdentitySchema.extend({
   trades: z.array(marketTradeSchema).max(5_000),
   observedAt: z.number().int().nonnegative(),
   sequence: z.number().int().nonnegative().optional(),
   displaySource: z.string().trim().min(1).max(64).optional(),
 });
 
-export const marketTradeUpdateSchema = identitySchema.extend({
+export const marketTradeUpdateSchema = marketIdentitySchema.extend({
   trades: z.array(marketTradeSchema).min(1).max(5_000),
   observedAt: z.number().int().nonnegative(),
   sequence: z.number().int().nonnegative().optional(),

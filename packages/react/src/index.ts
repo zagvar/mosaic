@@ -86,3 +86,11 @@ export type {
   RecentTradesMessages,
   RecentTradesProps,
 } from "./recent-trades";
+
+export { defaultTradingChartMessages, TradingChart } from "./trading-chart";
+
+export type {
+  TradingChartClassNames,
+  TradingChartMessages,
+  TradingChartProps,
+} from "./trading-chart";

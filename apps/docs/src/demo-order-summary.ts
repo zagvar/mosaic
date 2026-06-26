@@ -51,7 +51,7 @@ export function createDemoOrderSummary(
         {
           type: "commission",
           amount: 0.25,
-          currency: "USD",
+          currency: isCrypto ? "USDT" : "USD",
         },
       ],
       observedAt: now,

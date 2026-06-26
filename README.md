@@ -33,7 +33,7 @@ hooks that host applications can style with their own design system.
 | --- | --- |
 | [`@mosaic/core`](packages/core) | Framework-free trading schemas, validation, summaries, and reducers |
 | [`@mosaic/react`](packages/react) | Accessible React components and state hooks |
-| `@mosaic/docs` | Private Vite demo with an MSW market-data simulation |
+| `@mosaic/docs` | Private Vite demo app with an MSW market-data simulation |
 
 ## Try It Locally
 
@@ -52,7 +52,7 @@ pnpm dev
 The demo includes:
 
 - an AAPL quote-driven equity ticket
-- a BTC/USD order book backed by mocked HTTP and WebSocket data
+- a BTC/USDT order book backed by mocked HTTP and WebSocket data
 - selecting quote or order-book prices into a limit order
 - order review and confirmation
 
@@ -62,12 +62,12 @@ The demo includes:
 import { TradeTicket } from "@mosaic/react";
 
 <TradeTicket
-  symbol="BTC/USD"
+  symbol="BTC/USDT"
   assetClass="crypto"
   assetRules={assetRules}
   cashAvailable={10_000}
   assetQtyAvailable={0.5}
-  quoteCurrency="USD"
+  quoteCurrency="USDT"
   onSubmit={(order) => setOrderForReview(order)}
 />;
 ```
@@ -141,7 +141,7 @@ pnpm --filter @mosaic/docs build
 ## Repository Structure
 
 ```text
-apps/docs/       interactive demo and MSW handlers
+apps/docs/       interactive demo app and MSW handlers
 packages/core/   framework-free domain contracts
 packages/react/  accessible React components
 docs/            public architecture documentation

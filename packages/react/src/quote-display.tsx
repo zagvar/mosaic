@@ -1,6 +1,7 @@
 import type { MarketPriceKind, MarketQuote } from "@mosaic/core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
+import { formatDecimal } from "./internal/format";
 
 export interface QuoteDisplayClassNames {
   root?: string;
@@ -59,13 +60,13 @@ export function QuoteDisplay({
     ...messages,
   };
 
-  const bid = formatNumber(quote.bidPx, locale, priceFractionDigits);
-  const ask = formatNumber(quote.askPx, locale, priceFractionDigits);
+  const bid = formatDecimal(quote.bidPx, locale, priceFractionDigits);
+  const ask = formatDecimal(quote.askPx, locale, priceFractionDigits);
   const last =
     quote.lastPx === undefined
       ? undefined
-      : formatNumber(quote.lastPx, locale, priceFractionDigits);
-  const spread = formatNumber(
+      : formatDecimal(quote.lastPx, locale, priceFractionDigits);
+  const spread = formatDecimal(
     quote.askPx - quote.bidPx,
     locale,
     priceFractionDigits,
@@ -195,16 +196,5 @@ function formatQuantity(
 ) {
   return value === undefined
     ? undefined
-    : `${formatNumber(value, locale, maximumFractionDigits)} ${symbol}`;
-}
-
-function formatNumber(
-  value: number,
-  locale: string,
-  maximumFractionDigits: number,
-) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits,
-    useGrouping: true,
-  }).format(value);
+    : `${formatDecimal(value, locale, maximumFractionDigits)} ${symbol}`;
 }

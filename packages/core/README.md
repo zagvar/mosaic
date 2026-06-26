@@ -13,6 +13,7 @@ Framework-free trading contracts and utilities for Mosaic.
 - Fee and quote-preview validation
 - Order-summary and warning generation
 - Market-reference contracts
+- Market candle and trade contracts
 - Order-book snapshots, updates, and reconciliation
 
 ## Example

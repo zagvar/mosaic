@@ -11,6 +11,7 @@ import {
   QuoteDisplay,
   RecentTrades,
   TradeTicket,
+  TradingChart,
   type TradeDraftValue,
 } from "@mosaic/react";
 import {
@@ -23,17 +24,25 @@ import {
   quoteDisplayClassNames,
   recentTradesClassNames,
   tradeTicketClassNames,
+  tradingChartClassNames,
 } from "./demo-config";
 import { createDemoOrderSummary } from "./demo-order-summary";
 import { bitcoinBookSnapshot } from "./mocks/order-book-data";
+import { createBitcoinCandles } from "./mocks/chart-data";
 import { useOrderBookFeed } from "./use-order-book-feed";
 import { useRecentTradesFeed } from "./use-recent-trades-feed";
 import "./styles.css";
 
 type DemoInstrument = "equity" | "crypto";
+type MarketPanelTab = "orderBook" | "recentTrades";
+
+const demoMarketSessionMs = 5 * 60 * 1000;
 
 function App() {
   const [instrument, setInstrument] = useState<DemoInstrument>("equity");
+  const [marketPanelTab, setMarketPanelTab] =
+    useState<MarketPanelTab>("orderBook");
+  const [marketDataPaused, setMarketDataPaused] = useState(false);
   const [equityValue, setEquityValue] = useState<TradeDraftValue>({
     side: "buy",
     type: "limit",
@@ -46,16 +55,19 @@ function App() {
     tif: "gtc",
     limitPx: bitcoinBookSnapshot.asks[0]!.px,
   });
+  const [bitcoinCandles] = useState(() => createBitcoinCandles());
 
   const pageVisible = usePageVisible();
-  const cryptoFeedEnabled = instrument === "crypto" && pageVisible;
+  const cryptoSurfaceActive =
+    instrument === "crypto" && pageVisible && !marketDataPaused;
+  const cryptoFeedEnabled = cryptoSurfaceActive;
 
   const { snapshot: bitcoinBook, status: bitcoinBookStatus } = useOrderBookFeed(
-    "BTC/USD",
+    "BTC/USDT",
     cryptoFeedEnabled,
   );
   const { trades: bitcoinTrades, status: bitcoinTradesStatus } =
-    useRecentTradesFeed("BTC/USD", cryptoFeedEnabled);
+    useRecentTradesFeed("BTC/USDT", cryptoFeedEnabled);
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isRefreshingPreview, setIsRefreshingPreview] = useState(false);
@@ -67,6 +79,7 @@ function App() {
 
   const activeValue = instrument === "equity" ? equityValue : cryptoValue;
   const activeRules = instrument === "equity" ? appleRules : bitcoinRules;
+  const activeQuoteCurrency = instrument === "equity" ? "USD" : "USDT";
 
   useEffect(() => {
     if (confirmationMessage === null) return;
@@ -78,9 +91,20 @@ function App() {
     return () => window.clearTimeout(timeout);
   }, [confirmationMessage]);
 
+  useEffect(() => {
+    if (instrument !== "crypto" || !pageVisible || marketDataPaused) return;
+
+    const timeout = window.setTimeout(() => {
+      setMarketDataPaused(true);
+    }, demoMarketSessionMs);
+
+    return () => window.clearTimeout(timeout);
+  }, [instrument, pageVisible, marketDataPaused]);
+
   function selectInstrument(nextInstrument: DemoInstrument) {
     setInstrument(nextInstrument);
     setConfirmationMessage(null);
+    setMarketDataPaused(false);
   }
 
   function applyEquityLimitPrice(limitPx: number) {
@@ -137,7 +161,6 @@ function App() {
 
     try {
       await simulateBrokerSubmission();
-      console.info("Order confirmed", order);
       setOrderSummary(null);
       setConfirmationMessage(
         `${order.side === "buy" ? "Buy" : "Sell"} order confirmed for ${order.symbol}.`,
@@ -167,7 +190,7 @@ function App() {
             aria-pressed={instrument === "crypto"}
             onClick={() => selectInstrument("crypto")}
           >
-            BTC/USD
+            BTC/USDT
           </button>
         </div>
       ) : null}
@@ -185,9 +208,9 @@ function App() {
         </div>
       )}
 
-      <div className="demo-trading-workspace">
-        <div className="demo-market-panel">
-          {instrument === "equity" ? (
+      <div className="demo-trading-workspace" data-instrument={instrument}>
+        {instrument === "equity" ? (
+          <div className="demo-chart-panel">
             <QuoteDisplay
               quote={appleQuote}
               quoteCurrency="USD"
@@ -197,87 +220,138 @@ function App() {
               classNames={quoteDisplayClassNames}
               onSelectPrice={applyEquityLimitPrice}
             />
-          ) : bitcoinBook === null ? (
-            <p className="demo-market-status" role="status">
-              Loading order book...
-            </p>
-          ) : (
-            <>
-              <OrderBook
-                snapshot={bitcoinBook}
-                quoteCurrency="USD"
-                depth={12}
-                priceFractionDigits={bitcoinRules.pricePrecision}
-                quantityFractionDigits={bitcoinRules.qtyPrecision}
-                isDisabled={
-                  orderSummary !== null || cryptoValue.type !== "limit"
-                }
-                classNames={orderBookClassNames}
-                onSelectPrice={applyCryptoLimitPrice}
-              />
-
-              <RecentTrades
-                trades={bitcoinTrades}
-                quoteCurrency="USD"
-                depth={16}
-                priceFractionDigits={bitcoinRules.pricePrecision}
-                quantityFractionDigits={bitcoinRules.qtyPrecision}
-                isDisabled={
-                  orderSummary !== null || cryptoValue.type !== "limit"
-                }
-                classNames={recentTradesClassNames}
-                onSelectPrice={applyCryptoTradePrice}
-              />
-            </>
-          )}
-          {instrument === "crypto" && bitcoinBookStatus === "error" ? (
-            <p className="demo-market-error" role="alert">
-              The demo market-data feed is unavailable.
-            </p>
-          ) : null}
-
-          {instrument === "crypto" && bitcoinTradesStatus === "error" ? (
-            <p className="demo-market-error" role="alert">
-              The demo recent-trades feed is unavailable.
-            </p>
-          ) : null}
-        </div>
-
-        {orderSummary === null ? (
-          <TradeTicket
-            symbol={activeRules.symbol}
-            assetClass={activeRules.assetClass}
-            assetRules={activeRules}
-            cashAvailable={instrument === "equity" ? 1000 : 10_000}
-            assetQtyAvailable={instrument === "equity" ? 10 : 0.5}
-            quoteCurrency="USD"
-            value={activeValue}
-            onChange={instrument === "equity" ? setEquityValue : setCryptoValue}
-            classNames={tradeTicketClassNames}
-            onSubmit={reviewOrder}
-            onValidationIssues={(issues) => {
-              console.info("Validation issues", issues);
-            }}
-          />
+          </div>
         ) : (
-          <OrderReview
-            summary={orderSummary}
-            quoteCurrency="USD"
-            quantityFractionDigits={activeRules.qtyPrecision}
-            priceFractionDigits={activeRules.pricePrecision}
-            notionalFractionDigits={activeRules.notionalPrecision}
-            isConfirming={isConfirming}
-            isRefreshingPreview={isRefreshingPreview}
-            confirmationError={confirmationError}
-            classNames={orderReviewClassNames}
-            onCancel={() => {
-              setConfirmationError(null);
-              setOrderSummary(null);
-            }}
-            onRefreshPreview={refreshPreview}
-            onConfirm={confirmOrder}
-          />
+          <>
+            <div className="demo-chart-panel">
+              {cryptoSurfaceActive ? (
+                <TradingChart
+                  symbol="BTC/USDT"
+                  candles={bitcoinCandles}
+                  height={620}
+                  theme="dark"
+                  classNames={tradingChartClassNames}
+                />
+              ) : (
+                <DemoMarketPausedNotice
+                  onResume={() => setMarketDataPaused(false)}
+                />
+              )}
+            </div>
+
+            <div className="demo-market-panel">
+              <div
+                className="demo-market-tabs"
+                aria-label="Market data view"
+                role="tablist"
+              >
+                <button
+                  type="button"
+                  aria-selected={marketPanelTab === "orderBook"}
+                  className="demo-market-tab"
+                  role="tab"
+                  onClick={() => setMarketPanelTab("orderBook")}
+                >
+                  Order Book
+                </button>
+                <button
+                  type="button"
+                  aria-selected={marketPanelTab === "recentTrades"}
+                  className="demo-market-tab"
+                  role="tab"
+                  onClick={() => setMarketPanelTab("recentTrades")}
+                >
+                  Recent Trades
+                </button>
+              </div>
+
+              {!cryptoSurfaceActive ? (
+                <DemoMarketPausedNotice
+                  compact
+                  onResume={() => setMarketDataPaused(false)}
+                />
+              ) : bitcoinBook === null ? (
+                <p className="demo-market-status" role="status">
+                  Loading order book...
+                </p>
+              ) : marketPanelTab === "orderBook" ? (
+                <OrderBook
+                  snapshot={bitcoinBook}
+                  quoteCurrency="USDT"
+                  depth={11}
+                  priceFractionDigits={bitcoinRules.pricePrecision}
+                  quantityFractionDigits={bitcoinRules.qtyPrecision}
+                  isDisabled={
+                    orderSummary !== null || cryptoValue.type !== "limit"
+                  }
+                  classNames={orderBookClassNames}
+                  onSelectPrice={applyCryptoLimitPrice}
+                />
+              ) : (
+                <RecentTrades
+                  trades={bitcoinTrades}
+                  quoteCurrency="USDT"
+                  depth={28}
+                  priceFractionDigits={bitcoinRules.pricePrecision}
+                  quantityFractionDigits={bitcoinRules.qtyPrecision}
+                  isDisabled={
+                    orderSummary !== null || cryptoValue.type !== "limit"
+                  }
+                  classNames={recentTradesClassNames}
+                  onSelectPrice={applyCryptoTradePrice}
+                />
+              )}
+              {bitcoinBookStatus === "error" ? (
+                <p className="demo-market-error" role="alert">
+                  The demo market-data feed is unavailable.
+                </p>
+              ) : null}
+
+              {bitcoinTradesStatus === "error" ? (
+                <p className="demo-market-error" role="alert">
+                  The demo recent-trades feed is unavailable.
+                </p>
+              ) : null}
+            </div>
+          </>
         )}
+
+        <aside className="demo-ticket-panel">
+          {orderSummary === null ? (
+            <TradeTicket
+              symbol={activeRules.symbol}
+              assetClass={activeRules.assetClass}
+              assetRules={activeRules}
+              cashAvailable={instrument === "equity" ? 1000 : 10_000}
+              assetQtyAvailable={instrument === "equity" ? 10 : 0.5}
+              quoteCurrency={activeQuoteCurrency}
+              value={activeValue}
+              onChange={
+                instrument === "equity" ? setEquityValue : setCryptoValue
+              }
+              classNames={tradeTicketClassNames}
+              onSubmit={reviewOrder}
+            />
+          ) : (
+            <OrderReview
+              summary={orderSummary}
+              quoteCurrency={activeQuoteCurrency}
+              quantityFractionDigits={activeRules.qtyPrecision}
+              priceFractionDigits={activeRules.pricePrecision}
+              notionalFractionDigits={activeRules.notionalPrecision}
+              isConfirming={isConfirming}
+              isRefreshingPreview={isRefreshingPreview}
+              confirmationError={confirmationError}
+              classNames={orderReviewClassNames}
+              onCancel={() => {
+                setConfirmationError(null);
+                setOrderSummary(null);
+              }}
+              onRefreshPreview={refreshPreview}
+              onConfirm={confirmOrder}
+            />
+          )}
+        </aside>
       </div>
     </main>
   );
@@ -295,6 +369,27 @@ function simulateBrokerSubmission() {
       resolve();
     }, 700);
   });
+}
+
+function DemoMarketPausedNotice({
+  compact = false,
+  onResume,
+}: {
+  compact?: boolean;
+  onResume: () => void;
+}) {
+  return (
+    <div className="demo-market-paused" data-compact={compact}>
+      <strong>Market demo paused</strong>
+      <p>
+        Live mock feeds were stopped to clean up resources. Resume when you want
+        fresh demo data again.
+      </p>
+      <button type="button" onClick={onResume}>
+        Resume market data
+      </button>
+    </div>
+  );
 }
 
 function usePageVisible() {

@@ -1,6 +1,6 @@
 import type { MarketTrade, MarketTradeUpdate } from "@mosaic/core";
 
-const symbol = "BTC/USD";
+const symbol = "BTC/USDT";
 const assetClass = "crypto";
 
 export function createBitcoinTradesSnapshot(): MarketTrade[] {

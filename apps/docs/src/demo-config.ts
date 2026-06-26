@@ -5,6 +5,7 @@ import type {
   QuoteDisplayClassNames,
   RecentTradesClassNames,
   TradeTicketClassNames,
+  TradingChartClassNames,
 } from "@mosaic/react";
 
 export const appleRules: AssetRules = {
@@ -33,7 +34,7 @@ export const appleRules: AssetRules = {
 
 export const bitcoinRules: AssetRules = {
   assetClass: "crypto",
-  symbol: "BTC/USD",
+  symbol: "BTC/USDT",
   allowedOrderTypes: ["market", "limit"],
   allowedTifs: ["gtc", "ioc"],
   supportsNotional: true,
@@ -183,4 +184,12 @@ export const recentTradesClassNames: RecentTradesClassNames = {
   quantity: "demo-recent-trades-quantity",
   time: "demo-recent-trades-time",
   empty: "demo-recent-trades-empty",
+};
+
+export const tradingChartClassNames: TradingChartClassNames = {
+  root: "demo-trading-chart",
+  header: "demo-trading-chart-header",
+  title: "demo-trading-chart-title",
+  attribution: "demo-trading-chart-attribution",
+  chart: "demo-trading-chart-canvas",
 };

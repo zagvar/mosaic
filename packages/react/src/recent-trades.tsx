@@ -1,6 +1,7 @@
 import type { MarketTrade, TradeSide } from "@mosaic/core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
+import { formatDecimal } from "./internal/format";
 
 export interface RecentTradesClassNames {
   root?: string;
@@ -48,7 +49,7 @@ export const defaultRecentTradesMessages: RecentTradesMessages = {
   title: "Recent trades",
   price: "Price",
   quantity: "Qty",
-  time: "Time",
+  time: "Timestamp",
   empty: "No recent trades.",
   selectPrice: (formattedPrice) => `Use trade price ${formattedPrice}`,
 };
@@ -133,17 +134,18 @@ function RecentTradeRow({
   classNames: RecentTradesClassNames | undefined;
   onSelectPrice: ((px: number, trade: MarketTrade) => void) | undefined;
 }) {
-  const formattedPrice = `${formatNumber(
+  const formattedPrice = `${formatDecimal(
     trade.px,
     locale,
     priceFractionDigits,
   )} ${quoteCurrency}`;
-  const formattedQuantity = formatNumber(
+  const formattedQuantity = formatDecimal(
     trade.qty,
     locale,
     quantityFractionDigits,
   );
   const formattedTime = new Intl.DateTimeFormat(locale, {
+    hour12: false,
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
@@ -189,15 +191,4 @@ function getRowClassName(
         : classNames?.unknownRow;
 
   return [classNames?.row, sideClassName].filter(Boolean).join(" ");
-}
-
-function formatNumber(
-  value: number,
-  locale: string,
-  maximumFractionDigits: number,
-) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits,
-    useGrouping: true,
-  }).format(value);
 }

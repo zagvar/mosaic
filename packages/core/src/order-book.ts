@@ -1,10 +1,5 @@
 import { z } from "zod";
-import { assetClassSchema } from "./order-schemas";
-
-const identitySchema = z.object({
-  symbol: z.string().min(1).max(32),
-  assetClass: assetClassSchema,
-});
+import { marketIdentitySchema } from "./market-identity";
 
 /**
  * Validates one aggregated price level in a complete order-book snapshot.
@@ -32,7 +27,7 @@ export const orderBookUpdateLevelSchema = orderBookLevelSchema.extend({
  * Snapshots establish or replace local state. Providers commonly deliver them
  * over HTTP before incremental WebSocket updates are applied.
  */
-export const orderBookSnapshotSchema = identitySchema
+export const orderBookSnapshotSchema = marketIdentitySchema
   .extend({
     bids: z.array(orderBookLevelSchema).max(5_000),
     asks: z.array(orderBookLevelSchema).max(5_000),
@@ -48,7 +43,7 @@ export const orderBookSnapshotSchema = identitySchema
  * The arrays contain only levels changed by the event unless `reset` is true.
  * One event may contain zero, one, or many changes on either side.
  */
-export const orderBookUpdateSchema = identitySchema.extend({
+export const orderBookUpdateSchema = marketIdentitySchema.extend({
   bids: z.array(orderBookUpdateLevelSchema).max(5_000).default([]),
   asks: z.array(orderBookUpdateLevelSchema).max(5_000).default([]),
   observedAt: z.number().int().nonnegative(),

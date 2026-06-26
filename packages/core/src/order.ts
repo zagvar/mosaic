@@ -1,3 +1,4 @@
+export * from "./market-candle";
 export * from "./market-data";
 export * from "./market-trade";
 export * from "./order-book";

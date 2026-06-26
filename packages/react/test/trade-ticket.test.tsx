@@ -48,6 +48,22 @@ describe("TradeTicket", () => {
     expect(screen.getByText("Enter a limit price.")).toBeInTheDocument();
   });
 
+  it("formats non-ISO crypto quote balances without crashing", () => {
+    renderTradeTicket({
+      assetRules: {
+        ...equityRules,
+        assetClass: "crypto",
+        allowedTifs: ["gtc", "ioc"],
+        symbol: "BTC/USDT",
+      },
+      assetClass: "crypto",
+      quoteCurrency: "USDT",
+      symbol: "BTC/USDT",
+    });
+
+    expect(screen.getByText("1,000 USDT")).toBeInTheDocument();
+  });
+
   it("shows a limit price field error when price exceeds the maximum", async () => {
     const user = userEvent.setup();
 

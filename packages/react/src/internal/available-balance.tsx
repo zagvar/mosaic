@@ -1,5 +1,6 @@
 import type { OrderSide } from "@mosaic/core";
 import { classNameProps } from "./class-name";
+import { formatCurrencyOrQuoteAmount, formatDecimal } from "./format";
 
 export interface AvailableBalanceClassNames {
   root?: string;
@@ -34,8 +35,12 @@ export function AvailableBalance({
 }: AvailableBalanceProps) {
   const value =
     side === "buy"
-      ? formatCurrency(quoteAvailable, quoteCurrency, locale)
-      : `${formatDecimal(baseAvailable, locale)} ${baseSymbol}`;
+      ? formatCurrencyOrQuoteAmount({
+          value: quoteAvailable,
+          currency: quoteCurrency,
+          locale,
+        })
+      : `${formatDecimal(baseAvailable, locale, 8)} ${baseSymbol}`;
 
   return (
     <div {...classNameProps(classNames?.root)}>
@@ -43,19 +48,4 @@ export function AvailableBalance({
       <span {...classNameProps(classNames?.value)}>{value}</span>
     </div>
   );
-}
-
-function formatCurrency(value: number, currency: string, locale: string) {
-  return new Intl.NumberFormat(locale, {
-    currency,
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    style: "currency",
-  }).format(value);
-}
-
-function formatDecimal(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 8,
-  }).format(value);
 }

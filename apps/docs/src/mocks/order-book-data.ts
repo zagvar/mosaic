@@ -1,7 +1,7 @@
 import type { OrderBookSnapshot, OrderBookUpdate } from "@mosaic/core";
 
 export const bitcoinBookSnapshot: OrderBookSnapshot = {
-  symbol: "BTC/USD",
+  symbol: "BTC/USDT",
   assetClass: "crypto",
   bids: createLevels("bid", 65000, 20),
   asks: createLevels("ask", 65000.5, 20),
@@ -14,7 +14,7 @@ export const bitcoinBookUpdateTemplates: Array<
   Omit<OrderBookUpdate, "observedAt" | "previousSequence" | "sequence">
 > = [
   {
-    symbol: "BTC/USD",
+    symbol: "BTC/USDT",
     assetClass: "crypto",
     bids: [
       { px: 65000, qty: 0.6 },
@@ -24,7 +24,7 @@ export const bitcoinBookUpdateTemplates: Array<
     reset: false,
   },
   {
-    symbol: "BTC/USD",
+    symbol: "BTC/USDT",
     assetClass: "crypto",
     bids: [{ px: 65000.25, qty: 0.3 }],
     asks: [
@@ -34,7 +34,7 @@ export const bitcoinBookUpdateTemplates: Array<
     reset: false,
   },
   {
-    symbol: "BTC/USD",
+    symbol: "BTC/USDT",
     assetClass: "crypto",
     bids: [
       { px: 65000.25, qty: 0 },

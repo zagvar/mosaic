@@ -1,4 +1,5 @@
 import { classNameProps } from "./class-name";
+import { formatPercent } from "./format";
 import { useLocale } from "react-aria-components";
 
 export interface AmountPresetsClassNames {
@@ -38,11 +39,4 @@ export function AmountPresets({
       ))}
     </div>
   );
-}
-
-function formatPercent(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 2,
-    style: "percent",
-  }).format(value / 100);
 }

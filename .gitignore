@@ -14,3 +14,4 @@ test-results
 !.env.example
 
 docs/internal-design-decisions.md
+docs/internal-release.md

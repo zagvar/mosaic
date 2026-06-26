@@ -8,8 +8,8 @@ import type {
   OrderValidationIssue,
   OrderIntent,
   Tif,
-} from "@mosaic/core";
-import { createOrderIntent } from "@mosaic/core";
+} from "@zagvar/mosaic-core";
+import { createOrderIntent } from "@zagvar/mosaic-core";
 import { useLocale, VisuallyHidden } from "react-aria-components";
 import { OrderTypeToggle } from "./order-type-toggle";
 import { AvailableBalance } from "./internal/available-balance";

@@ -31,9 +31,9 @@ hooks that host applications can style with their own design system.
 
 | Package | Purpose |
 | --- | --- |
-| [`@mosaic/core`](packages/core) | Framework-free trading schemas, validation, summaries, and reducers |
-| [`@mosaic/react`](packages/react) | Accessible React components and state hooks |
-| `@mosaic/docs` | Private Vite demo app with an MSW market-data simulation |
+| [`@zagvar/mosaic-core`](packages/core) | Framework-free trading schemas, validation, summaries, and reducers |
+| [`@zagvar/mosaic-react`](packages/react) | Accessible React components and state hooks |
+| `@zagvar/mosaic-demo` | Private Vite demo app with an MSW market-data simulation |
 
 ## Try It Locally
 
@@ -59,7 +59,7 @@ The demo includes:
 ## Basic Composition
 
 ```tsx
-import { TradeTicket } from "@mosaic/react";
+import { TradeTicket } from "@zagvar/mosaic-react";
 
 <TradeTicket
   symbol="BTC/USDT"
@@ -133,9 +133,9 @@ pnpm build
 Run only one package:
 
 ```bash
-pnpm --filter @mosaic/core test
-pnpm --filter @mosaic/react test
-pnpm --filter @mosaic/docs build
+pnpm --filter @zagvar/mosaic-core test
+pnpm --filter @zagvar/mosaic-react test
+pnpm --filter @zagvar/mosaic-demo build
 ```
 
 ## Repository Structure

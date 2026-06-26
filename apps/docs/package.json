@@ -1,5 +1,5 @@
 {
-  "name": "@mosaic/docs",
+  "name": "@zagvar/mosaic-demo",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,8 +11,8 @@
     "e2e:headed": "playwright test -c playwright.config.ts --headed"
   },
   "dependencies": {
-    "@mosaic/core": "workspace:*",
-    "@mosaic/react": "workspace:*",
+    "@zagvar/mosaic-core": "workspace:*",
+    "@zagvar/mosaic-react": "workspace:*",
     "@vitejs/plugin-react": "^6.0.2",
     "vite": "^8.0.16",
     "react": "^19.2.7",

@@ -1,4 +1,4 @@
-import type { MarketCandle } from "@mosaic/core";
+import type { MarketCandle } from "@zagvar/mosaic-core";
 
 export function createBitcoinCandles(): MarketCandle[] {
   const nowSeconds = Math.floor(Date.now() / 1000);

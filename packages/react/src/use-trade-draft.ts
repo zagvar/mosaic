@@ -8,8 +8,8 @@ import type {
   OrderValidationContext,
   OrderValidationResult,
   Tif,
-} from "@mosaic/core";
-import { validateOrderDraft } from "@mosaic/core";
+} from "@zagvar/mosaic-core";
+import { validateOrderDraft } from "@zagvar/mosaic-core";
 
 /**
  * User-editable state managed by a trade ticket.

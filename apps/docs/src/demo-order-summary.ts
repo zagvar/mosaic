@@ -2,8 +2,8 @@ import type {
   OrderBookSnapshot,
   OrderIntent,
   OrderSummary,
-} from "@mosaic/core";
-import { createOrderSummary } from "@mosaic/core";
+} from "@zagvar/mosaic-core";
+import { createOrderSummary } from "@zagvar/mosaic-core";
 import { askPrice, bidPrice } from "./demo-config";
 
 export function createDemoOrderSummary(

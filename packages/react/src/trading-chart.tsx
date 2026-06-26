@@ -1,4 +1,4 @@
-import type { MarketCandle } from "@mosaic/core";
+import type { MarketCandle } from "@zagvar/mosaic-core";
 import type {
   CandlestickData,
   HistogramData,

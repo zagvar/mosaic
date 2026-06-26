@@ -1,4 +1,4 @@
-import type { OrderBookSnapshot, OrderBookUpdate } from "@mosaic/core";
+import type { OrderBookSnapshot, OrderBookUpdate } from "@zagvar/mosaic-core";
 
 export const bitcoinBookSnapshot: OrderBookSnapshot = {
   symbol: "BTC/USDT",

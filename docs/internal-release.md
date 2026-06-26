@@ -9,12 +9,12 @@ the root and package READMEs.
 pnpm typecheck
 pnpm test
 pnpm build
-pnpm --filter @mosaic/core publish --dry-run
-pnpm --filter @mosaic/react publish --dry-run
+pnpm --filter @zagvar/mosaic-core publish --dry-run
+pnpm --filter @zagvar/mosaic-react publish --dry-run
 ```
 
 Use `pnpm publish`, not raw `npm publish`, because workspace dependencies such
-as `@mosaic/core: "workspace:*"` are rewritten by pnpm when packing and
+as `@zagvar/mosaic-core: "workspace:*"` are rewritten by pnpm when packing and
 publishing workspace packages.
 
 ## Changesets
@@ -37,13 +37,13 @@ Publish scoped packages publicly, ideally from CI with npm trusted publishing
 and provenance enabled:
 
 ```bash
-pnpm --filter @mosaic/core publish --access public --provenance
-pnpm --filter @mosaic/react publish --access public --provenance
+pnpm --filter @zagvar/mosaic-core publish --access public --provenance
+pnpm --filter @zagvar/mosaic-react publish --access public --provenance
 ```
 
 After publishing, verify the registry output:
 
 ```bash
-npm view @mosaic/core version
-npm view @mosaic/react version
+npm view @zagvar/mosaic-core version
+npm view @zagvar/mosaic-react version
 ```

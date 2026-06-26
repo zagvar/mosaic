@@ -1,4 +1,4 @@
-import type { MarketPriceKind, MarketQuote } from "@mosaic/core";
+import type { MarketPriceKind, MarketQuote } from "@zagvar/mosaic-core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
 import { formatDecimal } from "./internal/format";

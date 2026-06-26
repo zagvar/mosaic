@@ -1,5 +1,5 @@
 {
-  "name": "@mosaic/react",
+  "name": "@zagvar/mosaic-react",
   "version": "0.1.0",
   "description": "Accessible React components for Mosaic trading interfaces.",
   "license": "MIT",
@@ -25,7 +25,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@mosaic/core": "workspace:*",
+    "@zagvar/mosaic-core": "workspace:*",
     "react-aria-components": "^1.19.0"
   },
   "peerDependencies": {

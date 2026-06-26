@@ -1,5 +1,5 @@
 import { HttpResponse, http, ws } from "msw";
-import type { OrderBookUpdate } from "@mosaic/core";
+import type { OrderBookUpdate } from "@zagvar/mosaic-core";
 import {
   bitcoinBookUpdateTemplates,
   createBitcoinBookSnapshot,

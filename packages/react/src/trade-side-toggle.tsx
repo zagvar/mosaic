@@ -1,4 +1,4 @@
-import type { OrderSide } from "@mosaic/core";
+import type { OrderSide } from "@zagvar/mosaic-core";
 import { SegmentedRadioGroup } from "./internal/segmented-radio-group";
 import type { SegmentedRadioGroupClassNames } from "./internal/segmented-radio-group";
 

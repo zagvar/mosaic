@@ -1,4 +1,4 @@
-# `@mosaic/react`
+# `@zagvar/mosaic-react`
 
 Accessible, minimally styled React trading components for Mosaic.
 

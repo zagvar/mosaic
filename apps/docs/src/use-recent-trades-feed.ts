@@ -1,5 +1,5 @@
-import type { MarketTrade, MarketTradeUpdate } from "@mosaic/core";
-import { marketTradeUpdateSchema, marketTradeSchema } from "@mosaic/core";
+import type { MarketTrade, MarketTradeUpdate } from "@zagvar/mosaic-core";
+import { marketTradeUpdateSchema, marketTradeSchema } from "@zagvar/mosaic-core";
 import { useEffect, useState } from "react";
 
 export type RecentTradesFeedStatus = "loading" | "live" | "error";

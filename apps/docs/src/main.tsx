@@ -4,7 +4,7 @@ import type {
   OrderExecutionError,
   OrderIntent,
   OrderSummary,
-} from "@mosaic/core";
+} from "@zagvar/mosaic-core";
 import {
   OrderBook,
   OrderReview,
@@ -13,7 +13,7 @@ import {
   TradeTicket,
   TradingChart,
   type TradeDraftValue,
-} from "@mosaic/react";
+} from "@zagvar/mosaic-react";
 import {
   appleQuote,
   appleRules,

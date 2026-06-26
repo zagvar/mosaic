@@ -1,4 +1,4 @@
-# `@mosaic/core`
+# `@zagvar/mosaic-core`
 
 Framework-free trading contracts and utilities for Mosaic.
 
@@ -19,7 +19,7 @@ Framework-free trading contracts and utilities for Mosaic.
 ## Example
 
 ```ts
-import { createOrderIntent } from "@mosaic/core";
+import { createOrderIntent } from "@zagvar/mosaic-core";
 
 const result = createOrderIntent(draft, {
   assetRules,

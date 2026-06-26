@@ -3,7 +3,7 @@ import type {
   OrderExecutionErrorCode,
   OrderSummary,
   OrderWarningCode,
-} from "@mosaic/core";
+} from "@zagvar/mosaic-core";
 import { formatBasisPoints, formatDecimal } from "./internal/format";
 import type { OrderReviewMessages } from "./order-review-messages";
 

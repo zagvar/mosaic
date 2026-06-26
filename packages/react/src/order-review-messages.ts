@@ -5,7 +5,7 @@ import type {
   OrderFeeType,
   OrderWarningCode,
   Tif,
-} from "@mosaic/core";
+} from "@zagvar/mosaic-core";
 
 export interface OrderReviewMessages {
   title: string;

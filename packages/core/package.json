@@ -1,5 +1,5 @@
 {
-  "name": "@mosaic/core",
+  "name": "@zagvar/mosaic-core",
   "version": "0.1.0",
   "description": "Framework-free utilities and schemas for Mosaic trading components.",
   "license": "MIT",

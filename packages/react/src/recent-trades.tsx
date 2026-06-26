@@ -1,4 +1,4 @@
-import type { MarketTrade, TradeSide } from "@mosaic/core";
+import type { MarketTrade, TradeSide } from "@zagvar/mosaic-core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
 import { formatDecimal } from "./internal/format";

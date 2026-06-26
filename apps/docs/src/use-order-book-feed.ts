@@ -3,7 +3,7 @@ import {
   applyOrderBookUpdate,
   type OrderBookSnapshot,
   type OrderBookUpdate,
-} from "@mosaic/core";
+} from "@zagvar/mosaic-core";
 import {
   fetchOrderBookSnapshot,
   subscribeToOrderBook,

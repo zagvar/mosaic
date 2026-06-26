@@ -2,7 +2,7 @@ import type {
   AssetRules,
   OrderValidationCode,
   OrderValidationIssue,
-} from "@mosaic/core";
+} from "@zagvar/mosaic-core";
 import { defaultTifSelectMessages } from "./tif-select";
 import type { TifSelectMessages } from "./tif-select";
 

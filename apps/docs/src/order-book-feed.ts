@@ -3,7 +3,7 @@ import {
   orderBookUpdateSchema,
   type OrderBookSnapshot,
   type OrderBookUpdate,
-} from "@mosaic/core";
+} from "@zagvar/mosaic-core";
 
 export async function fetchOrderBookSnapshot(
   symbol: string,

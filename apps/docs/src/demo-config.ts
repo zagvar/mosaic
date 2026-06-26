@@ -1,4 +1,4 @@
-import type { AssetRules, MarketQuote } from "@mosaic/core";
+import type { AssetRules, MarketQuote } from "@zagvar/mosaic-core";
 import type {
   OrderBookClassNames,
   OrderReviewClassNames,
@@ -6,7 +6,7 @@ import type {
   RecentTradesClassNames,
   TradeTicketClassNames,
   TradingChartClassNames,
-} from "@mosaic/react";
+} from "@zagvar/mosaic-react";
 
 export const appleRules: AssetRules = {
   assetClass: "equity",

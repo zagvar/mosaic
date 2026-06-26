@@ -3,7 +3,7 @@ import type {
   OrderExecutionError,
   OrderIntent,
   OrderSummary,
-} from "@mosaic/core";
+} from "@zagvar/mosaic-core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
 import {

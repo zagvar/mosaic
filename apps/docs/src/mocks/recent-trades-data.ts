@@ -1,4 +1,4 @@
-import type { MarketTrade, MarketTradeUpdate } from "@mosaic/core";
+import type { MarketTrade, MarketTradeUpdate } from "@zagvar/mosaic-core";
 
 const symbol = "BTC/USDT";
 const assetClass = "crypto";

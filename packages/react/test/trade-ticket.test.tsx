@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AssetRules } from "@mosaic/core";
+import type { AssetRules } from "@zagvar/mosaic-core";
 import { I18nProvider } from "react-aria-components";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

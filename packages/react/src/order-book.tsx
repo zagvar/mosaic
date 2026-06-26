@@ -1,4 +1,4 @@
-import type { OrderBookSnapshot } from "@mosaic/core";
+import type { OrderBookSnapshot } from "@zagvar/mosaic-core";
 import type { CSSProperties } from "react";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";

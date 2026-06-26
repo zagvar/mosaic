@@ -2,7 +2,7 @@ import { I18nProvider } from "react-aria-components";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import type { OrderBookSnapshot } from "@mosaic/core";
+import type { OrderBookSnapshot } from "@zagvar/mosaic-core";
 import { OrderBook } from "../src/order-book";
 
 const snapshot: OrderBookSnapshot = {

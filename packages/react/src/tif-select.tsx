@@ -1,4 +1,4 @@
-import type { Tif } from "@mosaic/core";
+import type { Tif } from "@zagvar/mosaic-core";
 import { useState } from "react";
 import {
   Button,

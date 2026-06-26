@@ -1,4 +1,4 @@
-import type { OrderSide } from "@mosaic/core";
+import type { OrderSide } from "@zagvar/mosaic-core";
 import { classNameProps } from "./class-name";
 import { formatCurrencyOrQuoteAmount, formatDecimal } from "./format";
 

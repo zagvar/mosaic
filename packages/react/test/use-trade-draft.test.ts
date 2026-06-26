@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import type { AssetRules } from "@mosaic/core";
+import type { AssetRules } from "@zagvar/mosaic-core";
 import { describe, expect, it, vi } from "vitest";
 import { useTradeDraft, type TradeDraftValue } from "../src/use-trade-draft";
 

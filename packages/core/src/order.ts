@@ -1,4 +1,5 @@
 export * from "./market-data";
+export * from "./market-trade";
 export * from "./order-book";
 export * from "./order-book-reducer";
 export * from "./order-execution";

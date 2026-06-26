@@ -15,12 +15,19 @@ export type OrderBookFeedStatus =
   | "reconnecting"
   | "error";
 
-export function useOrderBookFeed(symbol: string) {
+export function useOrderBookFeed(symbol: string, enabled = true) {
   const [snapshot, setSnapshot] = useState<OrderBookSnapshot | null>(null);
   const [status, setStatus] = useState<OrderBookFeedStatus>("loading");
   const snapshotRef = useRef<OrderBookSnapshot | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      snapshotRef.current = null;
+      setSnapshot(null);
+      setStatus("loading");
+      return;
+    }
+
     const abortController = new AbortController();
     let active = true;
     let resyncing = false;
@@ -87,7 +94,7 @@ export function useOrderBookFeed(symbol: string) {
       unsubscribe();
       snapshotRef.current = null;
     };
-  }, [symbol]);
+  }, [symbol, enabled]);
 
   return { snapshot, status };
 }

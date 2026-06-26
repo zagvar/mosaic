@@ -148,8 +148,7 @@ main {
   color: white;
 }
 
-.demo-side-toggle-field[data-value="buy"]
-  .demo-segmented-radio-button {
+.demo-side-toggle-field[data-value="buy"] .demo-segmented-radio-button {
   border-color: #86efac;
   background: #f0fdf4;
   color: #047857;
@@ -160,8 +159,7 @@ main {
   background: #dcfce7;
 }
 
-.demo-side-toggle-field[data-value="sell"]
-  .demo-segmented-radio-button {
+.demo-side-toggle-field[data-value="sell"] .demo-segmented-radio-button {
   border-color: #fca5a5;
   background: #fef2f2;
   color: #b91c1c;
@@ -776,4 +774,86 @@ button.demo-quote:disabled {
   .demo-trading-workspace {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.demo-recent-trades {
+  margin-top: 16px;
+}
+
+.demo-recent-trades-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.demo-recent-trades-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.demo-recent-trades-table {
+  display: grid;
+  gap: 4px;
+}
+
+.demo-recent-trades-columns,
+.demo-recent-trades-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.8fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.demo-recent-trades-columns {
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.demo-recent-trades-row {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 0;
+  text-align: left;
+  width: 100%;
+}
+
+button.demo-recent-trades-row {
+  cursor: pointer;
+}
+
+button.demo-recent-trades-row:hover {
+  background: #f3f4f6;
+}
+
+.demo-recent-trades-buy .demo-recent-trades-price {
+  color: #047857;
+}
+
+.demo-recent-trades-sell .demo-recent-trades-price {
+  color: #dc2626;
+}
+
+.demo-recent-trades-unknown .demo-recent-trades-price {
+  color: #374151;
+}
+
+.demo-recent-trades-quantity,
+.demo-recent-trades-time {
+  color: #4b5563;
+}
+
+.demo-recent-trades-time {
+  text-align: right;
+}
+
+.demo-recent-trades-empty {
+  color: #6b7280;
+  font-size: 13px;
 }

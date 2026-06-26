@@ -9,6 +9,7 @@ import {
   OrderBook,
   OrderReview,
   QuoteDisplay,
+  RecentTrades,
   TradeTicket,
   type TradeDraftValue,
 } from "@mosaic/react";
@@ -20,11 +21,13 @@ import {
   orderBookClassNames,
   orderReviewClassNames,
   quoteDisplayClassNames,
+  recentTradesClassNames,
   tradeTicketClassNames,
 } from "./demo-config";
 import { createDemoOrderSummary } from "./demo-order-summary";
 import { bitcoinBookSnapshot } from "./mocks/order-book-data";
 import { useOrderBookFeed } from "./use-order-book-feed";
+import { useRecentTradesFeed } from "./use-recent-trades-feed";
 import "./styles.css";
 
 type DemoInstrument = "equity" | "crypto";
@@ -43,8 +46,16 @@ function App() {
     tif: "gtc",
     limitPx: bitcoinBookSnapshot.asks[0]!.px,
   });
-  const { snapshot: bitcoinBook, status: bitcoinBookStatus } =
-    useOrderBookFeed("BTC/USD");
+
+  const pageVisible = usePageVisible();
+  const cryptoFeedEnabled = instrument === "crypto" && pageVisible;
+
+  const { snapshot: bitcoinBook, status: bitcoinBookStatus } = useOrderBookFeed(
+    "BTC/USD",
+    cryptoFeedEnabled,
+  );
+  const { trades: bitcoinTrades, status: bitcoinTradesStatus } =
+    useRecentTradesFeed("BTC/USD", cryptoFeedEnabled);
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isRefreshingPreview, setIsRefreshingPreview] = useState(false);
@@ -82,6 +93,15 @@ function App() {
   }
 
   function applyCryptoLimitPrice(limitPx: number) {
+    if (cryptoValue.type !== "limit") return;
+
+    setCryptoValue((current) => ({
+      ...current,
+      limitPx,
+    }));
+  }
+
+  function applyCryptoTradePrice(limitPx: number) {
     if (cryptoValue.type !== "limit") return;
 
     setCryptoValue((current) => ({
@@ -173,9 +193,7 @@ function App() {
               quoteCurrency="USD"
               priceFractionDigits={appleRules.pricePrecision}
               quantityFractionDigits={appleRules.qtyPrecision}
-              isDisabled={
-                orderSummary !== null || equityValue.type !== "limit"
-              }
+              isDisabled={orderSummary !== null || equityValue.type !== "limit"}
               classNames={quoteDisplayClassNames}
               onSelectPrice={applyEquityLimitPrice}
             />
@@ -184,22 +202,43 @@ function App() {
               Loading order book...
             </p>
           ) : (
-            <OrderBook
-              snapshot={bitcoinBook}
-              quoteCurrency="USD"
-              depth={12}
-              priceFractionDigits={bitcoinRules.pricePrecision}
-              quantityFractionDigits={bitcoinRules.qtyPrecision}
-              isDisabled={
-                orderSummary !== null || cryptoValue.type !== "limit"
-              }
-              classNames={orderBookClassNames}
-              onSelectPrice={applyCryptoLimitPrice}
-            />
+            <>
+              <OrderBook
+                snapshot={bitcoinBook}
+                quoteCurrency="USD"
+                depth={12}
+                priceFractionDigits={bitcoinRules.pricePrecision}
+                quantityFractionDigits={bitcoinRules.qtyPrecision}
+                isDisabled={
+                  orderSummary !== null || cryptoValue.type !== "limit"
+                }
+                classNames={orderBookClassNames}
+                onSelectPrice={applyCryptoLimitPrice}
+              />
+
+              <RecentTrades
+                trades={bitcoinTrades}
+                quoteCurrency="USD"
+                depth={16}
+                priceFractionDigits={bitcoinRules.pricePrecision}
+                quantityFractionDigits={bitcoinRules.qtyPrecision}
+                isDisabled={
+                  orderSummary !== null || cryptoValue.type !== "limit"
+                }
+                classNames={recentTradesClassNames}
+                onSelectPrice={applyCryptoTradePrice}
+              />
+            </>
           )}
           {instrument === "crypto" && bitcoinBookStatus === "error" ? (
             <p className="demo-market-error" role="alert">
               The demo market-data feed is unavailable.
+            </p>
+          ) : null}
+
+          {instrument === "crypto" && bitcoinTradesStatus === "error" ? (
+            <p className="demo-market-error" role="alert">
+              The demo recent-trades feed is unavailable.
             </p>
           ) : null}
         </div>
@@ -256,6 +295,26 @@ function simulateBrokerSubmission() {
       resolve();
     }, 700);
   });
+}
+
+function usePageVisible() {
+  const [pageVisible, setPageVisible] = useState(
+    document.visibilityState === "visible",
+  );
+
+  useEffect(() => {
+    function syncVisibilityState() {
+      setPageVisible(document.visibilityState === "visible");
+    }
+
+    document.addEventListener("visibilitychange", syncVisibilityState);
+
+    return () => {
+      document.removeEventListener("visibilitychange", syncVisibilityState);
+    };
+  }, []);
+
+  return pageVisible;
 }
 
 /**

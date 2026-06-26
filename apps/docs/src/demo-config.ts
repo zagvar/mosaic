@@ -3,6 +3,7 @@ import type {
   OrderBookClassNames,
   OrderReviewClassNames,
   QuoteDisplayClassNames,
+  RecentTradesClassNames,
   TradeTicketClassNames,
 } from "@mosaic/react";
 
@@ -164,4 +165,22 @@ export const orderReviewClassNames: OrderReviewClassNames = {
   refreshButton: "demo-order-review-refresh",
   confirmButton: "demo-order-review-confirm",
   confirmationError: "demo-order-review-error",
+};
+
+export const recentTradesClassNames: RecentTradesClassNames = {
+  root: "demo-recent-trades",
+  header: "demo-recent-trades-header",
+  title: "demo-recent-trades-title",
+  table: "demo-recent-trades-table",
+  columns: "demo-recent-trades-columns",
+  column: "demo-recent-trades-column",
+  rows: "demo-recent-trades-rows",
+  row: "demo-recent-trades-row",
+  buyRow: "demo-recent-trades-buy",
+  sellRow: "demo-recent-trades-sell",
+  unknownRow: "demo-recent-trades-unknown",
+  price: "demo-recent-trades-price",
+  quantity: "demo-recent-trades-quantity",
+  time: "demo-recent-trades-time",
+  empty: "demo-recent-trades-empty",
 };

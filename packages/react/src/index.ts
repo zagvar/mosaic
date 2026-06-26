@@ -54,10 +54,7 @@ export { OrderReview } from "./order-review";
 
 export { defaultOrderReviewMessages } from "./order-review-messages";
 
-export type {
-  OrderReviewClassNames,
-  OrderReviewProps,
-} from "./order-review";
+export type { OrderReviewClassNames, OrderReviewProps } from "./order-review";
 
 export type {
   OrderReviewMessages,
@@ -81,3 +78,11 @@ export type {
   OrderBookProps,
   OrderBookSide,
 } from "./order-book";
+
+export { defaultRecentTradesMessages, RecentTrades } from "./recent-trades";
+
+export type {
+  RecentTradesClassNames,
+  RecentTradesMessages,
+  RecentTradesProps,
+} from "./recent-trades";

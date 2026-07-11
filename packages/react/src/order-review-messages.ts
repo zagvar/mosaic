@@ -17,10 +17,10 @@ export interface OrderReviewMessages {
   market: string;
   limit: string;
   tif: string;
-  qty: string;
+  quantity: string;
   notional: string;
-  limitPx: string;
-  estimatedFillPx: string;
+  limitPrice: string;
+  estimatedFillPrice: string;
   estimatedNotional: string;
   marketReference: (priceKind: string) => string;
   marketPriceKind: Record<MarketPriceKind, string>;
@@ -73,10 +73,10 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
   market: "Market",
   limit: "Limit",
   tif: "Time in force",
-  qty: "Quantity",
+  quantity: "Quantity",
   notional: "Total",
-  limitPx: "Limit price",
-  estimatedFillPx: "Estimated fill price",
+  limitPrice: "Limit price",
+  estimatedFillPrice: "Estimated fill price",
   estimatedNotional: "Estimated total",
   marketReference: (priceKind) => `${priceKind} reference price`,
   marketPriceKind: {
@@ -130,7 +130,7 @@ export const defaultOrderReviewMessages: OrderReviewMessages = {
     broker_rejected: "The broker rejected this order.",
     insufficient_buying_power:
       "Buying power is no longer sufficient for this order.",
-    insufficient_asset_qty:
+    insufficient_asset_quantity:
       "Available quantity is no longer sufficient for this order.",
     market_closed: "The market is closed for this order.",
     price_changed: "The price changed. Review the order before trying again.",

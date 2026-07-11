@@ -55,12 +55,12 @@ export interface OrderBookProps {
   messages?: Partial<OrderBookMessages>;
   classNames?: OrderBookClassNames;
 
-  onSelectPrice?: (px: number, side: OrderBookSide) => void;
+  onSelectPrice?: (price: number, side: OrderBookSide) => void;
 }
 
 interface DisplayLevel {
-  px: number;
-  qty: number;
+  price: number;
+  quantity: number;
   total: number;
 }
 
@@ -98,13 +98,10 @@ export function OrderBook({
 
   const bids = addCumulativeTotals(snapshot.bids.slice(0, depth));
   const asks = addCumulativeTotals(snapshot.asks.slice(0, depth));
-  const maxTotal = Math.max(
-    bids.at(-1)?.total ?? 0,
-    asks.at(-1)?.total ?? 0,
-  );
+  const maxTotal = Math.max(bids.at(-1)?.total ?? 0, asks.at(-1)?.total ?? 0);
 
-  const bestBid = bids[0]?.px;
-  const bestAsk = asks[0]?.px;
+  const bestBid = bids[0]?.price;
+  const bestAsk = asks[0]?.price;
 
   const spread =
     bestBid === undefined || bestAsk === undefined
@@ -213,11 +210,11 @@ function addCumulativeTotals(
   let total = 0;
 
   return levels.map((level) => {
-    total += level.qty;
+    total += level.quantity;
 
     return {
-      px: level.px,
-      qty: level.qty,
+      price: level.price,
+      quantity: level.quantity,
       total,
     };
   });
@@ -248,14 +245,14 @@ function BookSide({
   isDisabled: boolean;
   messages: OrderBookMessages;
   classNames: OrderBookClassNames | undefined;
-  onSelectPrice: ((px: number, side: OrderBookSide) => void) | undefined;
+  onSelectPrice: ((price: number, side: OrderBookSide) => void) | undefined;
 }) {
   return (
     <section aria-label={title} {...classNameProps(classNames?.side)}>
       <div {...classNameProps(classNames?.levels)}>
         {levels.map((level) => (
           <BookLevel
-            key={level.px}
+            key={level.price}
             side={side}
             level={level}
             locale={locale}
@@ -297,9 +294,13 @@ function BookLevel({
   isDisabled: boolean;
   messages: OrderBookMessages;
   classNames: OrderBookClassNames | undefined;
-  onSelectPrice: ((px: number, side: OrderBookSide) => void) | undefined;
+  onSelectPrice: ((price: number, side: OrderBookSide) => void) | undefined;
 }) {
-  const formattedPrice = formatDecimal(level.px, locale, priceFractionDigits);
+  const formattedPrice = formatDecimal(
+    level.price,
+    locale,
+    priceFractionDigits,
+  );
   const depthPercent = maxTotal === 0 ? 0 : (level.total / maxTotal) * 100;
 
   const content = (
@@ -312,7 +313,7 @@ function BookLevel({
       <span {...classNameProps(classNames?.price)}>{formattedPrice}</span>
 
       <span {...classNameProps(classNames?.quantity)}>
-        {formatDecimal(level.qty, locale, quantityFractionDigits)}
+        {formatDecimal(level.quantity, locale, quantityFractionDigits)}
       </span>
 
       {showTotal ? (
@@ -341,7 +342,7 @@ function BookLevel({
       type="button"
       aria-label={messages.selectPrice(side, formattedPrice)}
       disabled={isDisabled}
-      onClick={() => onSelectPrice(level.px, side)}
+      onClick={() => onSelectPrice(level.price, side)}
       {...classNameProps(joinClassNames(classNames?.level, levelClassName))}
     >
       {content}

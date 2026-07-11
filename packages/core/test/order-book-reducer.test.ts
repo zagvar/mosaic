@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
-import type {
-  OrderBookSnapshot,
-  OrderBookUpdate,
-} from "../src/order";
+import type { OrderBookSnapshot, OrderBookUpdate } from "../src/order";
 import { applyOrderBookUpdate } from "../src/order";
+
+const snapshotTimestamp = "2026-01-01T14:30:00.000Z";
+const updateTimestamp = "2026-01-01T14:30:01.000Z";
 
 const snapshot: OrderBookSnapshot = {
   symbol: "BTC/USD",
   assetClass: "crypto",
   bids: [
-    { px: 100, qty: 2 },
-    { px: 99, qty: 3 },
+    { price: 100, quantity: 2 },
+    { price: 99, quantity: 3 },
   ],
   asks: [
-    { px: 101, qty: 1 },
-    { px: 102, qty: 4 },
+    { price: 101, quantity: 1 },
+    { price: 102, quantity: 4 },
   ],
-  observedAt: 1000,
+  timestamp: snapshotTimestamp,
   sequence: 10,
   displaySource: "Demo exchange",
 };
@@ -27,13 +27,13 @@ describe("applyOrderBookUpdate", () => {
       snapshot,
       createUpdate({
         bids: [
-          { px: 100.25, qty: 1 },
-          { px: 100, qty: 5 },
-          { px: 99, qty: 0 },
+          { price: 100.25, quantity: 1 },
+          { price: 100, quantity: 5 },
+          { price: 99, quantity: 0 },
         ],
         asks: [
-          { px: 100.5, qty: 2 },
-          { px: 102, qty: 0 },
+          { price: 100.5, quantity: 2 },
+          { price: 102, quantity: 0 },
         ],
       }),
     );
@@ -44,14 +44,14 @@ describe("applyOrderBookUpdate", () => {
         symbol: "BTC/USD",
         assetClass: "crypto",
         bids: [
-          { px: 100.25, qty: 1 },
-          { px: 100, qty: 5 },
+          { price: 100.25, quantity: 1 },
+          { price: 100, quantity: 5 },
         ],
         asks: [
-          { px: 100.5, qty: 2 },
-          { px: 101, qty: 1 },
+          { price: 100.5, quantity: 2 },
+          { price: 101, quantity: 1 },
         ],
-        observedAt: 2000,
+        timestamp: updateTimestamp,
         sequence: 11,
         displaySource: "Demo exchange",
       },
@@ -63,21 +63,21 @@ describe("applyOrderBookUpdate", () => {
       snapshot,
       createUpdate({
         bids: [
-          { px: 98, qty: 1 },
-          { px: 100.25, qty: 1 },
+          { price: 98, quantity: 1 },
+          { price: 100.25, quantity: 1 },
         ],
         asks: [
-          { px: 103, qty: 1 },
-          { px: 100.5, qty: 1 },
+          { price: 103, quantity: 1 },
+          { price: 100.5, quantity: 1 },
         ],
       }),
     );
 
     expectApplied(result);
-    expect(result.snapshot.bids.map((level) => level.px)).toEqual([
+    expect(result.snapshot.bids.map((level) => level.price)).toEqual([
       100.25, 100, 99, 98,
     ]);
-    expect(result.snapshot.asks.map((level) => level.px)).toEqual([
+    expect(result.snapshot.asks.map((level) => level.price)).toEqual([
       100.5, 101, 102, 103,
     ]);
   });
@@ -87,34 +87,34 @@ describe("applyOrderBookUpdate", () => {
       snapshot,
       createUpdate({
         reset: true,
-        bids: [{ px: 95, qty: 10 }],
-        asks: [{ px: 105, qty: 12 }],
+        bids: [{ price: 95, quantity: 10 }],
+        asks: [{ price: 105, quantity: 12 }],
       }),
     );
 
     expectApplied(result);
-    expect(result.snapshot.bids).toEqual([{ px: 95, qty: 10 }]);
-    expect(result.snapshot.asks).toEqual([{ px: 105, qty: 12 }]);
+    expect(result.snapshot.bids).toEqual([{ price: 95, quantity: 10 }]);
+    expect(result.snapshot.asks).toEqual([{ price: 105, quantity: 12 }]);
   });
 
   it("caps visible depth after reconciliation", () => {
     const result = applyOrderBookUpdate(
       snapshot,
       createUpdate({
-        bids: [{ px: 100.25, qty: 1 }],
-        asks: [{ px: 100.5, qty: 1 }],
+        bids: [{ price: 100.25, quantity: 1 }],
+        asks: [{ price: 100.5, quantity: 1 }],
       }),
       { depth: 2 },
     );
 
     expectApplied(result);
     expect(result.snapshot.bids).toEqual([
-      { px: 100.25, qty: 1 },
-      { px: 100, qty: 2 },
+      { price: 100.25, quantity: 1 },
+      { price: 100, quantity: 2 },
     ]);
     expect(result.snapshot.asks).toEqual([
-      { px: 100.5, qty: 1 },
-      { px: 101, qty: 1 },
+      { price: 100.5, quantity: 1 },
+      { price: 101, quantity: 1 },
     ]);
   });
 
@@ -179,7 +179,7 @@ function createUpdate(
     assetClass: "crypto",
     bids: [],
     asks: [],
-    observedAt: 2000,
+    timestamp: updateTimestamp,
     sequence: 11,
     previousSequence: 10,
     reset: false,

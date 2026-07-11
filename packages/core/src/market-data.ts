@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoTimestampSchema } from "./timestamp";
 import { assetClassSchema } from "./order-schemas";
 
 export const marketPriceKindSchema = z.enum([
@@ -24,10 +25,10 @@ export const marketDataModeSchema = z.enum([
 export const marketReferenceSchema = z.object({
   symbol: z.string().min(1).max(32),
   assetClass: assetClassSchema,
-  px: z.number().positive(),
+  price: z.number().positive(),
   kind: marketPriceKindSchema,
-  observedAt: z.number().int().nonnegative(),
-  receivedAt: z.number().int().nonnegative().optional(),
+  timestamp: isoTimestampSchema,
+  receivedAt: isoTimestampSchema.optional(),
   mode: marketDataModeSchema.optional(),
 
   /**
@@ -43,22 +44,22 @@ export const marketQuoteSchema = z
   .object({
     symbol: z.string().min(1).max(32),
     assetClass: assetClassSchema,
-    bidPx: z.number().positive(),
-    bidQty: z.number().positive().optional(),
-    askPx: z.number().positive(),
-    askQty: z.number().positive().optional(),
-    lastPx: z.number().positive().optional(),
-    observedAt: z.number().int().nonnegative(),
-    receivedAt: z.number().int().nonnegative().optional(),
+    bidPrice: z.number().positive(),
+    bidQuantity: z.number().positive().optional(),
+    askPrice: z.number().positive(),
+    askQuantity: z.number().positive().optional(),
+    lastPrice: z.number().positive().optional(),
+    timestamp: isoTimestampSchema,
+    receivedAt: isoTimestampSchema.optional(),
     mode: marketDataModeSchema.optional(),
     displaySource: z.string().trim().min(1).max(64).optional(),
   })
   .superRefine((quote, context) => {
-    if (quote.bidPx > quote.askPx) {
+    if (quote.bidPrice > quote.askPrice) {
       context.addIssue({
         code: "custom",
-        message: "bidPx must not be greater than askPx",
-        path: ["bidPx"],
+        message: "bidPrice must not be greater than askPrice",
+        path: ["bidPrice"],
       });
     }
   });

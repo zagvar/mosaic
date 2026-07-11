@@ -25,15 +25,15 @@ function expectIssue(
 }
 
 describe("validateOrderDraft", () => {
-  it("accepts a valid equity limit buy using qty and limitPx", () => {
+  it("accepts a valid equity limit buy using quantity and limitPrice", () => {
     const result = validateOrderDraft(
       {
         symbol: "AAPL",
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 2,
-        limitPx: 100,
+        quantity: 2,
+        limitPrice: 100,
         tif: "day",
       },
       equityContext(),
@@ -69,8 +69,8 @@ describe("validateOrderDraft", () => {
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 1.00001,
-        limitPx: 100,
+        quantity: 1.00001,
+        limitPrice: 100,
         tif: "day",
       },
       equityContext(),
@@ -97,7 +97,7 @@ describe("validateOrderDraft", () => {
     expect(result.issues).toEqual([]);
   });
 
-  it("requires either qty or notional", () => {
+  it("requires either quantity or notional", () => {
     expectIssue(
       {
         symbol: "AAPL",
@@ -106,36 +106,36 @@ describe("validateOrderDraft", () => {
         type: "market",
         tif: "day",
       },
-      "qty_or_notional_required",
+      "quantity_or_notional_required",
     );
   });
 
-  it("rejects qty and notional together", () => {
+  it("rejects quantity and notional together", () => {
     expectIssue(
       {
         symbol: "AAPL",
         assetClass: "equity",
         side: "buy",
         type: "market",
-        qty: 1,
+        quantity: 1,
         notional: 100,
         tif: "day",
       },
-      "qty_and_notional_conflict",
+      "quantity_and_notional_conflict",
     );
   });
 
-  it("requires limitPx for limit orders", () => {
+  it("requires limitPrice for limit orders", () => {
     expectIssue(
       {
         symbol: "AAPL",
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 1,
+        quantity: 1,
         tif: "day",
       },
-      "limit_px_required",
+      "limit_price_required",
     );
   });
 
@@ -162,7 +162,7 @@ describe("validateOrderDraft", () => {
         side: "buy",
         type: "limit",
         notional: 100,
-        limitPx: 50,
+        limitPrice: 50,
         tif: "day",
       },
       "notional_not_supported_for_order_type",
@@ -184,48 +184,48 @@ describe("validateOrderDraft", () => {
     );
   });
 
-  it("rejects qty below minQty", () => {
+  it("rejects quantity below minQuantity", () => {
     expectIssue(
       {
         symbol: "AAPL",
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 0.0000001,
-        limitPx: 100,
+        quantity: 0.0000001,
+        limitPrice: 100,
         tif: "day",
       },
-      "qty_below_min",
+      "quantity_below_min",
     );
   });
 
-  it("rejects qty precision above asset precision", () => {
+  it("rejects quantity precision above asset precision", () => {
     expectIssue(
       {
         symbol: "AAPL",
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 0.1234567,
-        limitPx: 100,
+        quantity: 0.1234567,
+        limitPrice: 100,
         tif: "day",
       },
-      "qty_precision_exceeded",
+      "quantity_precision_exceeded",
     );
   });
 
-  it("rejects qty values not aligned to the lot size", () => {
+  it("rejects quantity values not aligned to the lot size", () => {
     expectIssue(
       {
         symbol: "AAPL",
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 1.000006,
-        limitPx: 100,
+        quantity: 1.000006,
+        limitPrice: 100,
         tif: "day",
       },
-      "qty_lot_size_mismatch",
+      "quantity_lot_size_mismatch",
       equityContext({
         assetRules: {
           ...equityRules,
@@ -242,11 +242,11 @@ describe("validateOrderDraft", () => {
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 1,
-        limitPx: 100.123,
+        quantity: 1,
+        limitPrice: 100.123,
         tif: "day",
       },
-      "limit_px_precision_exceeded",
+      "limit_price_precision_exceeded",
     );
   });
 
@@ -257,11 +257,11 @@ describe("validateOrderDraft", () => {
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 1,
-        limitPx: 0.001,
+        quantity: 1,
+        limitPrice: 0.001,
         tif: "day",
       },
-      "limit_px_below_min",
+      "limit_price_below_min",
       equityContext({
         assetRules: {
           ...equityRules,
@@ -278,11 +278,11 @@ describe("validateOrderDraft", () => {
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 1,
-        limitPx: 1001,
+        quantity: 1,
+        limitPrice: 1001,
         tif: "day",
       },
-      "limit_px_above_max",
+      "limit_price_above_max",
       equityContext({
         assetRules: {
           ...equityRules,
@@ -299,11 +299,11 @@ describe("validateOrderDraft", () => {
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 1,
-        limitPx: 100.06,
+        quantity: 1,
+        limitPrice: 100.06,
         tif: "day",
       },
-      "limit_px_tick_size_mismatch",
+      "limit_price_tick_size_mismatch",
       equityContext({
         assetRules: {
           ...equityRules,
@@ -354,8 +354,8 @@ describe("validateOrderDraft", () => {
         assetClass: "equity",
         side: "buy",
         type: "limit",
-        qty: 0.1,
-        limitPx: 10000.01,
+        quantity: 0.1,
+        limitPrice: 10000.01,
         tif: "day",
       },
       "insufficient_cash",
@@ -369,10 +369,10 @@ describe("validateOrderDraft", () => {
         assetClass: "equity",
         side: "sell",
         type: "market",
-        qty: 11,
+        quantity: 11,
         tif: "day",
       },
-      "insufficient_asset_qty",
+      "insufficient_asset_quantity",
     );
   });
 

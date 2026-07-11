@@ -1,17 +1,17 @@
 import { z } from "zod";
 import { multiplyDecimal } from "./decimal";
 import { marketReferenceSchema, type MarketReference } from "./market-data";
-import {
-  orderFeeEstimateSchema,
-  type OrderFeeEstimate,
-} from "./order-fees";
+import { orderFeeEstimateSchema, type OrderFeeEstimate } from "./order-fees";
 import type { OrderIntent } from "./order-intent";
 import {
   orderQuotePreviewSchema,
   type OrderQuotePreview,
 } from "./order-quote-preview";
 
-export type OrderEstimateBasis = "limit_px" | "reference_px" | "quote_preview";
+export type OrderEstimateBasis =
+  | "limit_price"
+  | "reference_price"
+  | "quote_preview";
 
 export type OrderWarningCode =
   | "estimated_notional"
@@ -124,7 +124,7 @@ export function createOrderSummary(
     throw new Error("Market reference does not match the order instrument.");
   }
 
-  const marketEstimate = getEstimatedNotional(order, marketReference?.px);
+  const marketEstimate = getEstimatedNotional(order, marketReference?.price);
 
   const estimatedNotional =
     quotePreview?.estimatedNotional ?? marketEstimate?.value;
@@ -134,7 +134,7 @@ export function createOrderSummary(
       ? "quote_preview"
       : marketEstimate?.basis;
 
-  const usesMarketReference = estimateBasis === "reference_px";
+  const usesMarketReference = estimateBasis === "reference_price";
 
   const optionFees =
     options.fees === undefined
@@ -182,7 +182,10 @@ export function createOrderSummary(
     warnings.push({ code: "slippage_high" });
   }
 
-  if (quotePreview?.expiresAt !== undefined && now >= quotePreview.expiresAt) {
+  if (
+    quotePreview?.expiresAt !== undefined &&
+    now >= Date.parse(quotePreview.expiresAt)
+  ) {
     warnings.push({ code: "preview_expired" });
   }
 
@@ -209,40 +212,41 @@ function isMarketReferenceStale(
   staleAfterMs: number,
   now: number,
 ) {
-  const timestamp = reference.receivedAt ?? reference.observedAt;
+  const timestamp = reference.receivedAt ?? reference.timestamp;
+  const timestampMs = Date.parse(timestamp);
 
-  return now >= timestamp && now - timestamp > staleAfterMs;
+  return now >= timestampMs && now - timestampMs > staleAfterMs;
 }
 
 function getEstimatedNotional(
   order: OrderIntent,
-  marketPx: number | undefined,
+  marketPrice: number | undefined,
 ):
   | {
       value: number;
       basis: OrderEstimateBasis;
     }
   | undefined {
-  if (order.qty === undefined) {
+  if (order.quantity === undefined) {
     return undefined;
   }
 
-  if (order.type === "limit" && order.limitPx !== undefined) {
+  if (order.type === "limit" && order.limitPrice !== undefined) {
     return {
-      value: multiplyDecimal(order.qty, order.limitPx),
-      basis: "limit_px",
+      value: multiplyDecimal(order.quantity, order.limitPrice),
+      basis: "limit_price",
     };
   }
 
   if (
     order.type === "market" &&
-    marketPx !== undefined &&
-    Number.isFinite(marketPx) &&
-    marketPx > 0
+    marketPrice !== undefined &&
+    Number.isFinite(marketPrice) &&
+    marketPrice > 0
   ) {
     return {
-      value: multiplyDecimal(order.qty, marketPx),
-      basis: "reference_px",
+      value: multiplyDecimal(order.quantity, marketPrice),
+      basis: "reference_price",
     };
   }
 

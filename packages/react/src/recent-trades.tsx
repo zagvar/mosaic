@@ -42,13 +42,13 @@ export interface RecentTradesProps {
   messages?: Partial<RecentTradesMessages>;
   classNames?: RecentTradesClassNames;
 
-  onSelectPrice?: (px: number, trade: MarketTrade) => void;
+  onSelectPrice?: (price: number, trade: MarketTrade) => void;
 }
 
 export const defaultRecentTradesMessages: RecentTradesMessages = {
   title: "Recent trades",
   price: "Price",
-  quantity: "Qty",
+  quantity: "Quantity",
   time: "Timestamp",
   empty: "No recent trades.",
   selectPrice: (formattedPrice) => `Use trade price ${formattedPrice}`,
@@ -93,7 +93,7 @@ export function RecentTrades({
             {visibleTrades.map((trade, index) => (
               <RecentTradeRow
                 key={
-                  trade.tradeId ?? `${trade.executedAt}-${trade.px}-${index}`
+                  trade.tradeId ?? `${trade.timestamp}-${trade.price}-${index}`
                 }
                 trade={trade}
                 quoteCurrency={quoteCurrency}
@@ -132,15 +132,15 @@ function RecentTradeRow({
   isDisabled: boolean;
   messages: RecentTradesMessages;
   classNames: RecentTradesClassNames | undefined;
-  onSelectPrice: ((px: number, trade: MarketTrade) => void) | undefined;
+  onSelectPrice: ((price: number, trade: MarketTrade) => void) | undefined;
 }) {
   const formattedPrice = `${formatDecimal(
-    trade.px,
+    trade.price,
     locale,
     priceFractionDigits,
   )} ${quoteCurrency}`;
   const formattedQuantity = formatDecimal(
-    trade.qty,
+    trade.quantity,
     locale,
     quantityFractionDigits,
   );
@@ -149,7 +149,7 @@ function RecentTradeRow({
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
-  }).format(new Date(trade.executedAt));
+  }).format(new Date(trade.timestamp));
 
   const content = (
     <>
@@ -171,7 +171,7 @@ function RecentTradeRow({
       data-side={trade.side}
       aria-label={messages.selectPrice(formattedPrice)}
       disabled={isDisabled}
-      onClick={() => onSelectPrice(trade.px, trade)}
+      onClick={() => onSelectPrice(trade.price, trade)}
       {...classNameProps(rowClassName)}
     >
       {content}

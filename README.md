@@ -29,11 +29,11 @@ hooks that host applications can style with their own design system.
 
 ## Packages
 
-| Package | Purpose |
-| --- | --- |
-| [`@zagvar/mosaic-core`](packages/core) | Framework-free trading schemas, validation, summaries, and reducers |
-| [`@zagvar/mosaic-react`](packages/react) | Accessible React components and state hooks |
-| `@zagvar/mosaic-demo` | Private Vite demo app with an MSW market-data simulation |
+| Package                                  | Purpose                                                             |
+| ---------------------------------------- | ------------------------------------------------------------------- |
+| [`@zagvar/mosaic-core`](packages/core)   | Framework-free trading schemas, validation, summaries, and reducers |
+| [`@zagvar/mosaic-react`](packages/react) | Accessible React components and state hooks                         |
+| `@zagvar/mosaic-demo`                    | Private Vite demo app with an MSW market-data simulation            |
 
 ## Try It Locally
 
@@ -66,7 +66,7 @@ import { TradeTicket } from "@zagvar/mosaic-react";
   assetClass="crypto"
   assetRules={assetRules}
   cashAvailable={10_000}
-  assetQtyAvailable={0.5}
+  assetQuantityAvailable={0.5}
   quoteCurrency="USDT"
   onSubmit={(order) => setOrderForReview(order)}
 />;

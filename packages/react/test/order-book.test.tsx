@@ -9,16 +9,16 @@ const snapshot: OrderBookSnapshot = {
   symbol: "BTC/USD",
   assetClass: "crypto",
   asks: [
-    { px: 101, qty: 1 },
-    { px: 102, qty: 2 },
-    { px: 103, qty: 4 },
+    { price: 101, quantity: 1 },
+    { price: 102, quantity: 2 },
+    { price: 103, quantity: 4 },
   ],
   bids: [
-    { px: 100, qty: 1.5 },
-    { px: 99, qty: 2.5 },
-    { px: 98, qty: 5 },
+    { price: 100, quantity: 1.5 },
+    { price: 99, quantity: 2.5 },
+    { price: 98, quantity: 5 },
   ],
-  observedAt: 1000,
+  timestamp: "2026-01-01T14:30:00.000Z",
 };
 
 const classNames = {
@@ -48,10 +48,8 @@ describe("OrderBook", () => {
     expect(screen.getByText("1 USD")).toBeInTheDocument();
     expect(container.querySelectorAll(".book-column-headers")).toHaveLength(1);
 
-    const askRows =
-      container.querySelectorAll<HTMLElement>(".book-ask-level");
-    const bidRows =
-      container.querySelectorAll<HTMLElement>(".book-bid-level");
+    const askRows = container.querySelectorAll<HTMLElement>(".book-ask-level");
+    const bidRows = container.querySelectorAll<HTMLElement>(".book-bid-level");
 
     expect(askRows).toHaveLength(3);
     expect(bidRows).toHaveLength(3);
@@ -63,10 +61,8 @@ describe("OrderBook", () => {
   it("computes cumulative quantity totals independently for each side", () => {
     const { container } = renderOrderBook();
 
-    const askRows =
-      container.querySelectorAll<HTMLElement>(".book-ask-level");
-    const bidRows =
-      container.querySelectorAll<HTMLElement>(".book-bid-level");
+    const askRows = container.querySelectorAll<HTMLElement>(".book-ask-level");
+    const bidRows = container.querySelectorAll<HTMLElement>(".book-bid-level");
 
     expect(askRows[0]!.querySelector(".book-total")).toHaveTextContent("7");
     expect(askRows[1]!.querySelector(".book-total")).toHaveTextContent("3");
@@ -92,12 +88,8 @@ describe("OrderBook", () => {
 
     renderOrderBook({ onSelectPrice: handleSelect });
 
-    await user.click(
-      screen.getByRole("button", { name: "Use ask price 101" }),
-    );
-    await user.click(
-      screen.getByRole("button", { name: "Use bid price 100" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Use ask price 101" }));
+    await user.click(screen.getByRole("button", { name: "Use bid price 100" }));
 
     expect(handleSelect).toHaveBeenNthCalledWith(1, 101, "ask");
     expect(handleSelect).toHaveBeenNthCalledWith(2, 100, "bid");
@@ -136,7 +128,9 @@ describe("OrderBook", () => {
     expect(
       screen.getByText("No order-book levels available."),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Asks" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Asks" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("Spread")).not.toBeInTheDocument();
   });
 
@@ -172,10 +166,8 @@ describe("OrderBook", () => {
 
   it("exposes proportional cumulative depth bars", () => {
     const { container } = renderOrderBook();
-    const askRows =
-      container.querySelectorAll<HTMLElement>(".book-ask-level");
-    const bidRows =
-      container.querySelectorAll<HTMLElement>(".book-bid-level");
+    const askRows = container.querySelectorAll<HTMLElement>(".book-ask-level");
+    const bidRows = container.querySelectorAll<HTMLElement>(".book-bid-level");
 
     expect(
       askRows[0]!.querySelector<HTMLElement>(".book-depth-bar"),

@@ -8,8 +8,8 @@ const limitOrder: OrderIntent = {
   side: "buy",
   type: "limit",
   tif: "day",
-  qty: 1.25,
-  limitPx: 100.1,
+  quantity: 1.25,
+  limitPrice: 100.1,
 };
 
 const marketOrder: OrderIntent = {
@@ -18,24 +18,28 @@ const marketOrder: OrderIntent = {
   side: "buy",
   type: "market",
   tif: "day",
-  qty: 2,
+  quantity: 2,
 };
 
 const marketReference = {
   symbol: "AAPL",
   assetClass: "equity" as const,
-  px: 100,
+  price: 100,
   kind: "ask" as const,
-  observedAt: 1000,
+  timestamp: isoTimestamp(1000),
   mode: "real_time" as const,
 };
+
+function isoTimestamp(milliseconds: number): string {
+  return new Date(milliseconds).toISOString();
+}
 
 describe("createOrderSummary", () => {
   it("estimates limit-order notional from quantity and limit price", () => {
     expect(createOrderSummary(limitOrder)).toEqual({
       order: limitOrder,
       estimatedNotional: 125.125,
-      estimateBasis: "limit_px",
+      estimateBasis: "limit_price",
       warnings: [{ code: "estimated_notional" }],
     });
   });
@@ -47,15 +51,15 @@ describe("createOrderSummary", () => {
       side: "sell",
       type: "market",
       tif: "gtc",
-      qty: 0.01,
+      quantity: 0.01,
     };
 
     const marketReference = {
       symbol: "BTC/USD",
       assetClass: "crypto" as const,
-      px: 65000,
+      price: 65000,
       kind: "bid" as const,
-      observedAt: 1000,
+      timestamp: isoTimestamp(1000),
       mode: "real_time" as const,
       displaySource: "Coinbase",
     };
@@ -63,7 +67,7 @@ describe("createOrderSummary", () => {
     expect(createOrderSummary(order, { marketReference, now: 1000 })).toEqual({
       order,
       estimatedNotional: 650,
-      estimateBasis: "reference_px",
+      estimateBasis: "reference_price",
       marketReference,
       warnings: [
         { code: "market_price_not_guaranteed" },
@@ -79,7 +83,7 @@ describe("createOrderSummary", () => {
       side: "sell",
       type: "market",
       tif: "day",
-      qty: 2,
+      quantity: 2,
     };
 
     expect(createOrderSummary(order)).toEqual({
@@ -103,9 +107,9 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          px: 195,
+          price: 195,
           kind: "ask",
-          observedAt: 1000,
+          timestamp: isoTimestamp(1000),
         },
         now: 1000,
       }),
@@ -114,9 +118,9 @@ describe("createOrderSummary", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        px: 195,
+        price: 195,
         kind: "ask",
-        observedAt: 1000,
+        timestamp: isoTimestamp(1000),
       },
       warnings: [{ code: "market_price_not_guaranteed" }],
     });
@@ -127,9 +131,9 @@ describe("createOrderSummary", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        px: 95,
+        price: 95,
         kind: "last",
-        observedAt: 1000,
+        timestamp: isoTimestamp(1000),
         mode: "delayed",
       },
       staleAfterMs: 5000,
@@ -146,17 +150,17 @@ describe("createOrderSummary", () => {
       side: "sell",
       type: "market",
       tif: "day",
-      qty: 1,
+      quantity: 1,
     };
 
     const delayed = createOrderSummary(order, {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        px: 100,
+        price: 100,
         kind: "bid",
-        observedAt: 1000,
-        receivedAt: 2000,
+        timestamp: isoTimestamp(1000),
+        receivedAt: isoTimestamp(2000),
         mode: "delayed",
       },
       staleAfterMs: 5000,
@@ -174,9 +178,9 @@ describe("createOrderSummary", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        px: 100,
+        price: 100,
         kind: "mark",
-        observedAt: 8000,
+        timestamp: isoTimestamp(8000),
         mode: "indicative",
       },
       staleAfterMs: 5000,
@@ -197,9 +201,9 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "MSFT",
           assetClass: "equity",
-          px: 100,
+          price: 100,
           kind: "last",
-          observedAt: 1000,
+          timestamp: isoTimestamp(1000),
         },
       }),
     ).toThrow("Market reference does not match");
@@ -209,9 +213,9 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          px: 0,
+          price: 0,
           kind: "last",
-          observedAt: 1000,
+          timestamp: isoTimestamp(1000),
         },
       }),
     ).toThrow();
@@ -221,9 +225,9 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          px: 100,
+          price: 100,
           kind: "last",
-          observedAt: 1000,
+          timestamp: isoTimestamp(1000),
           displaySource: " ",
         },
       }),
@@ -238,21 +242,20 @@ describe("createOrderSummary", () => {
 
   it("uses backend preview estimates over market estimates", () => {
     const result = createOrderSummary(marketOrder, {
-      marketReference,
       quotePreview: {
         previewId: "preview-123",
-        estimatedFillPx: 101,
+        estimatedFillPrice: 101,
         estimatedNotional: 202,
         slippageBps: 20,
-        observedAt: 2000,
-        expiresAt: 5000,
+        createdAt: isoTimestamp(2000),
+        expiresAt: isoTimestamp(5000),
       },
       now: 3000,
     });
 
     expect(result.estimatedNotional).toBe(202);
     expect(result.estimateBasis).toBe("quote_preview");
-    expect(result.quotePreview?.estimatedFillPx).toBe(101);
+    expect(result.quotePreview?.estimatedFillPrice).toBe(101);
   });
 
   it("uses preview fees instead of separately supplied fees", () => {
@@ -273,7 +276,7 @@ describe("createOrderSummary", () => {
             currency: "USD",
           },
         ],
-        observedAt: 1000,
+        createdAt: isoTimestamp(1000),
       },
       now: 1000,
     });
@@ -292,7 +295,7 @@ describe("createOrderSummary", () => {
       quotePreview: {
         previewId: "preview-high",
         slippageBps: 51,
-        observedAt: 1000,
+        createdAt: isoTimestamp(1000),
       },
       highSlippageBps: 50,
       now: 1000,
@@ -306,7 +309,7 @@ describe("createOrderSummary", () => {
       quotePreview: {
         previewId: "preview-accepted",
         slippageBps: 50,
-        observedAt: 1000,
+        createdAt: isoTimestamp(1000),
       },
       highSlippageBps: 50,
       now: 1000,
@@ -321,8 +324,8 @@ describe("createOrderSummary", () => {
     const result = createOrderSummary(marketOrder, {
       quotePreview: {
         previewId: "preview-123",
-        observedAt: 1000,
-        expiresAt: 5000,
+        createdAt: isoTimestamp(1000),
+        expiresAt: isoTimestamp(5000),
       },
       now: 5000,
     });
@@ -336,15 +339,15 @@ describe("createOrderSummary", () => {
     const result = createOrderSummary(marketOrder, {
       marketReference: {
         ...marketReference,
-        observedAt: 1000,
+        timestamp: isoTimestamp(1000),
         mode: "delayed",
       },
       staleAfterMs: 5000,
       quotePreview: {
         previewId: "preview-123",
         estimatedNotional: 202,
-        observedAt: 7000,
-        expiresAt: 9000,
+        createdAt: isoTimestamp(7000),
+        expiresAt: isoTimestamp(9000),
       },
       now: 8000,
     });
@@ -526,8 +529,8 @@ describe("createOrderSummary", () => {
       side: "buy",
       type: "limit",
       tif: "day",
-      qty: 1,
-      limitPx: 100,
+      quantity: 1,
+      limitPrice: 100,
       extendedHours: true,
     };
 

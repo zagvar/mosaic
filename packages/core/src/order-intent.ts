@@ -59,10 +59,10 @@ function normalizeOrderIntent(draft: OrderDraft): OrderIntent {
     side: draft.side,
     type: draft.type,
     ...(draft.tif === undefined ? {} : { tif: draft.tif }),
-    ...(draft.qty === undefined ? {} : { qty: draft.qty }),
+    ...(draft.quantity === undefined ? {} : { quantity: draft.quantity }),
     ...(draft.notional === undefined ? {} : { notional: draft.notional }),
-    ...(draft.type === "limit" && draft.limitPx !== undefined
-      ? { limitPx: draft.limitPx }
+    ...(draft.type === "limit" && draft.limitPrice !== undefined
+      ? { limitPrice: draft.limitPrice }
       : {}),
     ...(draft.extendedHours === undefined
       ? {}

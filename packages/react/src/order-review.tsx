@@ -77,8 +77,7 @@ export function OrderReview({
   const text = mergeOrderReviewMessages(messages);
   const { order } = summary;
   const previewExpired = hasWarning(summary, "preview_expired");
-  const controlsDisabled =
-    isDisabled || isConfirming || isRefreshingPreview;
+  const controlsDisabled = isDisabled || isConfirming || isRefreshingPreview;
   const confirmDisabled = controlsDisabled || previewExpired;
   const confirmationErrorMessage = getConfirmationErrorMessage(
     confirmationError,
@@ -120,10 +119,10 @@ export function OrderReview({
           />
         )}
 
-        {order.qty === undefined ? null : (
+        {order.quantity === undefined ? null : (
           <ReviewRow
-            label={text.qty}
-            value={`${formatNumber(order.qty, locale, quantityFractionDigits)} ${order.symbol}`}
+            label={text.quantity}
+            value={`${formatNumber(order.quantity, locale, quantityFractionDigits)} ${order.symbol}`}
             classNames={classNames}
           />
         )}
@@ -141,11 +140,11 @@ export function OrderReview({
           />
         )}
 
-        {order.limitPx === undefined ? null : (
+        {order.limitPrice === undefined ? null : (
           <ReviewRow
-            label={text.limitPx}
+            label={text.limitPrice}
             value={formatQuoteAmount(
-              order.limitPx,
+              order.limitPrice,
               quoteCurrency,
               locale,
               priceFractionDigits,
@@ -155,11 +154,11 @@ export function OrderReview({
         )}
 
         {order.type !== "market" ||
-        summary.quotePreview?.estimatedFillPx === undefined ? null : (
+        summary.quotePreview?.estimatedFillPrice === undefined ? null : (
           <ReviewRow
-            label={text.estimatedFillPx}
+            label={text.estimatedFillPrice}
             value={formatQuoteAmount(
-              summary.quotePreview.estimatedFillPx,
+              summary.quotePreview.estimatedFillPrice,
               quoteCurrency,
               locale,
               priceFractionDigits,
@@ -189,7 +188,7 @@ export function OrderReview({
                 text.marketPriceKind[summary.marketReference.kind],
               )}
               value={formatQuoteAmount(
-                summary.marketReference.px,
+                summary.marketReference.price,
                 quoteCurrency,
                 locale,
                 priceFractionDigits,
@@ -219,7 +218,7 @@ export function OrderReview({
               <ReviewRow
                 label={text.marketObservedAt}
                 value={formatDateTime(
-                  summary.marketReference.observedAt,
+                  new Date(summary.marketReference.timestamp),
                   locale,
                 )}
                 classNames={classNames}
@@ -289,9 +288,7 @@ export function OrderReview({
             onClick={() => onRefreshPreview(order)}
             {...classNameProps(classNames?.refreshButton)}
           >
-            {isRefreshingPreview
-              ? text.refreshingPreview
-              : text.refreshPreview}
+            {isRefreshingPreview ? text.refreshingPreview : text.refreshPreview}
           </button>
         ) : null}
 

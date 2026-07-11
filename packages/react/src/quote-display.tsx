@@ -30,10 +30,7 @@ export interface QuoteDisplayProps {
   messages?: Partial<QuoteDisplayMessages>;
   classNames?: QuoteDisplayClassNames;
   isDisabled?: boolean;
-  onSelectPrice?: (
-    px: number,
-    kind: Extract<MarketPriceKind, "bid" | "ask" | "last">,
-  ) => void;
+  onSelectPrice?: (price: number, kind: "bid" | "ask" | "last") => void;
 }
 
 export const defaultQuoteDisplayMessages: QuoteDisplayMessages = {
@@ -41,7 +38,8 @@ export const defaultQuoteDisplayMessages: QuoteDisplayMessages = {
   ask: "Ask",
   last: "Last",
   spread: "Spread",
-  selectPrice: (label, formattedPrice) => `Use ${label} price ${formattedPrice}`,
+  selectPrice: (label, formattedPrice) =>
+    `Use ${label} price ${formattedPrice}`,
 };
 
 export function QuoteDisplay({
@@ -60,23 +58,20 @@ export function QuoteDisplay({
     ...messages,
   };
 
-  const bid = formatDecimal(quote.bidPx, locale, priceFractionDigits);
-  const ask = formatDecimal(quote.askPx, locale, priceFractionDigits);
+  const bid = formatDecimal(quote.bidPrice, locale, priceFractionDigits);
+  const ask = formatDecimal(quote.askPrice, locale, priceFractionDigits);
   const last =
-    quote.lastPx === undefined
+    quote.lastPrice === undefined
       ? undefined
-      : formatDecimal(quote.lastPx, locale, priceFractionDigits);
+      : formatDecimal(quote.lastPrice, locale, priceFractionDigits);
   const spread = formatDecimal(
-    quote.askPx - quote.bidPx,
+    quote.askPrice - quote.bidPrice,
     locale,
     priceFractionDigits,
   );
 
   return (
-    <section
-      aria-label={quote.symbol}
-      {...classNameProps(classNames?.root)}
-    >
+    <section aria-label={quote.symbol} {...classNameProps(classNames?.root)}>
       <strong {...classNameProps(classNames?.symbol)}>{quote.symbol}</strong>
 
       <div {...classNameProps(classNames?.quotes)}>
@@ -84,7 +79,7 @@ export function QuoteDisplay({
           label={text.bid}
           formattedPrice={`${bid} ${quoteCurrency}`}
           formattedQuantity={formatQuantity(
-            quote.bidQty,
+            quote.bidQuantity,
             quote.symbol,
             locale,
             quantityFractionDigits,
@@ -94,7 +89,7 @@ export function QuoteDisplay({
           onSelect={
             onSelectPrice === undefined
               ? undefined
-              : () => onSelectPrice(quote.bidPx, "bid")
+              : () => onSelectPrice(quote.bidPrice, "bid")
           }
           selectLabel={text.selectPrice(text.bid, `${bid} ${quoteCurrency}`)}
         />
@@ -103,7 +98,7 @@ export function QuoteDisplay({
           label={text.ask}
           formattedPrice={`${ask} ${quoteCurrency}`}
           formattedQuantity={formatQuantity(
-            quote.askQty,
+            quote.askQuantity,
             quote.symbol,
             locale,
             quantityFractionDigits,
@@ -113,7 +108,7 @@ export function QuoteDisplay({
           onSelect={
             onSelectPrice === undefined
               ? undefined
-              : () => onSelectPrice(quote.askPx, "ask")
+              : () => onSelectPrice(quote.askPrice, "ask")
           }
           selectLabel={text.selectPrice(text.ask, `${ask} ${quoteCurrency}`)}
         />
@@ -127,7 +122,7 @@ export function QuoteDisplay({
             onSelect={
               onSelectPrice === undefined
                 ? undefined
-                : () => onSelectPrice(quote.lastPx!, "last")
+                : () => onSelectPrice(quote.lastPrice!, "last")
             }
             selectLabel={text.selectPrice(
               text.last,

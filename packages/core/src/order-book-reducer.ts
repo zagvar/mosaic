@@ -76,7 +76,7 @@ export function applyOrderBookUpdate(
       assetClass: snapshot.assetClass,
       bids,
       asks,
-      observedAt: update.observedAt,
+      timestamp: update.timestamp,
       ...(update.sequence === undefined
         ? snapshot.sequence === undefined
           ? {}
@@ -94,17 +94,17 @@ function reconcileSide(
   updates: OrderBookUpdate["bids"],
   direction: "ascending" | "descending",
 ) {
-  const levels = new Map(current.map((level) => [level.px, level]));
+  const levels = new Map(current.map((level) => [level.price, level]));
 
   for (const update of updates) {
-    if (update.qty === 0) {
-      levels.delete(update.px);
+    if (update.quantity === 0) {
+      levels.delete(update.price);
     } else {
-      levels.set(update.px, update);
+      levels.set(update.price, update);
     }
   }
 
   return [...levels.values()].sort((a, b) =>
-    direction === "ascending" ? a.px - b.px : b.px - a.px,
+    direction === "ascending" ? a.price - b.price : b.price - a.price,
   );
 }

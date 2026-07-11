@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { marketIdentitySchema } from "./market-identity";
+import { isoTimestampSchema } from "./timestamp";
 
 export const tradeSideSchema = z.enum(["buy", "sell", "unknown"]);
 
@@ -12,23 +13,23 @@ export const tradeSideSchema = z.enum(["buy", "sell", "unknown"]);
  */
 export const marketTradeSchema = marketIdentitySchema.extend({
   tradeId: z.string().min(1).max(128).optional(),
-  px: z.number().positive(),
-  qty: z.number().positive(),
+  price: z.number().positive(),
+  quantity: z.number().positive(),
   side: tradeSideSchema.default("unknown"),
-  executedAt: z.number().int().nonnegative(),
+  timestamp: isoTimestampSchema,
   sequence: z.number().int().nonnegative().optional(),
 });
 
 export const marketTradesSnapshotSchema = marketIdentitySchema.extend({
   trades: z.array(marketTradeSchema).max(5_000),
-  observedAt: z.number().int().nonnegative(),
+  timestamp: isoTimestampSchema,
   sequence: z.number().int().nonnegative().optional(),
   displaySource: z.string().trim().min(1).max(64).optional(),
 });
 
 export const marketTradeUpdateSchema = marketIdentitySchema.extend({
   trades: z.array(marketTradeSchema).min(1).max(5_000),
-  observedAt: z.number().int().nonnegative(),
+  timestamp: isoTimestampSchema,
   sequence: z.number().int().nonnegative().optional(),
   previousSequence: z.number().int().nonnegative().optional(),
 });

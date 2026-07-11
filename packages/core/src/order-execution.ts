@@ -9,7 +9,7 @@ export const orderExecutionErrorCodeSchema = z.enum([
   "network_error",
   "broker_rejected",
   "insufficient_buying_power",
-  "insufficient_asset_qty",
+  "insufficient_asset_quantity",
   "market_closed",
   "price_changed",
   "quote_expired",

@@ -3,12 +3,16 @@ import { orderQuotePreviewSchema } from "../src/order";
 
 const validPreview = {
   previewId: "preview-123",
-  estimatedFillPx: 101,
+  estimatedFillPrice: 101,
   estimatedNotional: 202,
   slippageBps: 25,
-  observedAt: 1000,
-  expiresAt: 5000,
+  createdAt: isoTimestamp(1000),
+  expiresAt: isoTimestamp(5000),
 };
+
+function isoTimestamp(milliseconds: number): string {
+  return new Date(milliseconds).toISOString();
+}
 
 describe("orderQuotePreviewSchema", () => {
   it("parses a valid backend preview", () => {
@@ -40,8 +44,8 @@ describe("orderQuotePreviewSchema", () => {
     expect(
       orderQuotePreviewSchema.safeParse({
         previewId: "preview-123",
-        observedAt: 1000,
-        expiresAt: 1000,
+        createdAt: isoTimestamp(1000),
+        expiresAt: isoTimestamp(1000),
       }).success,
     ).toBe(true);
   });
@@ -58,7 +62,7 @@ describe("orderQuotePreviewSchema", () => {
       name: "non-positive fill price",
       preview: {
         ...validPreview,
-        estimatedFillPx: 0,
+        estimatedFillPrice: 0,
       },
     },
     {
@@ -76,18 +80,18 @@ describe("orderQuotePreviewSchema", () => {
       },
     },
     {
-      name: "fractional observed timestamp",
+      name: "invalid creation timestamp",
       preview: {
         ...validPreview,
-        observedAt: 1000.5,
+        createdAt: "not-a-date",
       },
     },
     {
-      name: "expiration before observation",
+      name: "expiration before creation",
       preview: {
         ...validPreview,
-        observedAt: 1000,
-        expiresAt: 999,
+        createdAt: isoTimestamp(1000),
+        expiresAt: isoTimestamp(999),
       },
     },
   ])("rejects $name", ({ preview }) => {

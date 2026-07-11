@@ -5,16 +5,19 @@ import {
   marketTradeUpdateSchema,
 } from "../src/market-trade";
 
+const timestamp = new Date(1_772_000_000_000).toISOString();
+const nextTimestamp = new Date(1_772_000_000_100).toISOString();
+
 describe("market trade schemas", () => {
   it("parses a valid trade print", () => {
     const parsed = marketTradeSchema.parse({
       symbol: "BTC/USD",
       assetClass: "crypto",
       tradeId: "t-1",
-      px: 67250.12,
-      qty: 0.015,
+      price: 67250.12,
+      quantity: 0.015,
       side: "buy",
-      executedAt: 1_772_000_000_000,
+      timestamp,
       sequence: 10,
     });
 
@@ -25,9 +28,9 @@ describe("market trade schemas", () => {
     const parsed = marketTradeSchema.parse({
       symbol: "BTC/USD",
       assetClass: "crypto",
-      px: 67250.12,
-      qty: 0.015,
-      executedAt: 1_772_000_000_000,
+      price: 67250.12,
+      quantity: 0.015,
+      timestamp,
     });
 
     expect(parsed.side).toBe("unknown");
@@ -38,9 +41,9 @@ describe("market trade schemas", () => {
       marketTradeSchema.parse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        px: 0,
-        qty: 0.015,
-        executedAt: 1_772_000_000_000,
+        price: 0,
+        quantity: 0.015,
+        timestamp: "not-a-date",
       }),
     ).toThrow();
 
@@ -48,9 +51,9 @@ describe("market trade schemas", () => {
       marketTradeSchema.parse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        px: 67250.12,
-        qty: 0,
-        executedAt: 1_772_000_000_000,
+        price: 67250.12,
+        quantity: 0,
+        timestamp,
       }),
     ).toThrow();
   });
@@ -59,10 +62,10 @@ describe("market trade schemas", () => {
     const trade = {
       symbol: "BTC/USD",
       assetClass: "crypto" as const,
-      px: 67250.12,
-      qty: 0.015,
+      price: 67250.12,
+      quantity: 0.015,
       side: "sell" as const,
-      executedAt: 1_772_000_000_000,
+      timestamp,
     };
 
     expect(
@@ -70,7 +73,7 @@ describe("market trade schemas", () => {
         symbol: "BTC/USD",
         assetClass: "crypto",
         trades: [trade],
-        observedAt: 1_772_000_000_000,
+        timestamp,
         sequence: 1,
       }).trades,
     ).toHaveLength(1);
@@ -80,7 +83,7 @@ describe("market trade schemas", () => {
         symbol: "BTC/USD",
         assetClass: "crypto",
         trades: [trade],
-        observedAt: 1_772_000_000_100,
+        timestamp: nextTimestamp,
         previousSequence: 1,
         sequence: 2,
       }).trades,

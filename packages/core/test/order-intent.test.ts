@@ -11,8 +11,8 @@ describe("createOrderIntent", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        qty: 2,
-        limitPx: 100,
+        quantity: 2,
+        limitPrice: 100,
       },
       equityContext(),
     );
@@ -25,8 +25,8 @@ describe("createOrderIntent", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        qty: 2,
-        limitPx: 100,
+        quantity: 2,
+        limitPrice: 100,
       },
       issues: [],
     });
@@ -41,7 +41,7 @@ describe("createOrderIntent", () => {
         type: "market",
         tif: "day",
         notional: 100,
-        limitPx: 95,
+        limitPrice: 95,
       },
       equityContext(),
     );
@@ -68,8 +68,8 @@ describe("createOrderIntent", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        qty: 1.000006,
-        limitPx: 100,
+        quantity: 1.000006,
+        limitPrice: 100,
       },
       equityContext({
         assetRules: {
@@ -83,7 +83,7 @@ describe("createOrderIntent", () => {
     expect(result.issues).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          code: "qty_lot_size_mismatch",
+          code: "quantity_lot_size_mismatch",
         }),
       ]),
     );

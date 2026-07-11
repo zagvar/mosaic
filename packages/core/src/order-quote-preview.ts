@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { orderFeeEstimateSchema } from "./order-fees";
+import { isoTimestampSchema } from "./timestamp";
 
 export const orderQuotePreviewSchema = z
   .object({
@@ -12,7 +13,7 @@ export const orderQuotePreviewSchema = z
     /**
      * Estimated average execution price.
      */
-    estimatedFillPx: z.number().positive().optional(),
+    estimatedFillPrice: z.number().positive().optional(),
 
     /**
      * Estimated value of the execution, excluding fees unless the backend
@@ -33,26 +34,26 @@ export const orderQuotePreviewSchema = z
     fees: z.array(orderFeeEstimateSchema).optional(),
 
     /**
-     * When the preview was produced, in Unix milliseconds.
+     * When the preview was produced.
      */
-    observedAt: z.number().int().nonnegative(),
+    createdAt: isoTimestampSchema,
 
     /**
-     * When the preview becomes invalid, in Unix milliseconds.
+     * When the preview becomes invalid.
      *
-     * Equality with `observedAt` is valid but means the preview expires
+     * Equality with `createdAt` is valid but means the preview expires
      * immediately.
      */
-    expiresAt: z.number().int().nonnegative().optional(),
+    expiresAt: isoTimestampSchema.optional(),
   })
   .superRefine((preview, context) => {
     if (
       preview.expiresAt !== undefined &&
-      preview.expiresAt < preview.observedAt
+      Date.parse(preview.expiresAt) < Date.parse(preview.createdAt)
     ) {
       context.addIssue({
         code: "custom",
-        message: "expiresAt must not be earlier than observedAt",
+        message: "expiresAt must not be earlier than createdAt",
         path: ["expiresAt"],
       });
     }

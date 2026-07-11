@@ -7,11 +7,11 @@ export const equityRules: AssetRules = {
   allowedTifs: ["day", "gtc", "opg", "cls", "ioc", "fok"],
   supportsNotional: true,
   notionalOrderTypes: ["market"],
-  minQty: 0.000001,
+  minQuantity: 0.000001,
   minNotional: 1,
   minPrice: 0.01,
   maxPrice: 1000,
-  qtyPrecision: 6,
+  quantityPrecision: 6,
   pricePrecision: 2,
   notionalPrecision: 2,
   lotSize: 0.000001,
@@ -31,8 +31,8 @@ export const cryptoRules: AssetRules = {
   allowedTifs: ["gtc", "ioc"],
   supportsNotional: true,
   notionalOrderTypes: ["market"],
-  minQty: 0.00000001,
-  qtyPrecision: 8,
+  minQuantity: 0.00000001,
+  quantityPrecision: 8,
   pricePrecision: 2,
   notionalPrecision: 2,
 };
@@ -42,7 +42,7 @@ export function equityContext(
 ): OrderValidationContext {
   return {
     cashAvailable: 1000,
-    assetQtyAvailable: 10,
+    assetQuantityAvailable: 10,
     assetRules: equityRules,
     ...overrides,
   };
@@ -53,7 +53,7 @@ export function cryptoContext(
 ): OrderValidationContext {
   return {
     cashAvailable: 1000,
-    assetQtyAvailable: 1,
+    assetQuantityAvailable: 1,
     assetRules: cryptoRules,
     ...overrides,
   };

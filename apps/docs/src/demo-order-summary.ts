@@ -13,38 +13,42 @@ export function createDemoOrderSummary(
   const now = Date.now();
   const isCrypto = order.assetClass === "crypto";
   const cryptoReference =
-    order.side === "buy" ? bitcoinBook.asks[0]!.px : bitcoinBook.bids[0]!.px;
-  const referencePx = isCrypto
+    order.side === "buy"
+      ? bitcoinBook.asks[0]!.price
+      : bitcoinBook.bids[0]!.price;
+  const referencePrice = isCrypto
     ? cryptoReference
     : order.side === "buy"
       ? askPrice
       : bidPrice;
   const referenceKind = order.side === "buy" ? "ask" : "bid";
   const slippageOffset = isCrypto ? 1.25 : 0.02;
-  const estimatedFillPx =
+  const estimatedFillPrice =
     order.type === "market"
-      ? referencePx + (order.side === "buy" ? slippageOffset : -slippageOffset)
+      ? referencePrice +
+        (order.side === "buy" ? slippageOffset : -slippageOffset)
       : undefined;
   const estimatedNotional =
     order.notional ??
-    (order.qty === undefined
+    (order.quantity === undefined
       ? undefined
-      : order.qty * (estimatedFillPx ?? order.limitPx ?? referencePx));
+      : order.quantity *
+        (estimatedFillPrice ?? order.limitPrice ?? referencePrice));
 
   return createOrderSummary(order, {
     marketReference: {
       symbol: order.symbol,
       assetClass: order.assetClass,
-      px: referencePx,
+      price: referencePrice,
       kind: referenceKind,
-      observedAt: now,
+      timestamp: new Date(now).toISOString(),
       mode: "real_time",
       displaySource: isCrypto ? "Demo exchange" : "Demo feed",
     },
     staleAfterMs: 15_000,
     quotePreview: {
       previewId: `demo-${now}`,
-      ...(estimatedFillPx === undefined ? {} : { estimatedFillPx }),
+      ...(estimatedFillPrice === undefined ? {} : { estimatedFillPrice }),
       ...(estimatedNotional === undefined ? {} : { estimatedNotional }),
       slippageBps: order.type === "market" ? (isCrypto ? 18 : 10) : 0,
       fees: [
@@ -54,8 +58,8 @@ export function createDemoOrderSummary(
           currency: isCrypto ? "USDT" : "USD",
         },
       ],
-      observedAt: now,
-      expiresAt: now + 30_000,
+      createdAt: new Date(now).toISOString(),
+      expiresAt: new Date(now + 30_000).toISOString(),
     },
     highSlippageBps: 50,
     now,

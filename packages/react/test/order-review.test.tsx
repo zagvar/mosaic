@@ -11,16 +11,20 @@ const limitOrder: OrderIntent = {
   side: "buy",
   type: "limit",
   tif: "day",
-  qty: 1.25,
-  limitPx: 100.1,
+  quantity: 1.25,
+  limitPrice: 100.1,
 };
 
 const limitSummary: OrderSummary = {
   order: limitOrder,
   estimatedNotional: 125.125,
-  estimateBasis: "limit_px",
+  estimateBasis: "limit_price",
   warnings: [{ code: "estimated_notional" }],
 };
+
+function isoTimestamp(milliseconds: number): string {
+  return new Date(milliseconds).toISOString();
+}
 
 describe("OrderReview", () => {
   it("renders the exact order and its derived estimate", () => {
@@ -51,7 +55,7 @@ describe("OrderReview", () => {
         side: "sell",
         type: "market",
         tif: "day",
-        qty: 2,
+        quantity: 2,
         extendedHours: true,
       },
       warnings: [
@@ -79,12 +83,12 @@ describe("OrderReview", () => {
         side: "buy",
         type: "market",
         tif: "day",
-        qty: 2,
+        quantity: 2,
       },
       quotePreview: {
         previewId: "preview-123",
-        estimatedFillPx: 195.82,
-        observedAt: 1000,
+        estimatedFillPrice: 195.82,
+        createdAt: isoTimestamp(1000),
       },
       warnings: [{ code: "market_price_not_guaranteed" }],
     });
@@ -98,8 +102,8 @@ describe("OrderReview", () => {
       ...limitSummary,
       quotePreview: {
         previewId: "preview-123",
-        estimatedFillPx: 100,
-        observedAt: 1000,
+        estimatedFillPrice: 100,
+        createdAt: isoTimestamp(1000),
       },
     });
 
@@ -115,12 +119,12 @@ describe("OrderReview", () => {
           side: "buy",
           type: "market",
           tif: "day",
-          qty: 2,
+          quantity: 2,
         },
         quotePreview: {
           previewId: "preview-123",
           slippageBps: 65,
-          observedAt: 1000,
+          createdAt: isoTimestamp(1000),
         },
         warnings: [{ code: "slippage_high" }],
       },
@@ -137,7 +141,9 @@ describe("OrderReview", () => {
       screen.getByText((content) => {
         return (
           content.startsWith("Estimated price movement is ") &&
-          content.replace(/\s/g, "").includes(formattedPercent.replace(/\s/g, ""))
+          content
+            .replace(/\s/g, "")
+            .includes(formattedPercent.replace(/\s/g, ""))
         );
       }),
     ).toBeInTheDocument();
@@ -149,9 +155,9 @@ describe("OrderReview", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        px: 100.25,
+        price: 100.25,
         kind: "ask",
-        observedAt: 1000,
+        timestamp: isoTimestamp(1000),
         mode: "real_time",
         displaySource: "SIP",
       },
@@ -168,9 +174,9 @@ describe("OrderReview", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          px: 100.25,
+          price: 100.25,
           kind: "ask",
-          observedAt: 1000,
+          timestamp: isoTimestamp(1000),
           mode: "real_time",
           displaySource: "SIP",
         },
@@ -187,11 +193,11 @@ describe("OrderReview", () => {
   });
 
   it("can render full market reference details and freshness warnings", () => {
-    const observedAt = Date.UTC(2026, 5, 25, 10, 30, 0);
-    const formattedObservedAt = new Intl.DateTimeFormat("en-US", {
+    const timestamp = new Date(Date.UTC(2026, 5, 25, 10, 30, 0)).toISOString();
+    const formattedTimestamp = new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
       timeStyle: "medium",
-    }).format(observedAt);
+    }).format(new Date(timestamp));
 
     renderOrderReview(
       {
@@ -199,9 +205,9 @@ describe("OrderReview", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          px: 100.25,
+          price: 100.25,
           kind: "ask",
-          observedAt,
+          timestamp,
           mode: "delayed",
           displaySource: "SIP",
         },
@@ -219,7 +225,7 @@ describe("OrderReview", () => {
     expect(screen.getByText("100.25 USD")).toBeInTheDocument();
     expect(screen.getByText("Delayed")).toBeInTheDocument();
     expect(screen.getByText("SIP")).toBeInTheDocument();
-    expect(screen.getByText(formattedObservedAt)).toBeInTheDocument();
+    expect(screen.getByText(formattedTimestamp)).toBeInTheDocument();
     expect(
       screen.getByText("The market price used for this review is delayed."),
     ).toBeInTheDocument();
@@ -331,12 +337,12 @@ describe("OrderReview", () => {
       {
         messages: {
           estimatedFee: (feeType) => `${feeType}の概算`,
-        feeType: {
-          commission: "取引手数料",
+          feeType: {
+            commission: "取引手数料",
+          },
         },
       },
-    },
-  );
+    );
 
     expect(screen.getByText("取引手数料の概算")).toBeInTheDocument();
   });
@@ -348,9 +354,9 @@ describe("OrderReview", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          px: 100.25,
+          price: 100.25,
           kind: "ask",
-          observedAt: 1000,
+          timestamp: isoTimestamp(1000),
           mode: "real_time",
         },
       },
@@ -398,13 +404,10 @@ describe("OrderReview", () => {
         ...limitSummary,
         quotePreview: {
           previewId: "preview-expired",
-          observedAt: 1000,
-          expiresAt: 2000,
+          createdAt: isoTimestamp(1000),
+          expiresAt: isoTimestamp(2000),
         },
-        warnings: [
-          { code: "estimated_notional" },
-          { code: "preview_expired" },
-        ],
+        warnings: [{ code: "estimated_notional" }, { code: "preview_expired" }],
       },
       {
         onRefreshPreview: handleRefresh,
@@ -431,8 +434,8 @@ describe("OrderReview", () => {
         ...limitSummary,
         quotePreview: {
           previewId: "preview-expired",
-          observedAt: 1000,
-          expiresAt: 2000,
+          createdAt: isoTimestamp(1000),
+          expiresAt: isoTimestamp(2000),
         },
         warnings: [{ code: "preview_expired" }],
       },
@@ -526,7 +529,6 @@ describe("OrderReview", () => {
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
-
 });
 
 function renderOrderReview(

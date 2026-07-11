@@ -1,14 +1,15 @@
 import { z } from "zod";
 import { marketIdentitySchema } from "./market-identity";
+import { isoTimestampSchema } from "./timestamp";
 
 /**
  * Validates one aggregated price level in a complete order-book snapshot.
  *
- * `qty` is the total resting quantity at `px`, not an individual order.
+ * `quantity` is the total resting quantity at `price`, not an individual order.
  */
 export const orderBookLevelSchema = z.object({
-  px: z.number().positive(),
-  qty: z.number().positive(),
+  price: z.number().positive(),
+  quantity: z.number().positive(),
   orderCount: z.number().int().nonnegative().optional(),
 });
 
@@ -18,7 +19,7 @@ export const orderBookLevelSchema = z.object({
  * A zero quantity removes the level from the locally maintained book.
  */
 export const orderBookUpdateLevelSchema = orderBookLevelSchema.extend({
-  qty: z.number().nonnegative(),
+  quantity: z.number().nonnegative(),
 });
 
 /**
@@ -31,7 +32,7 @@ export const orderBookSnapshotSchema = marketIdentitySchema
   .extend({
     bids: z.array(orderBookLevelSchema).max(5_000),
     asks: z.array(orderBookLevelSchema).max(5_000),
-    observedAt: z.number().int().nonnegative(),
+    timestamp: isoTimestampSchema,
     sequence: z.number().int().nonnegative().optional(),
     displaySource: z.string().trim().min(1).max(64).optional(),
   })
@@ -46,7 +47,7 @@ export const orderBookSnapshotSchema = marketIdentitySchema
 export const orderBookUpdateSchema = marketIdentitySchema.extend({
   bids: z.array(orderBookUpdateLevelSchema).max(5_000).default([]),
   asks: z.array(orderBookUpdateLevelSchema).max(5_000).default([]),
-  observedAt: z.number().int().nonnegative(),
+  timestamp: isoTimestampSchema,
   sequence: z.number().int().nonnegative().optional(),
 
   /**
@@ -68,14 +69,14 @@ function validateSnapshot(
   validateLevels(book.bids, "bids", "descending", context);
   validateLevels(book.asks, "asks", "ascending", context);
 
-  const bestBid = book.bids[0]?.px;
-  const bestAsk = book.asks[0]?.px;
+  const bestBid = book.bids[0]?.price;
+  const bestAsk = book.asks[0]?.price;
 
   if (bestBid !== undefined && bestAsk !== undefined && bestBid > bestAsk) {
     context.addIssue({
       code: "custom",
       message: "best bid must not exceed best ask",
-      path: ["bids", 0, "px"],
+      path: ["bids", 0, "price"],
     });
   }
 }
@@ -92,14 +93,14 @@ function validateLevels(
 
     const correctlySorted =
       direction === "ascending"
-        ? previous.px < current.px
-        : previous.px > current.px;
+        ? previous.price < current.price
+        : previous.price > current.price;
 
     if (!correctlySorted) {
       context.addIssue({
         code: "custom",
         message: `${side} must have unique, sorted prices`,
-        path: [side, index, "px"],
+        path: [side, index, "price"],
       });
     }
   }

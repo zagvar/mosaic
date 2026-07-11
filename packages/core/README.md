@@ -24,7 +24,7 @@ import { createOrderIntent } from "@zagvar/mosaic-core";
 const result = createOrderIntent(draft, {
   assetRules,
   cashAvailable: 10_000,
-  assetQtyAvailable: 0.5,
+  assetQuantityAvailable: 0.5,
 });
 
 if (result.valid) {

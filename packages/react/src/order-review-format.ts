@@ -55,7 +55,7 @@ export function formatQuoteAmount(
   return `${formatNumber(value, locale, maximumFractionDigits)} ${quoteCurrency}`;
 }
 
-export function formatDateTime(value: number, locale: string) {
+export function formatDateTime(value: Date, locale: string) {
   return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "medium",

@@ -21,8 +21,8 @@ export interface TradeDraftValue {
   side: OrderSide;
   type: OrderType;
   tif?: Tif;
-  qty?: number;
-  limitPx?: number;
+  quantity?: number;
+  limitPrice?: number;
   notional?: number;
 }
 
@@ -31,7 +31,7 @@ export interface UseTradeDraftOptions {
   assetClass: AssetClass;
   assetRules: AssetRules;
   cashAvailable: number;
-  assetQtyAvailable: number;
+  assetQuantityAvailable: number;
 
   /**
    * Controlled editable draft value.
@@ -51,7 +51,7 @@ export interface UseTradeDraftOptions {
   initialSide?: OrderSide;
   initialType?: OrderType;
   initialTif?: Tif;
-  defaultLimitPx?: number;
+  defaultLimitPrice?: number;
 }
 
 export interface UseTradeDraftResult {
@@ -66,11 +66,11 @@ export interface UseTradeDraftResult {
   tif: Tif | undefined;
   setTif: (tif: Tif | undefined) => void;
 
-  qty: number | undefined;
-  setQty: (qty: number | undefined) => void;
+  quantity: number | undefined;
+  setQuantity: (quantity: number | undefined) => void;
 
-  limitPx: number | undefined;
-  setLimitPx: (limitPx: number | undefined) => void;
+  limitPrice: number | undefined;
+  setLimitPrice: (limitPrice: number | undefined) => void;
 
   notional: number | undefined;
   setNotional: (notional: number | undefined) => void;
@@ -89,11 +89,11 @@ interface CreateInitialTradeDraftValueOptions {
   side: OrderSide;
   type: OrderType;
   tif: Tif | undefined;
-  defaultLimitPx: number | undefined;
+  defaultLimitPrice: number | undefined;
   allowedTifs: Tif[] | undefined;
 }
 
-type OptionalTradeDraftField = "tif" | "qty" | "limitPx" | "notional";
+type OptionalTradeDraftField = "tif" | "quantity" | "limitPrice" | "notional";
 
 type TradeDraftValueUpdater = (current: TradeDraftValue) => TradeDraftValue;
 
@@ -102,14 +102,14 @@ export function useTradeDraft({
   assetClass,
   assetRules,
   cashAvailable,
-  assetQtyAvailable,
+  assetQuantityAvailable,
   value: controlledValue,
   defaultValue,
   onChange,
   initialSide = "buy",
   initialType = "limit",
   initialTif,
-  defaultLimitPx,
+  defaultLimitPrice,
 }: UseTradeDraftOptions): UseTradeDraftResult {
   const isControlled = controlledValue !== undefined;
 
@@ -119,7 +119,7 @@ export function useTradeDraft({
       side: initialSide,
       type: initialType,
       tif: initialTif,
-      defaultLimitPx,
+      defaultLimitPrice,
       allowedTifs: assetRules.allowedTifs,
     }),
   );
@@ -128,7 +128,7 @@ export function useTradeDraft({
   const valueRef = useRef(value);
   valueRef.current = value;
 
-  const { side, type, tif, qty, limitPx, notional } = value;
+  const { side, type, tif, quantity, limitPrice, notional } = value;
 
   const assetKey = `${assetClass}:${symbol}`;
   const previousAssetKey = useRef(assetKey);
@@ -157,11 +157,11 @@ export function useTradeDraft({
       side: current.side,
       type: current.type,
       ...(current.tif === undefined ? {} : { tif: current.tif }),
-      ...(current.type === "limit" && defaultLimitPx !== undefined
-        ? { limitPx: defaultLimitPx }
+      ...(current.type === "limit" && defaultLimitPrice !== undefined
+        ? { limitPrice: defaultLimitPrice }
         : {}),
     }));
-  }, [assetKey, defaultLimitPx]);
+  }, [assetKey, defaultLimitPrice]);
 
   useEffect(() => {
     updateValue((current) => {
@@ -186,10 +186,10 @@ export function useTradeDraft({
   const context = useMemo<OrderValidationContext>(() => {
     return {
       cashAvailable,
-      assetQtyAvailable,
+      assetQuantityAvailable,
       assetRules,
     };
-  }, [assetQtyAvailable, assetRules, cashAvailable]);
+  }, [assetQuantityAvailable, assetRules, cashAvailable]);
 
   const validation = useMemo(() => {
     return validateOrderDraft(draft, context);
@@ -199,13 +199,15 @@ export function useTradeDraft({
     updateValue((current) => updateOptionalField(current, "tif", nextTif));
   }
 
-  function setQty(nextQty: number | undefined) {
-    updateValue((current) => updateOptionalField(current, "qty", nextQty));
+  function setQuantity(nextQuantity: number | undefined) {
+    updateValue((current) =>
+      updateOptionalField(current, "quantity", nextQuantity),
+    );
   }
 
-  function setLimitPx(nextLimitPx: number | undefined) {
+  function setLimitPrice(nextLimitPrice: number | undefined) {
     updateValue((current) =>
-      updateOptionalField(current, "limitPx", nextLimitPx),
+      updateOptionalField(current, "limitPrice", nextLimitPrice),
     );
   }
 
@@ -222,7 +224,7 @@ export function useTradeDraft({
       }
 
       if (current.type === "market") {
-        const { qty: _qty, notional: _notional, ...rest } = current;
+        const { quantity: _quantity, notional: _notional, ...rest } = current;
 
         return {
           ...rest,
@@ -243,14 +245,21 @@ export function useTradeDraft({
         return current;
       }
 
-      const { qty, limitPx: _limitPx, notional: _notional, ...rest } = current;
+      const {
+        quantity,
+        limitPrice: _limitPrice,
+        notional: _notional,
+        ...rest
+      } = current;
 
       return {
         ...rest,
         type: nextType,
-        ...(current.side === "sell" && qty !== undefined ? { qty } : {}),
-        ...(nextType === "limit" && defaultLimitPx !== undefined
-          ? { limitPx: defaultLimitPx }
+        ...(current.side === "sell" && quantity !== undefined
+          ? { quantity }
+          : {}),
+        ...(nextType === "limit" && defaultLimitPrice !== undefined
+          ? { limitPrice: defaultLimitPrice }
           : {}),
       };
     });
@@ -266,7 +275,7 @@ export function useTradeDraft({
           assetRules.notionalPrecision,
         );
 
-        const { qty: _qty, notional: _notional, ...rest } = current;
+        const { quantity: _quantity, notional: _notional, ...rest } = current;
 
         return {
           ...rest,
@@ -275,34 +284,34 @@ export function useTradeDraft({
       }
 
       if (current.side === "buy" && current.type === "limit") {
-        if (current.limitPx === undefined || current.limitPx <= 0) {
+        if (current.limitPrice === undefined || current.limitPrice <= 0) {
           return current;
         }
 
-        const qty = roundToPrecision(
-          (cashAvailable * ratio) / current.limitPx,
-          assetRules.qtyPrecision,
+        const quantity = roundToPrecision(
+          (cashAvailable * ratio) / current.limitPrice,
+          assetRules.quantityPrecision,
         );
 
-        const { qty: _qty, notional: _notional, ...rest } = current;
+        const { quantity: _quantity, notional: _notional, ...rest } = current;
 
         return {
           ...rest,
-          qty,
+          quantity,
         };
       }
 
       if (current.side === "sell") {
-        const qty = roundToPrecision(
-          assetQtyAvailable * ratio,
-          assetRules.qtyPrecision,
+        const quantity = roundToPrecision(
+          assetQuantityAvailable * ratio,
+          assetRules.quantityPrecision,
         );
 
-        const { qty: _qty, notional: _notional, ...rest } = current;
+        const { quantity: _quantity, notional: _notional, ...rest } = current;
 
         return {
           ...rest,
-          qty,
+          quantity,
         };
       }
 
@@ -315,8 +324,8 @@ export function useTradeDraft({
       side: current.side,
       type: current.type,
       ...(current.tif === undefined ? {} : { tif: current.tif }),
-      ...(current.type === "limit" && defaultLimitPx !== undefined
-        ? { limitPx: defaultLimitPx }
+      ...(current.type === "limit" && defaultLimitPrice !== undefined
+        ? { limitPrice: defaultLimitPrice }
         : {}),
     }));
   }
@@ -329,10 +338,10 @@ export function useTradeDraft({
     setType: handleTypeChange,
     tif,
     setTif,
-    qty,
-    setQty,
-    limitPx,
-    setLimitPx,
+    quantity,
+    setQuantity,
+    limitPrice,
+    setLimitPrice,
     notional,
     setNotional,
     applyPercent,
@@ -367,7 +376,7 @@ function createInitialTradeDraftValue({
   side,
   type,
   tif,
-  defaultLimitPx,
+  defaultLimitPrice,
   allowedTifs,
 }: CreateInitialTradeDraftValueOptions): TradeDraftValue {
   const initialSide = defaultValue?.side ?? side;
@@ -378,14 +387,16 @@ function createInitialTradeDraftValue({
     side: initialSide,
     type: initialType,
     ...(initialTif === undefined ? {} : { tif: initialTif }),
-    ...(defaultValue?.qty === undefined ? {} : { qty: defaultValue.qty }),
+    ...(defaultValue?.quantity === undefined
+      ? {}
+      : { quantity: defaultValue.quantity }),
     ...(defaultValue?.notional === undefined
       ? {}
       : { notional: defaultValue.notional }),
-    ...(defaultValue?.limitPx !== undefined
-      ? { limitPx: defaultValue.limitPx }
-      : initialType === "limit" && defaultLimitPx !== undefined
-        ? { limitPx: defaultLimitPx }
+    ...(defaultValue?.limitPrice !== undefined
+      ? { limitPrice: defaultValue.limitPrice }
+      : initialType === "limit" && defaultLimitPrice !== undefined
+        ? { limitPrice: defaultLimitPrice }
         : {}),
   };
 }

@@ -1,13 +1,13 @@
 import type { MarketCandle } from "@zagvar/mosaic-core";
 
 export function createBitcoinCandles(): MarketCandle[] {
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const start = nowSeconds - 80 * 60;
+  const now = Date.now();
+  const start = now - 80 * 60_000;
 
   let close = 65000;
 
   return Array.from({ length: 80 }, (_, index) => {
-    const time = start + index * 60;
+    const timestamp = new Date(start + index * 60_000).toISOString();
     const open = close;
     const drift = Math.sin(index / 5) * 18 + (Math.random() - 0.45) * 40;
     close = Number((open + drift).toFixed(2));
@@ -20,7 +20,7 @@ export function createBitcoinCandles(): MarketCandle[] {
     );
 
     return {
-      time,
+      timestamp,
       open,
       high,
       low,

@@ -53,7 +53,7 @@ export interface TradeTicketProps {
   assetRules: AssetRules;
 
   cashAvailable: number;
-  assetQtyAvailable: number;
+  assetQuantityAvailable: number;
   quoteCurrency?: string;
 
   value?: TradeDraftValue;
@@ -61,7 +61,7 @@ export interface TradeTicketProps {
   onChange?: (value: TradeDraftValue) => void;
 
   defaultTif?: Tif;
-  defaultLimitPx?: number;
+  defaultLimitPrice?: number;
   amountPresets?: number[];
 
   isDisabled?: boolean;
@@ -84,13 +84,13 @@ export function TradeTicket({
   assetClass,
   assetRules,
   cashAvailable,
-  assetQtyAvailable,
+  assetQuantityAvailable,
   quoteCurrency = "USD",
   value,
   defaultValue,
   onChange,
   defaultTif,
-  defaultLimitPx,
+  defaultLimitPrice,
   amountPresets,
   isDisabled = false,
   isSubmitting = false,
@@ -126,8 +126,8 @@ export function TradeTicket({
     defaultTif === undefined ? {} : { initialTif: defaultTif };
   const controlledValueProps = value === undefined ? {} : { value };
   const defaultValueProps = defaultValue === undefined ? {} : { defaultValue };
-  const defaultLimitPxProps =
-    defaultLimitPx === undefined ? {} : { defaultLimitPx };
+  const defaultLimitPriceProps =
+    defaultLimitPrice === undefined ? {} : { defaultLimitPrice };
 
   function clearSubmissionError() {
     if (!isSubmissionErrorControlled) {
@@ -145,12 +145,12 @@ export function TradeTicket({
     assetClass,
     assetRules,
     cashAvailable,
-    assetQtyAvailable,
+    assetQuantityAvailable,
     onChange: handleDraftChange,
     ...controlledValueProps,
     ...defaultValueProps,
     ...initialTifProps,
-    ...defaultLimitPxProps,
+    ...defaultLimitPriceProps,
   });
 
   const submissionScopeKey = getSubmissionScopeKey(trade.draft);
@@ -168,8 +168,8 @@ export function TradeTicket({
     trade.side,
     trade.type,
     trade.tif,
-    trade.qty,
-    trade.limitPx,
+    trade.quantity,
+    trade.limitPrice,
     trade.notional,
   ]);
 
@@ -250,20 +250,20 @@ export function TradeTicket({
   const visibleIssues = hasSubmitted ? trade.validation.issues : [];
   const firstGlobalIssue = visibleIssues.find(
     (issue) =>
-      !issue.path?.includes("qty") &&
-      !issue.path?.includes("limitPx") &&
+      !issue.path?.includes("quantity") &&
+      !issue.path?.includes("limitPrice") &&
       !issue.path?.includes("notional"),
   );
-  const qtyIssue = getFieldIssue(visibleIssues, "qty");
-  const limitPxIssue = getFieldIssue(visibleIssues, "limitPx");
+  const quantityIssue = getFieldIssue(visibleIssues, "quantity");
+  const limitPriceIssue = getFieldIssue(visibleIssues, "limitPrice");
   const notionalIssue = getFieldIssue(visibleIssues, "notional");
-  const qtyErrorProps = getErrorMessageProps(
-    qtyIssue,
+  const quantityErrorProps = getErrorMessageProps(
+    quantityIssue,
     text.validation,
     validationMessageContext,
   );
-  const limitPxErrorProps = getErrorMessageProps(
-    limitPxIssue,
+  const limitPriceErrorProps = getErrorMessageProps(
+    limitPriceIssue,
     text.validation,
     validationMessageContext,
   );
@@ -278,11 +278,12 @@ export function TradeTicket({
     validationMessageContext,
   );
 
-  const limitPxProps =
-    trade.limitPx === undefined ? {} : { value: trade.limitPx };
+  const limitPriceProps =
+    trade.limitPrice === undefined ? {} : { value: trade.limitPrice };
   const notionalProps =
     trade.notional === undefined ? {} : { value: trade.notional };
-  const qtyProps = trade.qty === undefined ? {} : { value: trade.qty };
+  const quantityProps =
+    trade.quantity === undefined ? {} : { value: trade.quantity };
   const amountPresetValuesProps =
     amountPresets === undefined ? {} : { values: amountPresets };
   const sideToggleClassNameProps =
@@ -345,7 +346,7 @@ export function TradeTicket({
       <AvailableBalance
         side={trade.side}
         quoteAvailable={cashAvailable}
-        baseAvailable={assetQtyAvailable}
+        baseAvailable={assetQuantityAvailable}
         quoteCurrency={quoteCurrency}
         baseSymbol={symbol}
         locale={locale}
@@ -355,15 +356,15 @@ export function TradeTicket({
 
       {trade.type === "limit" ? (
         <TradeDecimalField
-          label={text.limitPx}
-          {...limitPxProps}
+          label={text.limitPrice}
+          {...limitPriceProps}
           isDisabled={controlsDisabled}
-          onChange={trade.setLimitPx}
+          onChange={trade.setLimitPrice}
           precision={assetRules.pricePrecision}
           placeholder="0"
           suffix={quoteCurrency}
           {...numberFieldClassNameProps}
-          {...limitPxErrorProps}
+          {...limitPriceErrorProps}
         />
       ) : null}
 
@@ -385,19 +386,19 @@ export function TradeTicket({
         />
       ) : (
         <TradeDecimalField
-          label={text.qty}
-          {...qtyProps}
+          label={text.quantity}
+          {...quantityProps}
           isDisabled={controlsDisabled}
-          onChange={trade.setQty}
-          precision={assetRules.qtyPrecision}
-          placeholder={formatMinimum(assetRules.minQty, "0", {
+          onChange={trade.setQuantity}
+          precision={assetRules.quantityPrecision}
+          placeholder={formatMinimum(assetRules.minQuantity, "0", {
             locale,
-            maximumFractionDigits: assetRules.qtyPrecision,
+            maximumFractionDigits: assetRules.quantityPrecision,
             message: text.minimum,
           })}
           suffix={symbol}
           {...numberFieldClassNameProps}
-          {...qtyErrorProps}
+          {...quantityErrorProps}
         />
       )}
 
@@ -442,7 +443,7 @@ export function TradeTicket({
 
 function getFieldIssue(
   issues: OrderValidationIssue[],
-  field: "qty" | "limitPx" | "notional",
+  field: "quantity" | "limitPrice" | "notional",
 ) {
   return issues.find((issue) => issue.path?.includes(field));
 }
@@ -454,8 +455,8 @@ function getSubmissionScopeKey(order: OrderIntent) {
     order.side,
     order.type,
     order.tif,
-    order.qty,
-    order.limitPx,
+    order.quantity,
+    order.limitPrice,
     order.notional,
   ]);
 }

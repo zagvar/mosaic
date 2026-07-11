@@ -50,7 +50,7 @@ export const handlers = [
         ]!;
       const update: OrderBookUpdate = {
         ...template,
-        observedAt: Date.now(),
+        timestamp: new Date().toISOString(),
         previousSequence: sequence,
         sequence: sequence + 1,
       };

@@ -1,5 +1,8 @@
 import type { MarketTrade, MarketTradeUpdate } from "@zagvar/mosaic-core";
-import { marketTradeUpdateSchema, marketTradeSchema } from "@zagvar/mosaic-core";
+import {
+  marketTradeUpdateSchema,
+  marketTradeSchema,
+} from "@zagvar/mosaic-core";
 import { useEffect, useState } from "react";
 
 export type RecentTradesFeedStatus = "loading" | "live" | "error";
@@ -55,7 +58,10 @@ export function useRecentTradesFeed(symbol: string, enabled = true) {
 
         setTrades((current) =>
           [...update.trades, ...current]
-            .sort((left, right) => right.executedAt - left.executedAt)
+            .sort(
+              (left, right) =>
+                Date.parse(right.timestamp) - Date.parse(left.timestamp),
+            )
             .slice(0, 100),
         );
         setStatus("live");

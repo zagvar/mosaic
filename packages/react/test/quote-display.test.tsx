@@ -8,12 +8,12 @@ import { QuoteDisplay } from "../src/quote-display";
 const quote: MarketQuote = {
   symbol: "AAPL",
   assetClass: "equity",
-  bidPx: 195.7,
-  bidQty: 120,
-  askPx: 195.8,
-  askQty: 95,
-  lastPx: 195.75,
-  observedAt: 1000,
+  bidPrice: 195.7,
+  bidQuantity: 120,
+  askPrice: 195.8,
+  askQuantity: 95,
+  lastPrice: 195.75,
+  timestamp: "2026-01-01T14:30:00.000Z",
 };
 
 describe("QuoteDisplay", () => {
@@ -76,11 +76,7 @@ function renderQuoteDisplay(
   locale?: string,
 ) {
   const display = (
-    <QuoteDisplay
-      quote={quote}
-      quoteCurrency="USD"
-      {...overrides}
-    />
+    <QuoteDisplay quote={quote} quoteCurrency="USD" {...overrides} />
   );
 
   return render(

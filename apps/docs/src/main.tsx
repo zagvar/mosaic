@@ -47,13 +47,13 @@ function App() {
     side: "buy",
     type: "limit",
     tif: "day",
-    limitPx: latestPrice,
+    limitPrice: latestPrice,
   });
   const [cryptoValue, setCryptoValue] = useState<TradeDraftValue>({
     side: "buy",
     type: "limit",
     tif: "gtc",
-    limitPx: bitcoinBookSnapshot.asks[0]!.px,
+    limitPrice: bitcoinBookSnapshot.asks[0]!.price,
   });
   const [bitcoinCandles] = useState(() => createBitcoinCandles());
 
@@ -107,30 +107,30 @@ function App() {
     setMarketDataPaused(false);
   }
 
-  function applyEquityLimitPrice(limitPx: number) {
+  function applyEquityLimitPrice(limitPrice: number) {
     if (equityValue.type !== "limit") return;
 
     setEquityValue((current) => ({
       ...current,
-      limitPx,
+      limitPrice,
     }));
   }
 
-  function applyCryptoLimitPrice(limitPx: number) {
+  function applyCryptoLimitPrice(limitPrice: number) {
     if (cryptoValue.type !== "limit") return;
 
     setCryptoValue((current) => ({
       ...current,
-      limitPx,
+      limitPrice,
     }));
   }
 
-  function applyCryptoTradePrice(limitPx: number) {
+  function applyCryptoTradePrice(limitPrice: number) {
     if (cryptoValue.type !== "limit") return;
 
     setCryptoValue((current) => ({
       ...current,
-      limitPx,
+      limitPrice,
     }));
   }
 
@@ -215,7 +215,7 @@ function App() {
               quote={appleQuote}
               quoteCurrency="USD"
               priceFractionDigits={appleRules.pricePrecision}
-              quantityFractionDigits={appleRules.qtyPrecision}
+              quantityFractionDigits={appleRules.quantityPrecision}
               isDisabled={orderSummary !== null || equityValue.type !== "limit"}
               classNames={quoteDisplayClassNames}
               onSelectPrice={applyEquityLimitPrice}
@@ -280,7 +280,7 @@ function App() {
                   quoteCurrency="USDT"
                   depth={11}
                   priceFractionDigits={bitcoinRules.pricePrecision}
-                  quantityFractionDigits={bitcoinRules.qtyPrecision}
+                  quantityFractionDigits={bitcoinRules.quantityPrecision}
                   isDisabled={
                     orderSummary !== null || cryptoValue.type !== "limit"
                   }
@@ -293,7 +293,7 @@ function App() {
                   quoteCurrency="USDT"
                   depth={28}
                   priceFractionDigits={bitcoinRules.pricePrecision}
-                  quantityFractionDigits={bitcoinRules.qtyPrecision}
+                  quantityFractionDigits={bitcoinRules.quantityPrecision}
                   isDisabled={
                     orderSummary !== null || cryptoValue.type !== "limit"
                   }
@@ -323,7 +323,7 @@ function App() {
               assetClass={activeRules.assetClass}
               assetRules={activeRules}
               cashAvailable={instrument === "equity" ? 1000 : 10_000}
-              assetQtyAvailable={instrument === "equity" ? 10 : 0.5}
+              assetQuantityAvailable={instrument === "equity" ? 10 : 0.5}
               quoteCurrency={activeQuoteCurrency}
               value={activeValue}
               onChange={
@@ -336,7 +336,7 @@ function App() {
             <OrderReview
               summary={orderSummary}
               quoteCurrency={activeQuoteCurrency}
-              quantityFractionDigits={activeRules.qtyPrecision}
+              quantityFractionDigits={activeRules.quantityPrecision}
               priceFractionDigits={activeRules.pricePrecision}
               notionalFractionDigits={activeRules.notionalPrecision}
               isConfirming={isConfirming}

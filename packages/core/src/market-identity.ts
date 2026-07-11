@@ -1,14 +1,21 @@
 import { z } from "zod";
 import { assetClassSchema } from "./order-schemas";
 
+const instrumentIdentifierSchema = z.string().trim().min(1).max(64);
+
 /**
- * Shared identity fields for provider-neutral market-data payloads.
+ * Provider-neutral identity shared by Mosaic market-data contracts.
  *
- * Broker and exchange adapters should normalize their native identifiers into
- * this shape before passing data into Mosaic schemas.
+ * `assetClass` describes the instrument's economic exposure.
+ * `venue` identifies where its market data or trading activity originates.
+ * Pair-based instruments may also provide `baseAsset` and `quoteAsset`.
  */
 export const marketIdentitySchema = z.object({
-  symbol: z.string().min(1).max(32),
+  symbol: instrumentIdentifierSchema,
   assetClass: assetClassSchema,
+  venue: instrumentIdentifierSchema.optional(),
+  baseAsset: instrumentIdentifierSchema.optional(),
+  quoteAsset: instrumentIdentifierSchema.optional(),
 });
 
+export type MarketIdentity = z.infer<typeof marketIdentitySchema>;

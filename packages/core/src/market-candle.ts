@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { marketIdentitySchema } from "./market-identity";
+import { isoTimestampSchema } from "./timestamp";
 
 export const candleIntervalSchema = z.enum(["1m", "5m", "15m", "1h", "1d"]);
 
 export const marketCandleSchema = z
   .object({
-    time: z.number().int().nonnegative(),
+    timestamp: isoTimestampSchema,
     open: z.number().positive(),
     high: z.number().positive(),
     low: z.number().positive(),
@@ -36,7 +37,7 @@ export const marketCandleSchema = z
 export const marketCandlesSnapshotSchema = marketIdentitySchema.extend({
   interval: candleIntervalSchema,
   candles: z.array(marketCandleSchema).max(10_000),
-  observedAt: z.number().int().nonnegative(),
+  timestamp: isoTimestampSchema,
 });
 
 export type CandleInterval = z.infer<typeof candleIntervalSchema>;

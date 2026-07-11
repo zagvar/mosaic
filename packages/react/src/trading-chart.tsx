@@ -181,7 +181,7 @@ export function TradingChart({
 
 function toCandlestickData(candle: MarketCandle): CandlestickData {
   return {
-    time: candle.time as UTCTimestamp,
+    time: toUnixTimestamp(candle.timestamp),
     open: candle.open,
     high: candle.high,
     low: candle.low,
@@ -191,8 +191,12 @@ function toCandlestickData(candle: MarketCandle): CandlestickData {
 
 function toVolumeData(candle: MarketCandle): HistogramData {
   return {
-    time: candle.time as UTCTimestamp,
+    time: toUnixTimestamp(candle.timestamp),
     value: candle.volume ?? 0,
     color: candle.close >= candle.open ? "#05966955" : "#dc262655",
   };
+}
+
+function toUnixTimestamp(timestamp: string): UTCTimestamp {
+  return Math.floor(Date.parse(timestamp) / 1000) as UTCTimestamp;
 }

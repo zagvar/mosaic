@@ -79,19 +79,22 @@ export function validateOrderDraft(
     addIssue(issues, "unsupported_tif", ["tif"]);
   }
 
-  const hasQty = order.qty !== undefined;
+  const hasQuantity = order.quantity !== undefined;
   const hasNotional = order.notional !== undefined;
 
-  if (!hasQty && !hasNotional) {
-    addIssue(issues, "qty_or_notional_required", ["qty"]);
+  if (!hasQuantity && !hasNotional) {
+    addIssue(issues, "quantity_or_notional_required", ["quantity"]);
   }
 
-  if (hasQty && hasNotional) {
-    addIssue(issues, "qty_and_notional_conflict", ["qty", "notional"]);
+  if (hasQuantity && hasNotional) {
+    addIssue(issues, "quantity_and_notional_conflict", [
+      "quantity",
+      "notional",
+    ]);
   }
 
-  if (order.type === "limit" && order.limitPx === undefined) {
-    addIssue(issues, "limit_px_required", ["limitPx"]);
+  if (order.type === "limit" && order.limitPrice === undefined) {
+    addIssue(issues, "limit_price_required", ["limitPrice"]);
   }
 
   if (order.notional !== undefined) {
@@ -128,31 +131,37 @@ export function validateOrderDraft(
     }
   }
 
-  if (order.qty !== undefined) {
-    if (rules.minQty !== undefined && isLessThan(order.qty, rules.minQty)) {
-      addIssue(issues, "qty_below_min", ["qty"]);
+  if (order.quantity !== undefined) {
+    if (
+      rules.minQuantity !== undefined &&
+      isLessThan(order.quantity, rules.minQuantity)
+    ) {
+      addIssue(issues, "quantity_below_min", ["quantity"]);
     }
 
-    if (rules.maxQty !== undefined && isGreaterThan(order.qty, rules.maxQty)) {
-      addIssue(issues, "qty_above_max", ["qty"]);
+    if (
+      rules.maxQuantity !== undefined &&
+      isGreaterThan(order.quantity, rules.maxQuantity)
+    ) {
+      addIssue(issues, "quantity_above_max", ["quantity"]);
     }
 
-    if (hasMoreDecimals(order.qty, rules.qtyPrecision)) {
-      addIssue(issues, "qty_precision_exceeded", ["qty"]);
+    if (hasMoreDecimals(order.quantity, rules.quantityPrecision)) {
+      addIssue(issues, "quantity_precision_exceeded", ["quantity"]);
     }
 
     if (
       rules.lotSize !== undefined &&
-      !isMultipleOfIncrement(order.qty, rules.lotSize)
+      !isMultipleOfIncrement(order.quantity, rules.lotSize)
     ) {
-      addIssue(issues, "qty_lot_size_mismatch", ["qty"]);
+      addIssue(issues, "quantity_lot_size_mismatch", ["quantity"]);
     }
 
     if (
       order.side === "sell" &&
-      isGreaterThan(order.qty, validatedContext.assetQtyAvailable)
+      isGreaterThan(order.quantity, validatedContext.assetQuantityAvailable)
     ) {
-      addIssue(issues, "insufficient_asset_qty", ["qty", "account"]);
+      addIssue(issues, "insufficient_asset_quantity", ["quantity", "account"]);
     }
   }
 
@@ -191,46 +200,50 @@ export function validateOrderDraft(
   }
 
   if (
-    order.limitPx !== undefined &&
-    hasMoreDecimals(order.limitPx, rules.pricePrecision)
+    order.limitPrice !== undefined &&
+    hasMoreDecimals(order.limitPrice, rules.pricePrecision)
   ) {
-    addIssue(issues, "limit_px_precision_exceeded", ["limitPx"]);
+    addIssue(issues, "limit_price_precision_exceeded", ["limitPrice"]);
   }
 
   if (
-    order.limitPx !== undefined &&
+    order.limitPrice !== undefined &&
     rules.tickSize !== undefined &&
-    !isMultipleOfIncrement(order.limitPx, rules.tickSize)
+    !isMultipleOfIncrement(order.limitPrice, rules.tickSize)
   ) {
-    addIssue(issues, "limit_px_tick_size_mismatch", ["limitPx"]);
+    addIssue(issues, "limit_price_tick_size_mismatch", ["limitPrice"]);
   }
 
   if (
-    order.limitPx !== undefined &&
+    order.limitPrice !== undefined &&
     rules.minPrice !== undefined &&
-    isLessThan(order.limitPx, rules.minPrice)
+    isLessThan(order.limitPrice, rules.minPrice)
   ) {
-    addIssue(issues, "limit_px_below_min", ["limitPx"]);
+    addIssue(issues, "limit_price_below_min", ["limitPrice"]);
   }
 
   if (
-    order.limitPx !== undefined &&
+    order.limitPrice !== undefined &&
     rules.maxPrice !== undefined &&
-    isGreaterThan(order.limitPx, rules.maxPrice)
+    isGreaterThan(order.limitPrice, rules.maxPrice)
   ) {
-    addIssue(issues, "limit_px_above_max", ["limitPx"]);
+    addIssue(issues, "limit_price_above_max", ["limitPrice"]);
   }
 
   if (
     order.side === "buy" &&
     order.type === "limit" &&
-    order.qty !== undefined &&
-    order.limitPx !== undefined
+    order.quantity !== undefined &&
+    order.limitPrice !== undefined
   ) {
-    const estimatedCost = multiplyDecimal(order.qty, order.limitPx);
+    const estimatedCost = multiplyDecimal(order.quantity, order.limitPrice);
 
     if (isGreaterThan(estimatedCost, validatedContext.cashAvailable)) {
-      addIssue(issues, "insufficient_cash", ["qty", "limitPx", "account"]);
+      addIssue(issues, "insufficient_cash", [
+        "quantity",
+        "limitPrice",
+        "account",
+      ]);
     }
   }
 

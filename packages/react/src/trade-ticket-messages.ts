@@ -33,8 +33,8 @@ export interface TradeTicketMessages {
   submit: string;
   submitting: string;
   submissionError: string;
-  qty: string;
-  limitPx: string;
+  quantity: string;
+  limitPrice: string;
   notional: string;
   available: string;
   minimum: TradeTicketMinimumMessage;
@@ -53,8 +53,8 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
   submit: "Review order",
   submitting: "Submitting...",
   submissionError: "We couldn't submit your order. Please try again.",
-  qty: "Quantity",
-  limitPx: "Limit price",
+  quantity: "Quantity",
+  limitPrice: "Limit price",
   notional: "Total",
   available: "Available",
   minimum: (formattedValue) => `Min ${formattedValue}`,
@@ -63,9 +63,9 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
     invalid_order: "Order details are invalid.",
     invalid_context: "Trading context is invalid.",
     asset_rules_mismatch: "Asset rules do not match this order.",
-    qty_or_notional_required: "Enter a quantity or total.",
-    qty_and_notional_conflict: "Use either quantity or total, not both.",
-    limit_px_required: "Enter a limit price.",
+    quantity_or_notional_required: "Enter a quantity or total.",
+    quantity_and_notional_conflict: "Use either quantity or total, not both.",
+    limit_price_required: "Enter a limit price.",
     unsupported_order_type: "This order type is not supported.",
     unsupported_tif: "This time in force is not supported.",
     notional_not_supported:
@@ -78,19 +78,19 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
       "Extended-hours trading is not supported for this order type.",
     extended_hours_unsupported_tif:
       "Extended-hours trading is not supported for this time in force.",
-    qty_below_min: ({ assetRules, symbol, locale }) =>
-      assetRules.minQty === undefined
+    quantity_below_min: ({ assetRules, symbol, locale }) =>
+      assetRules.minQuantity === undefined
         ? "Quantity is below the minimum."
-        : `Minimum quantity is ${formatRuleNumber(assetRules.minQty, {
+        : `Minimum quantity is ${formatRuleNumber(assetRules.minQuantity, {
             locale,
-            maximumFractionDigits: assetRules.qtyPrecision,
+            maximumFractionDigits: assetRules.quantityPrecision,
           })} ${symbol}.`,
-    qty_above_max: ({ assetRules, symbol, locale }) =>
-      assetRules.maxQty === undefined
+    quantity_above_max: ({ assetRules, symbol, locale }) =>
+      assetRules.maxQuantity === undefined
         ? "Quantity is above the maximum."
-        : `Maximum quantity is ${formatRuleNumber(assetRules.maxQty, {
+        : `Maximum quantity is ${formatRuleNumber(assetRules.maxQuantity, {
             locale,
-            maximumFractionDigits: assetRules.qtyPrecision,
+            maximumFractionDigits: assetRules.quantityPrecision,
           })} ${symbol}.`,
     notional_below_min: ({ assetRules, quoteCurrency, locale }) =>
       assetRules.minNotional === undefined
@@ -106,34 +106,34 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
             locale,
             maximumFractionDigits: assetRules.notionalPrecision,
           })} ${quoteCurrency}.`,
-    limit_px_below_min: ({ assetRules, quoteCurrency, locale }) =>
+    limit_price_below_min: ({ assetRules, quoteCurrency, locale }) =>
       assetRules.minPrice === undefined
         ? "Limit price is below the minimum."
         : `Minimum limit price is ${formatRuleNumber(assetRules.minPrice, {
             locale,
             maximumFractionDigits: assetRules.pricePrecision,
           })} ${quoteCurrency}.`,
-    limit_px_above_max: ({ assetRules, quoteCurrency, locale }) =>
+    limit_price_above_max: ({ assetRules, quoteCurrency, locale }) =>
       assetRules.maxPrice === undefined
         ? "Limit price is above the maximum."
         : `Maximum limit price is ${formatRuleNumber(assetRules.maxPrice, {
             locale,
             maximumFractionDigits: assetRules.pricePrecision,
           })} ${quoteCurrency}.`,
-    qty_precision_exceeded: "Quantity has too many decimal places.",
-    limit_px_precision_exceeded: "Limit price has too many decimal places.",
+    quantity_precision_exceeded: "Quantity has too many decimal places.",
+    limit_price_precision_exceeded: "Limit price has too many decimal places.",
     notional_precision_exceeded: "Total has too many decimal places.",
-    qty_lot_size_mismatch: ({ assetRules, symbol, locale }) =>
+    quantity_lot_size_mismatch: ({ assetRules, symbol, locale }) =>
       assetRules.lotSize === undefined
         ? "Quantity must align with the lot size."
         : `Quantity must align with lot size ${formatRuleNumber(
             assetRules.lotSize,
             {
               locale,
-              maximumFractionDigits: assetRules.qtyPrecision,
+              maximumFractionDigits: assetRules.quantityPrecision,
             },
           )} ${symbol}.`,
-    limit_px_tick_size_mismatch: ({ assetRules, quoteCurrency, locale }) =>
+    limit_price_tick_size_mismatch: ({ assetRules, quoteCurrency, locale }) =>
       assetRules.tickSize === undefined
         ? "Limit price must align with the tick size."
         : `Limit price must align with tick size ${formatRuleNumber(
@@ -158,7 +158,8 @@ export const defaultTradeTicketMessages: TradeTicketMessages = {
             },
           )} ${quoteCurrency}.`,
     insufficient_cash: "Buying power is not enough for this order.",
-    insufficient_asset_qty: "Available quantity is not enough for this order.",
+    insufficient_asset_quantity:
+      "Available quantity is not enough for this order.",
   },
 };
 

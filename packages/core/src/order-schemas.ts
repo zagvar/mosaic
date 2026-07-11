@@ -1,6 +1,23 @@
 import { z } from "zod";
 
-export const assetClassSchema = z.enum(["equity", "crypto"]);
+/**
+ * Broad economic classification of a market instrument.
+ *
+ * This describes the underlying exposure, not how the instrument is issued,
+ * traded, custodied, or settled. For example, a tokenized equity still has an
+ * asset class of "equity".
+ */
+export const assetClassSchema = z.enum([
+  "equity",
+  "crypto",
+  "fx",
+  "commodity",
+  "index",
+  "fund",
+  "option",
+  "future",
+  "other",
+]);
 
 export const orderSideSchema = z.enum(["buy", "sell"]);
 
@@ -36,8 +53,8 @@ export const assetRulesSchema = z.object({
    */
   notionalOrderTypes: z.array(orderTypeSchema).default(["market"]),
 
-  minQty: positiveNumberSchema.optional(),
-  maxQty: positiveNumberSchema.optional(),
+  minQuantity: positiveNumberSchema.optional(),
+  maxQuantity: positiveNumberSchema.optional(),
 
   minNotional: positiveNumberSchema.optional(),
   maxNotional: positiveNumberSchema.optional(),
@@ -45,7 +62,7 @@ export const assetRulesSchema = z.object({
   minPrice: positiveNumberSchema.optional(),
   maxPrice: positiveNumberSchema.optional(),
 
-  qtyPrecision: z.number().int().min(0).max(18).default(6),
+  quantityPrecision: z.number().int().min(0).max(18).default(6),
   pricePrecision: z.number().int().min(0).max(18).default(2),
   notionalPrecision: z.number().int().min(0).max(18).default(2),
 
@@ -78,9 +95,9 @@ export const assetRulesSchema = z.object({
 /**
  * Draft order produced by Mosaic components.
  *
- * qty = asset quantity/shares/units.
+ * quantity = asset quantity/shares/units.
  * notional = quote-currency value to trade, e.g. USD amount.
- * limitPx = explicit limit price. Market orders do not guarantee this price.
+ * limitPrice = explicit limit price. Market orders do not guarantee this price.
  * tif = time in force.
  */
 export const orderDraftSchema = z.object({
@@ -91,9 +108,9 @@ export const orderDraftSchema = z.object({
   type: orderTypeSchema,
   tif: tifSchema.optional(),
 
-  qty: positiveNumberSchema.optional(),
+  quantity: positiveNumberSchema.optional(),
   notional: positiveNumberSchema.optional(),
-  limitPx: positiveNumberSchema.optional(),
+  limitPrice: positiveNumberSchema.optional(),
 
   extendedHours: z.boolean().optional(),
 });
@@ -102,9 +119,9 @@ export const orderValidationCodeSchema = z.enum([
   "invalid_order",
   "invalid_context",
   "asset_rules_mismatch",
-  "qty_or_notional_required",
-  "qty_and_notional_conflict",
-  "limit_px_required",
+  "quantity_or_notional_required",
+  "quantity_and_notional_conflict",
+  "limit_price_required",
   "unsupported_order_type",
   "unsupported_tif",
   "notional_not_supported",
@@ -112,20 +129,20 @@ export const orderValidationCodeSchema = z.enum([
   "extended_hours_not_supported",
   "extended_hours_unsupported_order_type",
   "extended_hours_unsupported_tif",
-  "qty_below_min",
-  "qty_above_max",
+  "quantity_below_min",
+  "quantity_above_max",
   "notional_below_min",
   "notional_above_max",
-  "limit_px_below_min",
-  "limit_px_above_max",
-  "qty_precision_exceeded",
-  "limit_px_precision_exceeded",
+  "limit_price_below_min",
+  "limit_price_above_max",
+  "quantity_precision_exceeded",
+  "limit_price_precision_exceeded",
   "notional_precision_exceeded",
-  "qty_lot_size_mismatch",
-  "limit_px_tick_size_mismatch",
+  "quantity_lot_size_mismatch",
+  "limit_price_tick_size_mismatch",
   "notional_quote_increment_mismatch",
   "insufficient_cash",
-  "insufficient_asset_qty",
+  "insufficient_asset_quantity",
 ]);
 
 export const orderValidationContextSchema = z.object({
@@ -137,7 +154,7 @@ export const orderValidationContextSchema = z.object({
   /**
    * Asset quantity available to sell.
    */
-  assetQtyAvailable: nonNegativeNumberSchema,
+  assetQuantityAvailable: nonNegativeNumberSchema,
 
   /**
    * Broker or asset-specific precision/min/max rules.

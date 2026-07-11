@@ -10,7 +10,7 @@ const assetRules: AssetRules = {
   allowedTifs: ["day", "gtc"],
   supportsNotional: true,
   notionalOrderTypes: ["market"],
-  qtyPrecision: 6,
+  quantityPrecision: 6,
   pricePrecision: 2,
   notionalPrecision: 2,
 };
@@ -22,7 +22,7 @@ function renderTradeDraft() {
       assetClass: "equity",
       assetRules,
       cashAvailable: 1000,
-      assetQtyAvailable: 10,
+      assetQuantityAvailable: 10,
     }),
   );
 }
@@ -32,16 +32,16 @@ describe("useTradeDraft transitions", () => {
     const { result } = renderTradeDraft();
 
     act(() => {
-      result.current.setQty(2);
-      result.current.setLimitPx(100);
+      result.current.setQuantity(2);
+      result.current.setLimitPrice(100);
     });
 
     act(() => {
       result.current.setType("market");
     });
 
-    expect(result.current.qty).toBeUndefined();
-    expect(result.current.limitPx).toBeUndefined();
+    expect(result.current.quantity).toBeUndefined();
+    expect(result.current.limitPrice).toBeUndefined();
   });
 
   it("preserves quantity between sell order types", () => {
@@ -49,15 +49,15 @@ describe("useTradeDraft transitions", () => {
 
     act(() => {
       result.current.setSide("sell");
-      result.current.setQty(2);
+      result.current.setQuantity(2);
     });
 
     act(() => {
       result.current.setType("market");
     });
 
-    expect(result.current.qty).toBe(2);
-    expect(result.current.limitPx).toBeUndefined();
+    expect(result.current.quantity).toBe(2);
+    expect(result.current.limitPrice).toBeUndefined();
   });
 
   it("clears notional when changing a market buy to sell", () => {
@@ -73,7 +73,7 @@ describe("useTradeDraft transitions", () => {
     });
 
     expect(result.current.notional).toBeUndefined();
-    expect(result.current.qty).toBeUndefined();
+    expect(result.current.quantity).toBeUndefined();
   });
 
   it("clears instrument-specific values when the asset changes", () => {
@@ -84,7 +84,7 @@ describe("useTradeDraft transitions", () => {
           assetClass: rules.assetClass,
           assetRules: rules,
           cashAvailable: 1000,
-          assetQtyAvailable: 10,
+          assetQuantityAvailable: 10,
         }),
       {
         initialProps: {
@@ -95,8 +95,8 @@ describe("useTradeDraft transitions", () => {
     );
 
     act(() => {
-      result.current.setQty(2);
-      result.current.setLimitPx(100);
+      result.current.setQuantity(2);
+      result.current.setLimitPrice(100);
       result.current.setNotional(200);
     });
 
@@ -108,8 +108,8 @@ describe("useTradeDraft transitions", () => {
       },
     });
 
-    expect(result.current.qty).toBeUndefined();
-    expect(result.current.limitPx).toBeUndefined();
+    expect(result.current.quantity).toBeUndefined();
+    expect(result.current.limitPrice).toBeUndefined();
     expect(result.current.notional).toBeUndefined();
   });
 
@@ -122,15 +122,15 @@ describe("useTradeDraft transitions", () => {
     });
 
     act(() => {
-      result.current.setQty(2);
+      result.current.setQuantity(2);
     });
 
     act(() => {
       result.current.setType("limit");
     });
 
-    expect(result.current.qty).toBe(2);
-    expect(result.current.limitPx).toBeUndefined();
+    expect(result.current.quantity).toBe(2);
+    expect(result.current.limitPrice).toBeUndefined();
     expect(result.current.notional).toBeUndefined();
   });
 
@@ -138,8 +138,8 @@ describe("useTradeDraft transitions", () => {
     const { result } = renderTradeDraft();
 
     act(() => {
-      result.current.setQty(2);
-      result.current.setLimitPx(100);
+      result.current.setQuantity(2);
+      result.current.setLimitPrice(100);
     });
 
     act(() => {
@@ -147,8 +147,8 @@ describe("useTradeDraft transitions", () => {
     });
 
     expect(result.current.side).toBe("sell");
-    expect(result.current.qty).toBe(2);
-    expect(result.current.limitPx).toBe(100);
+    expect(result.current.quantity).toBe(2);
+    expect(result.current.limitPrice).toBe(100);
     expect(result.current.notional).toBeUndefined();
   });
 
@@ -160,7 +160,7 @@ describe("useTradeDraft transitions", () => {
           assetClass: "equity",
           assetRules: rules,
           cashAvailable: 1000,
-          assetQtyAvailable: 10,
+          assetQuantityAvailable: 10,
         }),
       {
         initialProps: {
@@ -192,23 +192,23 @@ describe("useTradeDraft transitions", () => {
         assetClass: "equity",
         assetRules,
         cashAvailable: 1000,
-        assetQtyAvailable: 10,
-        defaultLimitPx: 195.5,
+        assetQuantityAvailable: 10,
+        defaultLimitPrice: 195.5,
       }),
     );
 
     act(() => {
-      result.current.setLimitPx(190);
+      result.current.setLimitPrice(190);
       result.current.setType("market");
     });
 
-    expect(result.current.limitPx).toBeUndefined();
+    expect(result.current.limitPrice).toBeUndefined();
 
     act(() => {
       result.current.setType("limit");
     });
 
-    expect(result.current.limitPx).toBe(195.5);
+    expect(result.current.limitPrice).toBe(195.5);
   });
 });
 
@@ -226,12 +226,12 @@ describe("useTradeDraft initialization", () => {
         assetClass: "equity",
         assetRules,
         cashAvailable: 1000,
-        assetQtyAvailable: 10,
-        defaultLimitPx: 195.5,
+        assetQuantityAvailable: 10,
+        defaultLimitPrice: 195.5,
       }),
     );
 
-    expect(result.current.limitPx).toBe(195.5);
+    expect(result.current.limitPrice).toBe(195.5);
   });
 
   it("initializes uncontrolled state from defaultValue", () => {
@@ -241,11 +241,11 @@ describe("useTradeDraft initialization", () => {
         assetClass: "equity",
         assetRules,
         cashAvailable: 1000,
-        assetQtyAvailable: 10,
+        assetQuantityAvailable: 10,
         defaultValue: {
           side: "sell",
           type: "market",
-          qty: 3,
+          quantity: 3,
         },
       }),
     );
@@ -254,7 +254,7 @@ describe("useTradeDraft initialization", () => {
       side: "sell",
       type: "market",
       tif: "day",
-      qty: 3,
+      quantity: 3,
     });
   });
 });
@@ -265,7 +265,7 @@ describe("useTradeDraft controlled state", () => {
       side: "sell",
       type: "market",
       tif: "gtc",
-      qty: 2,
+      quantity: 2,
     };
 
     const { result } = renderHook(() =>
@@ -274,7 +274,7 @@ describe("useTradeDraft controlled state", () => {
         assetClass: "equity",
         assetRules,
         cashAvailable: 1000,
-        assetQtyAvailable: 10,
+        assetQuantityAvailable: 10,
         value: controlledValue,
       }),
     );
@@ -296,13 +296,13 @@ describe("useTradeDraft controlled state", () => {
         assetClass: "equity",
         assetRules,
         cashAvailable: 1000,
-        assetQtyAvailable: 10,
+        assetQuantityAvailable: 10,
         value: {
           side: "buy",
           type: "limit",
           tif: "day",
-          qty: 2,
-          limitPx: 100,
+          quantity: 2,
+          limitPrice: 100,
         },
         onChange: handleChange,
       }),
@@ -328,7 +328,7 @@ describe("useTradeDraft controlled state", () => {
           assetClass: "equity",
           assetRules,
           cashAvailable: 1000,
-          assetQtyAvailable: 10,
+          assetQuantityAvailable: 10,
           value,
         }),
       {
@@ -337,7 +337,7 @@ describe("useTradeDraft controlled state", () => {
             side: "buy",
             type: "limit",
             tif: "day",
-            limitPx: 100,
+            limitPrice: 100,
           } satisfies TradeDraftValue,
         },
       },
@@ -348,11 +348,11 @@ describe("useTradeDraft controlled state", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        limitPx: 101,
+        limitPrice: 101,
       },
     });
 
-    expect(result.current.limitPx).toBe(101);
+    expect(result.current.limitPrice).toBe(101);
   });
 });
 
@@ -364,17 +364,17 @@ describe("useTradeDraft reset", () => {
         assetClass: "equity",
         assetRules,
         cashAvailable: 1000,
-        assetQtyAvailable: 10,
+        assetQuantityAvailable: 10,
         initialSide: "sell",
         initialType: "limit",
         initialTif: "gtc",
-        defaultLimitPx: 100,
+        defaultLimitPrice: 100,
       }),
     );
 
     act(() => {
-      result.current.setQty(2);
-      result.current.setLimitPx(125);
+      result.current.setQuantity(2);
+      result.current.setLimitPrice(125);
     });
 
     act(() => {
@@ -385,7 +385,7 @@ describe("useTradeDraft reset", () => {
       side: "sell",
       type: "limit",
       tif: "gtc",
-      limitPx: 100,
+      limitPrice: 100,
     });
   });
 });

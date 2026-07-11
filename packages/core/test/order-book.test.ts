@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
-import {
-  orderBookSnapshotSchema,
-  orderBookUpdateSchema,
-} from "../src/order";
+import { orderBookSnapshotSchema, orderBookUpdateSchema } from "../src/order";
+
+const snapshotTimestamp = "2026-01-01T14:30:00.000Z";
+const updateTimestamp = "2026-01-01T14:30:01.000Z";
 
 const validSnapshot = {
   symbol: "BTC/USD",
   assetClass: "crypto" as const,
   bids: [
-    { px: 100, qty: 2 },
-    { px: 99, qty: 3 },
+    { price: 100, quantity: 2 },
+    { price: 99, quantity: 3 },
   ],
   asks: [
-    { px: 101, qty: 1 },
-    { px: 102, qty: 4 },
+    { price: 101, quantity: 1 },
+    { price: 102, quantity: 4 },
   ],
-  observedAt: 1000,
+  timestamp: snapshotTimestamp,
   sequence: 10,
 };
 
@@ -28,8 +28,8 @@ describe("orderBookSnapshotSchema", () => {
     expect(
       orderBookSnapshotSchema.safeParse({
         ...validSnapshot,
-        bids: [{ px: 100, qty: 2 }],
-        asks: [{ px: 100, qty: 1 }],
+        bids: [{ price: 100, quantity: 2 }],
+        asks: [{ price: 100, quantity: 1 }],
       }).success,
     ).toBe(true);
   });
@@ -40,8 +40,8 @@ describe("orderBookSnapshotSchema", () => {
       snapshot: {
         ...validSnapshot,
         bids: [
-          { px: 99, qty: 3 },
-          { px: 100, qty: 2 },
+          { price: 99, quantity: 3 },
+          { price: 100, quantity: 2 },
         ],
       },
     },
@@ -50,8 +50,8 @@ describe("orderBookSnapshotSchema", () => {
       snapshot: {
         ...validSnapshot,
         asks: [
-          { px: 102, qty: 4 },
-          { px: 101, qty: 1 },
+          { price: 102, quantity: 4 },
+          { price: 101, quantity: 1 },
         ],
       },
     },
@@ -60,8 +60,8 @@ describe("orderBookSnapshotSchema", () => {
       snapshot: {
         ...validSnapshot,
         bids: [
-          { px: 100, qty: 2 },
-          { px: 100, qty: 3 },
+          { price: 100, quantity: 2 },
+          { price: 100, quantity: 3 },
         ],
       },
     },
@@ -69,15 +69,22 @@ describe("orderBookSnapshotSchema", () => {
       name: "crossed best prices",
       snapshot: {
         ...validSnapshot,
-        bids: [{ px: 102, qty: 2 }],
-        asks: [{ px: 101, qty: 1 }],
+        bids: [{ price: 102, quantity: 2 }],
+        asks: [{ price: 101, quantity: 1 }],
       },
     },
     {
       name: "zero snapshot quantity",
       snapshot: {
         ...validSnapshot,
-        bids: [{ px: 100, qty: 0 }],
+        bids: [{ price: 100, quantity: 0 }],
+      },
+    },
+    {
+      name: "invalid timestamp",
+      snapshot: {
+        ...validSnapshot,
+        timestamp: "not-a-date",
       },
     },
   ])("rejects $name", ({ snapshot }) => {
@@ -91,15 +98,15 @@ describe("orderBookUpdateSchema", () => {
       orderBookUpdateSchema.parse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        bids: [{ px: 100, qty: 0 }],
-        observedAt: 2000,
+        bids: [{ price: 100, quantity: 0 }],
+        timestamp: updateTimestamp,
       }),
     ).toEqual({
       symbol: "BTC/USD",
       assetClass: "crypto",
-      bids: [{ px: 100, qty: 0 }],
+      bids: [{ price: 100, quantity: 0 }],
       asks: [],
-      observedAt: 2000,
+      timestamp: updateTimestamp,
       reset: false,
     });
   });
@@ -109,8 +116,8 @@ describe("orderBookUpdateSchema", () => {
       orderBookUpdateSchema.safeParse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        bids: [{ px: 100, qty: -1 }],
-        observedAt: 2000,
+        bids: [{ price: 100, quantity: -1 }],
+        timestamp: updateTimestamp,
       }).success,
     ).toBe(false);
   });

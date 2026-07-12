@@ -34,10 +34,7 @@ export function applyOrderBookUpdate(
   update: OrderBookUpdate,
   options: { depth?: number } = {},
 ): OrderBookUpdateResult {
-  if (
-    snapshot.symbol !== update.symbol ||
-    snapshot.assetClass !== update.assetClass
-  ) {
+  if (!hasMatchingIdentity(snapshot, update)) {
     return { applied: false, reason: "instrument_mismatch" };
   }
 
@@ -72,21 +69,26 @@ export function applyOrderBookUpdate(
   return {
     applied: true,
     snapshot: {
-      symbol: snapshot.symbol,
-      assetClass: snapshot.assetClass,
+      ...snapshot,
       bids,
       asks,
       timestamp: update.timestamp,
-      ...(update.sequence === undefined
-        ? snapshot.sequence === undefined
-          ? {}
-          : { sequence: snapshot.sequence }
-        : { sequence: update.sequence }),
-      ...(snapshot.displaySource === undefined
-        ? {}
-        : { displaySource: snapshot.displaySource }),
+      ...(update.sequence === undefined ? {} : { sequence: update.sequence }),
     },
   };
+}
+
+function hasMatchingIdentity(
+  snapshot: OrderBookSnapshot,
+  update: OrderBookUpdate,
+): boolean {
+  return (
+    snapshot.symbol === update.symbol &&
+    snapshot.assetClass === update.assetClass &&
+    snapshot.venue === update.venue &&
+    snapshot.baseAsset === update.baseAsset &&
+    snapshot.quoteAsset === update.quoteAsset
+  );
 }
 
 function reconcileSide(

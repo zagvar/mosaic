@@ -8,6 +8,9 @@ const updateTimestamp = "2026-01-01T14:30:01.000Z";
 const snapshot: OrderBookSnapshot = {
   symbol: "BTC/USD",
   assetClass: "crypto",
+  venue: "COINBASE",
+  baseAsset: "BTC",
+  quoteAsset: "USD",
   bids: [
     { price: 100, quantity: 2 },
     { price: 99, quantity: 3 },
@@ -43,6 +46,9 @@ describe("applyOrderBookUpdate", () => {
       snapshot: {
         symbol: "BTC/USD",
         assetClass: "crypto",
+        venue: "COINBASE",
+        baseAsset: "BTC",
+        quoteAsset: "USD",
         bids: [
           { price: 100.25, quantity: 1 },
           { price: 100, quantity: 5 },
@@ -132,6 +138,17 @@ describe("applyOrderBookUpdate", () => {
     });
   });
 
+  it.each([
+    ["venue", { venue: "KRAKEN" }],
+    ["base asset", { baseAsset: "WBTC" }],
+    ["quote asset", { quoteAsset: "USDT" }],
+  ] as const)("rejects a %s mismatch", (_label, overrides) => {
+    expect(applyOrderBookUpdate(snapshot, createUpdate(overrides))).toEqual({
+      applied: false,
+      reason: "instrument_mismatch",
+    });
+  });
+
   it("rejects a stale sequence", () => {
     expect(
       applyOrderBookUpdate(
@@ -177,6 +194,9 @@ function createUpdate(
   return {
     symbol: "BTC/USD",
     assetClass: "crypto",
+    venue: "COINBASE",
+    baseAsset: "BTC",
+    quoteAsset: "USD",
     bids: [],
     asks: [],
     timestamp: updateTimestamp,

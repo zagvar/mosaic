@@ -1,5 +1,11 @@
 # @zagvar/mosaic-react
 
+## 0.2.1
+
+### Patch Changes
+
+- Preserve chart data when theme, height, or volume configuration changes.
+
 ## 0.2.0
 
 ### Minor Changes

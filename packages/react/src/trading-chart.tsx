@@ -59,6 +59,14 @@ export function TradingChart({
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
 
+  const candlesRef = useRef(candles);
+  const heightRef = useRef(height);
+  const themeRef = useRef(theme);
+
+  candlesRef.current = candles;
+  heightRef.current = height;
+  themeRef.current = theme;
+
   const text = {
     ...defaultTradingChartMessages,
     ...messages,
@@ -69,16 +77,9 @@ export function TradingChart({
     if (container === null) return;
 
     const chart = createChart(container, {
-      height: container.clientHeight || height,
+      height: container.clientHeight || heightRef.current,
       width: container.clientWidth,
-      layout: {
-        background: { type: ColorType.Solid, color: "transparent" },
-        textColor: theme === "dark" ? "#8b95a7" : "#6b7280",
-      },
-      grid: {
-        vertLines: { color: theme === "dark" ? "#1b2432" : "#eef2f7" },
-        horzLines: { color: theme === "dark" ? "#1b2432" : "#eef2f7" },
-      },
+      ...getThemeOptions(themeRef.current),
       rightPriceScale: {
         borderVisible: false,
       },
@@ -120,6 +121,8 @@ export function TradingChart({
     candleSeriesRef.current = candleSeries;
     volumeSeriesRef.current = volumeSeries;
 
+    setChartData(chart, candleSeries, volumeSeries, candlesRef.current);
+
     const resizeObserver = new ResizeObserver(([entry]) => {
       if (entry === undefined) return;
 
@@ -139,20 +142,23 @@ export function TradingChart({
       candleSeriesRef.current = null;
       volumeSeriesRef.current = null;
     };
-  }, [height, showVolume, theme]);
+  }, [showVolume]);
 
   useEffect(() => {
+    chartRef.current?.applyOptions(getThemeOptions(theme));
+  }, [theme]);
+
+  useEffect(() => {
+    chartRef.current?.applyOptions({ height });
+  }, [height]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
     const candleSeries = candleSeriesRef.current;
-    if (candleSeries === null) return;
 
-    candleSeries.setData(candles.map(toCandlestickData));
+    if (chart === null || candleSeries === null) return;
 
-    const volumeSeries = volumeSeriesRef.current;
-    if (volumeSeries !== null) {
-      volumeSeries.setData(candles.map(toVolumeData));
-    }
-
-    chartRef.current?.timeScale().fitContent();
+    setChartData(chart, candleSeries, volumeSeriesRef.current, candles);
   }, [candles]);
 
   return (
@@ -177,6 +183,41 @@ export function TradingChart({
       <div ref={containerRef} {...classNameProps(classNames?.chart)} />
     </section>
   );
+}
+
+function getThemeOptions(theme: "light" | "dark") {
+  return {
+    layout: {
+      background: {
+        type: ColorType.Solid,
+        color: "transparent",
+      },
+      textColor: theme === "dark" ? "#8b95a7" : "#6b7280",
+    },
+    grid: {
+      vertLines: {
+        color: theme === "dark" ? "#1b2432" : "#eef2f7",
+      },
+      horzLines: {
+        color: theme === "dark" ? "#1b2432" : "#eef2f7",
+      },
+    },
+  };
+}
+
+function setChartData(
+  chart: IChartApi,
+  candleSeries: ISeriesApi<"Candlestick">,
+  volumeSeries: ISeriesApi<"Histogram"> | null,
+  candles: readonly MarketCandle[],
+) {
+  candleSeries.setData(candles.map(toCandlestickData));
+
+  if (volumeSeries !== null) {
+    volumeSeries.setData(candles.map(toVolumeData));
+  }
+
+  chart.timeScale().fitContent();
 }
 
 function toCandlestickData(candle: MarketCandle): CandlestickData {

@@ -44,7 +44,7 @@ Mosaic separates those responsibilities:
 - the host application owns transport, buffering, retry, and resubscription
 - the React `OrderBook` renders an already-maintained snapshot
 
-The docs app demonstrates a smaller version of this flow with an MSW HTTP
+The demo app demonstrates a smaller version of this flow with an MSW HTTP
 snapshot and WebSocket update stream.
 
 ### Demo Limitation

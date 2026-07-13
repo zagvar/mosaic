@@ -8,9 +8,9 @@ provides schemas, validation, order preparation, quote previews, fees, and
 order-book reconciliation. The React package provides accessible components and
 hooks that host applications can style with their own design system.
 
-> **Project status:** pre-release and source-first. The packages are not
-> published to npm yet. Clone the repository to explore the API and run the
-> interactive demo.
+> **Project status:** pre-release. Published packages are available on npm, and
+> the repository includes an interactive demo for exploring the components and
+> integration patterns.
 
 ## Features
 
@@ -141,7 +141,7 @@ pnpm --filter @zagvar/mosaic-demo build
 ## Repository Structure
 
 ```text
-apps/docs/       interactive demo app and MSW handlers
+apps/demo/       interactive demo app and MSW handlers
 packages/core/   framework-free domain contracts
 packages/react/  accessible React components
 docs/            public architecture documentation

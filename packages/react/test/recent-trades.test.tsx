@@ -8,8 +8,8 @@ const trades = [
     symbol: "BTC/USD",
     assetClass: "crypto" as const,
     tradeId: "t-1",
-    price: 67250.12,
-    quantity: 0.015,
+    price: "67250.12",
+    quantity: "0.015",
     side: "buy" as const,
     timestamp: new Date(Date.UTC(2026, 5, 26, 1, 30, 10)).toISOString(),
   },
@@ -17,8 +17,8 @@ const trades = [
     symbol: "BTC/USD",
     assetClass: "crypto" as const,
     tradeId: "t-2",
-    price: 67249.98,
-    quantity: 0.02,
+    price: "67249.98",
+    quantity: "0.02",
     side: "sell" as const,
     timestamp: new Date(Date.UTC(2026, 5, 26, 1, 30, 9)).toISOString(),
   },
@@ -58,7 +58,7 @@ describe("RecentTrades", () => {
       screen.getByRole("button", { name: "Use trade price 67,250.12 USD" }),
     );
 
-    expect(handleSelect).toHaveBeenCalledWith(67250.12, trades[0]);
+    expect(handleSelect).toHaveBeenCalledWith("67250.12", trades[0]);
   });
 
   it("supports custom messages", () => {

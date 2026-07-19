@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { positiveDecimalStringSchema } from "./decimal-string";
 import { marketIdentitySchema } from "./market-identity";
 import { isoTimestampSchema } from "./timestamp";
 
@@ -13,8 +14,8 @@ export const tradeSideSchema = z.enum(["buy", "sell", "unknown"]);
  */
 export const marketTradeSchema = marketIdentitySchema.extend({
   tradeId: z.string().min(1).max(128).optional(),
-  price: z.number().positive(),
-  quantity: z.number().positive(),
+  price: positiveDecimalStringSchema,
+  quantity: positiveDecimalStringSchema,
   side: tradeSideSchema.default("unknown"),
   timestamp: isoTimestampSchema,
   sequence: z.number().int().nonnegative().optional(),

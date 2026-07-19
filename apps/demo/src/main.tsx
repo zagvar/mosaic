@@ -1,6 +1,7 @@
-import { StrictMode, useEffect, useState } from "react";
+import { lazy, StrictMode, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type {
+  DecimalString,
   OrderExecutionError,
   OrderIntent,
   OrderSummary,
@@ -11,7 +12,6 @@ import {
   QuoteDisplay,
   RecentTrades,
   TradeTicket,
-  TradingChart,
   type TradeDraftValue,
 } from "@zagvar/mosaic-react";
 import {
@@ -32,6 +32,12 @@ import { createBitcoinCandles } from "./mocks/chart-data";
 import { useOrderBookFeed } from "./use-order-book-feed";
 import { useRecentTradesFeed } from "./use-recent-trades-feed";
 import "./styles.css";
+
+const TradingChart = lazy(() =>
+  import("@zagvar/mosaic-react").then(({ TradingChart }) => ({
+    default: TradingChart,
+  })),
+);
 
 type DemoInstrument = "equity" | "crypto";
 type MarketPanelTab = "orderBook" | "recentTrades";
@@ -107,7 +113,7 @@ function App() {
     setMarketDataPaused(false);
   }
 
-  function applyEquityLimitPrice(limitPrice: number) {
+  function applyEquityLimitPrice(limitPrice: DecimalString) {
     if (equityValue.type !== "limit") return;
 
     setEquityValue((current) => ({
@@ -116,7 +122,7 @@ function App() {
     }));
   }
 
-  function applyCryptoLimitPrice(limitPrice: number) {
+  function applyCryptoLimitPrice(limitPrice: DecimalString) {
     if (cryptoValue.type !== "limit") return;
 
     setCryptoValue((current) => ({
@@ -125,7 +131,7 @@ function App() {
     }));
   }
 
-  function applyCryptoTradePrice(limitPrice: number) {
+  function applyCryptoTradePrice(limitPrice: DecimalString) {
     if (cryptoValue.type !== "limit") return;
 
     setCryptoValue((current) => ({
@@ -225,13 +231,19 @@ function App() {
           <>
             <div className="demo-chart-panel">
               {cryptoSurfaceActive ? (
-                <TradingChart
-                  symbol="BTC/USDT"
-                  candles={bitcoinCandles}
-                  height={620}
-                  theme="dark"
-                  classNames={tradingChartClassNames}
-                />
+                <Suspense
+                  fallback={
+                    <p className="demo-market-status">Loading chart...</p>
+                  }
+                >
+                  <TradingChart
+                    symbol="BTC/USDT"
+                    candles={bitcoinCandles}
+                    height={620}
+                    theme="dark"
+                    classNames={tradingChartClassNames}
+                  />
+                </Suspense>
               ) : (
                 <DemoMarketPausedNotice
                   onResume={() => setMarketDataPaused(false)}
@@ -322,8 +334,8 @@ function App() {
               symbol={activeRules.symbol}
               assetClass={activeRules.assetClass}
               assetRules={activeRules}
-              cashAvailable={instrument === "equity" ? 1000 : 10_000}
-              assetQuantityAvailable={instrument === "equity" ? 10 : 0.5}
+              cashAvailable={instrument === "equity" ? "1000" : "10000"}
+              assetQuantityAvailable={instrument === "equity" ? "10" : "0.5"}
               quoteCurrency={activeQuoteCurrency}
               value={activeValue}
               onChange={

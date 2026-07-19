@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { multiplyDecimal } from "./decimal";
+import {
+  compareDecimals,
+  multiplyDecimals,
+  nonNegativeDecimalStringSchema,
+  type DecimalString,
+} from "./decimal-string";
 import { marketReferenceSchema, type MarketReference } from "./market-data";
 import { orderFeeEstimateSchema, type OrderFeeEstimate } from "./order-fees";
 import type { OrderIntent } from "./order-intent";
@@ -35,7 +40,7 @@ export interface OrderWarning {
  */
 export interface OrderSummary {
   order: OrderIntent;
-  estimatedNotional?: number;
+  estimatedNotional?: DecimalString;
   estimateBasis?: OrderEstimateBasis;
   marketReference?: MarketReference;
   quotePreview?: OrderQuotePreview;
@@ -74,7 +79,7 @@ export interface CreateOrderSummaryOptions {
   /**
    * Slippage threshold that emits `slippage_high`.
    */
-  highSlippageBps?: number;
+  highSlippageBps?: DecimalString;
 }
 
 /**
@@ -114,7 +119,7 @@ export function createOrderSummary(
   const highSlippageBps =
     options.highSlippageBps === undefined
       ? undefined
-      : z.number().nonnegative().parse(options.highSlippageBps);
+      : nonNegativeDecimalStringSchema.parse(options.highSlippageBps);
 
   if (
     marketReference !== undefined &&
@@ -177,7 +182,7 @@ export function createOrderSummary(
   if (
     quotePreview?.slippageBps !== undefined &&
     highSlippageBps !== undefined &&
-    quotePreview.slippageBps > highSlippageBps
+    compareDecimals(quotePreview.slippageBps, highSlippageBps) > 0
   ) {
     warnings.push({ code: "slippage_high" });
   }
@@ -220,10 +225,10 @@ function isMarketReferenceStale(
 
 function getEstimatedNotional(
   order: OrderIntent,
-  marketPrice: number | undefined,
+  marketPrice: DecimalString | undefined,
 ):
   | {
-      value: number;
+      value: DecimalString;
       basis: OrderEstimateBasis;
     }
   | undefined {
@@ -233,19 +238,14 @@ function getEstimatedNotional(
 
   if (order.type === "limit" && order.limitPrice !== undefined) {
     return {
-      value: multiplyDecimal(order.quantity, order.limitPrice),
+      value: multiplyDecimals(order.quantity, order.limitPrice),
       basis: "limit_price",
     };
   }
 
-  if (
-    order.type === "market" &&
-    marketPrice !== undefined &&
-    Number.isFinite(marketPrice) &&
-    marketPrice > 0
-  ) {
+  if (order.type === "market" && marketPrice !== undefined) {
     return {
-      value: multiplyDecimal(order.quantity, marketPrice),
+      value: multiplyDecimals(order.quantity, marketPrice),
       basis: "reference_price",
     };
   }

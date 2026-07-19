@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  compareDecimals,
+  nonNegativeDecimalStringSchema,
+  positiveDecimalStringSchema,
+} from "./decimal-string";
 import { marketIdentitySchema } from "./market-identity";
 import { isoTimestampSchema } from "./timestamp";
 
@@ -8,8 +13,8 @@ import { isoTimestampSchema } from "./timestamp";
  * `quantity` is the total resting quantity at `price`, not an individual order.
  */
 export const orderBookLevelSchema = z.object({
-  price: z.number().positive(),
-  quantity: z.number().positive(),
+  price: positiveDecimalStringSchema,
+  quantity: positiveDecimalStringSchema,
   orderCount: z.number().int().nonnegative().optional(),
 });
 
@@ -19,7 +24,7 @@ export const orderBookLevelSchema = z.object({
  * A zero quantity removes the level from the locally maintained book.
  */
 export const orderBookUpdateLevelSchema = orderBookLevelSchema.extend({
-  quantity: z.number().nonnegative(),
+  quantity: nonNegativeDecimalStringSchema,
 });
 
 /**
@@ -72,7 +77,11 @@ function validateSnapshot(
   const bestBid = book.bids[0]?.price;
   const bestAsk = book.asks[0]?.price;
 
-  if (bestBid !== undefined && bestAsk !== undefined && bestBid > bestAsk) {
+  if (
+    bestBid !== undefined &&
+    bestAsk !== undefined &&
+    compareDecimals(bestBid, bestAsk) > 0
+  ) {
     context.addIssue({
       code: "custom",
       message: "best bid must not exceed best ask",
@@ -90,11 +99,10 @@ function validateLevels(
   for (let index = 1; index < levels.length; index += 1) {
     const previous = levels[index - 1]!;
     const current = levels[index]!;
+    const comparison = compareDecimals(previous.price, current.price);
 
     const correctlySorted =
-      direction === "ascending"
-        ? previous.price < current.price
-        : previous.price > current.price;
+      direction === "ascending" ? comparison < 0 : comparison > 0;
 
     if (!correctlySorted) {
       context.addIssue({

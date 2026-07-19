@@ -1,4 +1,4 @@
-import type { OrderSide } from "@zagvar/mosaic-core";
+import type { DecimalString, OrderSide } from "@zagvar/mosaic-core";
 import { classNameProps } from "./class-name";
 import { formatCurrencyOrQuoteAmount, formatDecimal } from "./format";
 
@@ -14,8 +14,8 @@ export interface AvailableBalanceMessages {
 
 export interface AvailableBalanceProps {
   side: OrderSide;
-  quoteAvailable: number;
-  baseAvailable: number;
+  quoteAvailable: DecimalString;
+  baseAvailable: DecimalString;
   quoteCurrency: string;
   baseSymbol: string;
   locale: string;

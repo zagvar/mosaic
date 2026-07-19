@@ -9,14 +9,14 @@ const snapshot: OrderBookSnapshot = {
   symbol: "BTC/USD",
   assetClass: "crypto",
   asks: [
-    { price: 101, quantity: 1 },
-    { price: 102, quantity: 2 },
-    { price: 103, quantity: 4 },
+    { price: "101", quantity: "1" },
+    { price: "102", quantity: "2" },
+    { price: "103", quantity: "4" },
   ],
   bids: [
-    { price: 100, quantity: 1.5 },
-    { price: 99, quantity: 2.5 },
-    { price: 98, quantity: 5 },
+    { price: "100", quantity: "1.5" },
+    { price: "99", quantity: "2.5" },
+    { price: "98", quantity: "5" },
   ],
   timestamp: "2026-01-01T14:30:00.000Z",
 };
@@ -91,8 +91,8 @@ describe("OrderBook", () => {
     await user.click(screen.getByRole("button", { name: "Use ask price 101" }));
     await user.click(screen.getByRole("button", { name: "Use bid price 100" }));
 
-    expect(handleSelect).toHaveBeenNthCalledWith(1, 101, "ask");
-    expect(handleSelect).toHaveBeenNthCalledWith(2, 100, "bid");
+    expect(handleSelect).toHaveBeenNthCalledWith(1, "101", "ask");
+    expect(handleSelect).toHaveBeenNthCalledWith(2, "100", "bid");
   });
 
   it("disables selectable levels when requested", () => {

@@ -1,4 +1,8 @@
-import type { MarketPriceKind, MarketQuote } from "@zagvar/mosaic-core";
+import {
+  subtractDecimals,
+  type DecimalString,
+  type MarketQuote,
+} from "@zagvar/mosaic-core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
 import { formatDecimal } from "./internal/format";
@@ -30,7 +34,7 @@ export interface QuoteDisplayProps {
   messages?: Partial<QuoteDisplayMessages>;
   classNames?: QuoteDisplayClassNames;
   isDisabled?: boolean;
-  onSelectPrice?: (price: number, kind: "bid" | "ask" | "last") => void;
+  onSelectPrice?: (price: DecimalString, kind: "bid" | "ask" | "last") => void;
 }
 
 export const defaultQuoteDisplayMessages: QuoteDisplayMessages = {
@@ -65,7 +69,7 @@ export function QuoteDisplay({
       ? undefined
       : formatDecimal(quote.lastPrice, locale, priceFractionDigits);
   const spread = formatDecimal(
-    quote.askPrice - quote.bidPrice,
+    subtractDecimals(quote.askPrice, quote.bidPrice),
     locale,
     priceFractionDigits,
   );
@@ -184,7 +188,7 @@ function QuoteItem({
 }
 
 function formatQuantity(
-  value: number | undefined,
+  value: DecimalString | undefined,
   symbol: string,
   locale: string,
   maximumFractionDigits: number,

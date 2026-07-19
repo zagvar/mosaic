@@ -8,12 +8,12 @@ const validSnapshot = {
   symbol: "BTC/USD",
   assetClass: "crypto" as const,
   bids: [
-    { price: 100, quantity: 2 },
-    { price: 99, quantity: 3 },
+    { price: "100", quantity: "2" },
+    { price: "99", quantity: "3" },
   ],
   asks: [
-    { price: 101, quantity: 1 },
-    { price: 102, quantity: 4 },
+    { price: "101", quantity: "1" },
+    { price: "102", quantity: "4" },
   ],
   timestamp: snapshotTimestamp,
   sequence: 10,
@@ -28,8 +28,8 @@ describe("orderBookSnapshotSchema", () => {
     expect(
       orderBookSnapshotSchema.safeParse({
         ...validSnapshot,
-        bids: [{ price: 100, quantity: 2 }],
-        asks: [{ price: 100, quantity: 1 }],
+        bids: [{ price: "100", quantity: "2" }],
+        asks: [{ price: "100", quantity: "1" }],
       }).success,
     ).toBe(true);
   });
@@ -40,8 +40,8 @@ describe("orderBookSnapshotSchema", () => {
       snapshot: {
         ...validSnapshot,
         bids: [
-          { price: 99, quantity: 3 },
-          { price: 100, quantity: 2 },
+          { price: "99", quantity: "3" },
+          { price: "100", quantity: "2" },
         ],
       },
     },
@@ -50,8 +50,8 @@ describe("orderBookSnapshotSchema", () => {
       snapshot: {
         ...validSnapshot,
         asks: [
-          { price: 102, quantity: 4 },
-          { price: 101, quantity: 1 },
+          { price: "102", quantity: "4" },
+          { price: "101", quantity: "1" },
         ],
       },
     },
@@ -60,8 +60,8 @@ describe("orderBookSnapshotSchema", () => {
       snapshot: {
         ...validSnapshot,
         bids: [
-          { price: 100, quantity: 2 },
-          { price: 100, quantity: 3 },
+          { price: "100", quantity: "2" },
+          { price: "100", quantity: "3" },
         ],
       },
     },
@@ -69,15 +69,15 @@ describe("orderBookSnapshotSchema", () => {
       name: "crossed best prices",
       snapshot: {
         ...validSnapshot,
-        bids: [{ price: 102, quantity: 2 }],
-        asks: [{ price: 101, quantity: 1 }],
+        bids: [{ price: "102", quantity: "2" }],
+        asks: [{ price: "101", quantity: "1" }],
       },
     },
     {
       name: "zero snapshot quantity",
       snapshot: {
         ...validSnapshot,
-        bids: [{ price: 100, quantity: 0 }],
+        bids: [{ price: "100", quantity: "0" }],
       },
     },
     {
@@ -98,13 +98,13 @@ describe("orderBookUpdateSchema", () => {
       orderBookUpdateSchema.parse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        bids: [{ price: 100, quantity: 0 }],
+        bids: [{ price: "100", quantity: "0" }],
         timestamp: updateTimestamp,
       }),
     ).toEqual({
       symbol: "BTC/USD",
       assetClass: "crypto",
-      bids: [{ price: 100, quantity: 0 }],
+      bids: [{ price: "100", quantity: "0" }],
       asks: [],
       timestamp: updateTimestamp,
       reset: false,
@@ -116,7 +116,7 @@ describe("orderBookUpdateSchema", () => {
       orderBookUpdateSchema.safeParse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        bids: [{ price: 100, quantity: -1 }],
+        bids: [{ price: "100", quantity: "-1" }],
         timestamp: updateTimestamp,
       }).success,
     ).toBe(false);

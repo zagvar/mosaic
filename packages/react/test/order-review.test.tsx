@@ -11,13 +11,13 @@ const limitOrder: OrderIntent = {
   side: "buy",
   type: "limit",
   tif: "day",
-  quantity: 1.25,
-  limitPrice: 100.1,
+  quantity: "1.25",
+  limitPrice: "100.1",
 };
 
 const limitSummary: OrderSummary = {
   order: limitOrder,
-  estimatedNotional: 125.125,
+  estimatedNotional: "125.125",
   estimateBasis: "limit_price",
   warnings: [{ code: "estimated_notional" }],
 };
@@ -55,7 +55,7 @@ describe("OrderReview", () => {
         side: "sell",
         type: "market",
         tif: "day",
-        quantity: 2,
+        quantity: "2",
         extendedHours: true,
       },
       warnings: [
@@ -83,11 +83,11 @@ describe("OrderReview", () => {
         side: "buy",
         type: "market",
         tif: "day",
-        quantity: 2,
+        quantity: "2",
       },
       quotePreview: {
         previewId: "preview-123",
-        estimatedFillPrice: 195.82,
+        estimatedFillPrice: "195.82",
         createdAt: isoTimestamp(1000),
       },
       warnings: [{ code: "market_price_not_guaranteed" }],
@@ -102,7 +102,7 @@ describe("OrderReview", () => {
       ...limitSummary,
       quotePreview: {
         previewId: "preview-123",
-        estimatedFillPrice: 100,
+        estimatedFillPrice: "100",
         createdAt: isoTimestamp(1000),
       },
     });
@@ -119,11 +119,11 @@ describe("OrderReview", () => {
           side: "buy",
           type: "market",
           tif: "day",
-          quantity: 2,
+          quantity: "2",
         },
         quotePreview: {
           previewId: "preview-123",
-          slippageBps: 65,
+          slippageBps: "65",
           createdAt: isoTimestamp(1000),
         },
         warnings: [{ code: "slippage_high" }],
@@ -155,7 +155,7 @@ describe("OrderReview", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        price: 100.25,
+        price: "100.25",
         kind: "ask",
         timestamp: isoTimestamp(1000),
         mode: "real_time",
@@ -174,7 +174,7 @@ describe("OrderReview", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          price: 100.25,
+          price: "100.25",
           kind: "ask",
           timestamp: isoTimestamp(1000),
           mode: "real_time",
@@ -205,7 +205,7 @@ describe("OrderReview", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          price: 100.25,
+          price: "100.25",
           kind: "ask",
           timestamp,
           mode: "delayed",
@@ -242,12 +242,12 @@ describe("OrderReview", () => {
       fees: [
         {
           type: "commission",
-          amount: 0.25,
+          amount: "0.25",
           currency: "USD",
         },
         {
           type: "regulatory",
-          amount: 0.01,
+          amount: "0.01",
           currency: "USD",
         },
       ],
@@ -267,7 +267,7 @@ describe("OrderReview", () => {
       fees: [
         {
           type: "commission",
-          amount: 0.000001,
+          amount: "0.000001",
           currency: "BTC",
           fractionDigits: 8,
         },
@@ -329,7 +329,7 @@ describe("OrderReview", () => {
         fees: [
           {
             type: "commission",
-            amount: 0.25,
+            amount: "0.25",
             currency: "USD",
           },
         ],
@@ -354,7 +354,7 @@ describe("OrderReview", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          price: 100.25,
+          price: "100.25",
           kind: "ask",
           timestamp: isoTimestamp(1000),
           mode: "real_time",

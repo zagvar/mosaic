@@ -1,4 +1,8 @@
-import type { MarketTrade, TradeSide } from "@zagvar/mosaic-core";
+import type {
+  DecimalString,
+  MarketTrade,
+  TradeSide,
+} from "@zagvar/mosaic-core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
 import { formatDecimal } from "./internal/format";
@@ -42,7 +46,7 @@ export interface RecentTradesProps {
   messages?: Partial<RecentTradesMessages>;
   classNames?: RecentTradesClassNames;
 
-  onSelectPrice?: (price: number, trade: MarketTrade) => void;
+  onSelectPrice?: (price: DecimalString, trade: MarketTrade) => void;
 }
 
 export const defaultRecentTradesMessages: RecentTradesMessages = {
@@ -132,7 +136,9 @@ function RecentTradeRow({
   isDisabled: boolean;
   messages: RecentTradesMessages;
   classNames: RecentTradesClassNames | undefined;
-  onSelectPrice: ((price: number, trade: MarketTrade) => void) | undefined;
+  onSelectPrice:
+    | ((price: DecimalString, trade: MarketTrade) => void)
+    | undefined;
 }) {
   const formattedPrice = `${formatDecimal(
     trade.price,

@@ -15,8 +15,8 @@ export function createBitcoinTradesSnapshot(): MarketTrade[] {
       symbol,
       assetClass,
       tradeId: `snapshot-${index}`,
-      price,
-      quantity: 0.0025 + index * 0.0007,
+      price: toDemoDecimal(price, 2),
+      quantity: toDemoDecimal(0.0025 + index * 0.0007, 6),
       side,
       timestamp: new Date(now - index * 1_300).toISOString(),
       sequence: 100 - index,
@@ -33,8 +33,8 @@ export function createBitcoinTradeUpdate(sequence: number): MarketTradeUpdate {
     symbol,
     assetClass,
     tradeId: `live-${sequence}`,
-    price: Number(price.toFixed(2)),
-    quantity: Number((0.001 + Math.random() * 0.04).toFixed(6)),
+    price: toDemoDecimal(price, 2),
+    quantity: toDemoDecimal(0.001 + Math.random() * 0.04, 6),
     side,
     timestamp: new Date().toISOString(),
     sequence,
@@ -48,4 +48,11 @@ export function createBitcoinTradeUpdate(sequence: number): MarketTradeUpdate {
     previousSequence: sequence - 1,
     sequence,
   };
+}
+
+function toDemoDecimal(value: number, decimalPlaces: number): string {
+  const fixed = value.toFixed(decimalPlaces);
+  const normalized = fixed.replace(/(?:\.0+|(\.\d+?)0+)$/, "$1");
+
+  return normalized === "-0" ? "0" : normalized;
 }

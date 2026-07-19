@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  nonNegativeDecimalStringSchema,
+  positiveDecimalStringSchema,
+} from "./decimal-string";
 
 /**
  * Broad economic classification of a market instrument.
@@ -53,14 +57,14 @@ export const assetRulesSchema = z.object({
    */
   notionalOrderTypes: z.array(orderTypeSchema).default(["market"]),
 
-  minQuantity: positiveNumberSchema.optional(),
-  maxQuantity: positiveNumberSchema.optional(),
+  minQuantity: positiveDecimalStringSchema.optional(),
+  maxQuantity: positiveDecimalStringSchema.optional(),
 
-  minNotional: positiveNumberSchema.optional(),
-  maxNotional: positiveNumberSchema.optional(),
+  minNotional: positiveDecimalStringSchema.optional(),
+  maxNotional: positiveDecimalStringSchema.optional(),
 
-  minPrice: positiveNumberSchema.optional(),
-  maxPrice: positiveNumberSchema.optional(),
+  minPrice: positiveDecimalStringSchema.optional(),
+  maxPrice: positiveDecimalStringSchema.optional(),
 
   quantityPrecision: z.number().int().min(0).max(18).default(6),
   pricePrecision: z.number().int().min(0).max(18).default(2),
@@ -70,18 +74,18 @@ export const assetRulesSchema = z.object({
    * Minimum quantity grid size. For example, a crypto pair may only trade in
    * lots of 0.000001 base units.
    */
-  lotSize: positiveNumberSchema.optional(),
+  lotSize: positiveDecimalStringSchema.optional(),
 
   /**
    * Minimum price movement. For example, a stock priced in cents has a tick
    * size of 0.01.
    */
-  tickSize: positiveNumberSchema.optional(),
+  tickSize: positiveDecimalStringSchema.optional(),
 
   /**
    * Minimum quote-currency grid size for notional/value-based orders.
    */
-  quoteIncrement: positiveNumberSchema.optional(),
+  quoteIncrement: positiveDecimalStringSchema.optional(),
 
   extendedHours: z
     .object({
@@ -108,9 +112,9 @@ export const orderDraftSchema = z.object({
   type: orderTypeSchema,
   tif: tifSchema.optional(),
 
-  quantity: positiveNumberSchema.optional(),
-  notional: positiveNumberSchema.optional(),
-  limitPrice: positiveNumberSchema.optional(),
+  quantity: positiveDecimalStringSchema.optional(),
+  notional: positiveDecimalStringSchema.optional(),
+  limitPrice: positiveDecimalStringSchema.optional(),
 
   extendedHours: z.boolean().optional(),
 });
@@ -149,12 +153,12 @@ export const orderValidationContextSchema = z.object({
   /**
    * Cash/buying power available in the quote currency, for example USD.
    */
-  cashAvailable: nonNegativeNumberSchema,
+  cashAvailable: nonNegativeDecimalStringSchema,
 
   /**
    * Asset quantity available to sell.
    */
-  assetQuantityAvailable: nonNegativeNumberSchema,
+  assetQuantityAvailable: nonNegativeDecimalStringSchema,
 
   /**
    * Broker or asset-specific precision/min/max rules.

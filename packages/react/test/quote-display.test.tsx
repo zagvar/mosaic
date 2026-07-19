@@ -8,11 +8,11 @@ import { QuoteDisplay } from "../src/quote-display";
 const quote: MarketQuote = {
   symbol: "AAPL",
   assetClass: "equity",
-  bidPrice: 195.7,
-  bidQuantity: 120,
-  askPrice: 195.8,
-  askQuantity: 95,
-  lastPrice: 195.75,
+  bidPrice: "195.7",
+  bidQuantity: "120",
+  askPrice: "195.8",
+  askQuantity: "95",
+  lastPrice: "195.75",
   timestamp: "2026-01-01T14:30:00.000Z",
 };
 
@@ -39,7 +39,7 @@ describe("QuoteDisplay", () => {
       screen.getByRole("button", { name: "Use Ask price 195.8 USD" }),
     );
 
-    expect(handleSelect).toHaveBeenCalledWith(195.8, "ask");
+    expect(handleSelect).toHaveBeenCalledWith("195.8", "ask");
   });
 
   it("supports localized labels and number formatting", () => {

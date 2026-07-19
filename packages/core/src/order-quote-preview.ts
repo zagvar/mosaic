@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  nonNegativeDecimalStringSchema,
+  positiveDecimalStringSchema,
+} from "./decimal-string";
 import { orderFeeEstimateSchema } from "./order-fees";
 import { isoTimestampSchema } from "./timestamp";
 
@@ -13,20 +17,20 @@ export const orderQuotePreviewSchema = z
     /**
      * Estimated average execution price.
      */
-    estimatedFillPrice: z.number().positive().optional(),
+    estimatedFillPrice: positiveDecimalStringSchema.optional(),
 
     /**
      * Estimated value of the execution, excluding fees unless the backend
      * explicitly defines otherwise.
      */
-    estimatedNotional: z.number().nonnegative().optional(),
+    estimatedNotional: nonNegativeDecimalStringSchema.optional(),
 
     /**
      * Estimated difference from the comparison price, in basis points.
      *
      * 25 bps = 0.25%.
      */
-    slippageBps: z.number().nonnegative().optional(),
+    slippageBps: nonNegativeDecimalStringSchema.optional(),
 
     /**
      * Broker or backend-provided fee estimates.

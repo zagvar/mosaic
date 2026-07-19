@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nonNegativeDecimalStringSchema } from "./decimal-string";
 
 export const orderFeeTypeSchema = z.enum([
   "commission",
@@ -10,7 +11,7 @@ export const orderFeeTypeSchema = z.enum([
 
 export const orderFeeEstimateSchema = z.object({
   type: orderFeeTypeSchema,
-  amount: z.number().nonnegative(),
+  amount: nonNegativeDecimalStringSchema,
   currency: z.string().trim().min(1),
   fractionDigits: z.number().int().min(0).max(18).optional(),
 });

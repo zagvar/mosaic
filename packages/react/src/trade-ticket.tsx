@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
+  DecimalString,
   OrderSide,
   OrderType,
   OrderValidationIssue,
@@ -52,8 +53,8 @@ export interface TradeTicketProps {
   assetClass: AssetClass;
   assetRules: AssetRules;
 
-  cashAvailable: number;
-  assetQuantityAvailable: number;
+  cashAvailable: DecimalString;
+  assetQuantityAvailable: DecimalString;
   quoteCurrency?: string;
 
   value?: TradeDraftValue;
@@ -61,7 +62,7 @@ export interface TradeTicketProps {
   onChange?: (value: TradeDraftValue) => void;
 
   defaultTif?: Tif;
-  defaultLimitPrice?: number;
+  defaultLimitPrice?: DecimalString;
   amountPresets?: number[];
 
   isDisabled?: boolean;

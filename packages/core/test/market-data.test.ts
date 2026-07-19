@@ -4,11 +4,11 @@ import { marketQuoteSchema } from "../src/order";
 const validQuote = {
   symbol: "AAPL",
   assetClass: "equity" as const,
-  bidPrice: 195.7,
-  bidQuantity: 120,
-  askPrice: 195.8,
-  askQuantity: 95,
-  lastPrice: 195.75,
+  bidPrice: "195.7",
+  bidQuantity: "120",
+  askPrice: "195.8",
+  askQuantity: "95",
+  lastPrice: "195.75",
   timestamp: "2026-01-01T14:30:00.000Z",
 };
 
@@ -29,8 +29,8 @@ describe("marketQuoteSchema", () => {
     expect(
       marketQuoteSchema.safeParse({
         ...validQuote,
-        bidPrice: 195.75,
-        askPrice: 195.75,
+        bidPrice: "195.75",
+        askPrice: "195.75",
       }).success,
     ).toBe(true);
   });
@@ -40,21 +40,21 @@ describe("marketQuoteSchema", () => {
       name: "crossed bid and ask",
       quote: {
         ...validQuote,
-        bidPrice: 196,
+        bidPrice: "196",
       },
     },
     {
       name: "non-positive price",
       quote: {
         ...validQuote,
-        bidPrice: 0,
+        bidPrice: "0",
       },
     },
     {
       name: "non-positive size",
       quote: {
         ...validQuote,
-        askQuantity: 0,
+        askQuantity: "0",
       },
     },
     {

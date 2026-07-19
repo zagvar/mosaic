@@ -3,7 +3,12 @@ import type {
   OrderIntent,
   OrderSummary,
 } from "@zagvar/mosaic-core";
-import { createOrderSummary } from "@zagvar/mosaic-core";
+import {
+  addDecimals,
+  createOrderSummary,
+  multiplyDecimals,
+  subtractDecimals,
+} from "@zagvar/mosaic-core";
 import { askPrice, bidPrice } from "./demo-config";
 
 export function createDemoOrderSummary(
@@ -22,18 +27,23 @@ export function createDemoOrderSummary(
       ? askPrice
       : bidPrice;
   const referenceKind = order.side === "buy" ? "ask" : "bid";
-  const slippageOffset = isCrypto ? 1.25 : 0.02;
+  const slippageOffset = isCrypto ? "1.25" : "0.02";
+
   const estimatedFillPrice =
-    order.type === "market"
-      ? referencePrice +
-        (order.side === "buy" ? slippageOffset : -slippageOffset)
-      : undefined;
+    order.type !== "market"
+      ? undefined
+      : order.side === "buy"
+        ? addDecimals(referencePrice, slippageOffset)
+        : subtractDecimals(referencePrice, slippageOffset);
+
   const estimatedNotional =
     order.notional ??
     (order.quantity === undefined
       ? undefined
-      : order.quantity *
-        (estimatedFillPrice ?? order.limitPrice ?? referencePrice));
+      : multiplyDecimals(
+          order.quantity,
+          estimatedFillPrice ?? order.limitPrice ?? referencePrice,
+        ));
 
   return createOrderSummary(order, {
     marketReference: {
@@ -50,18 +60,18 @@ export function createDemoOrderSummary(
       previewId: `demo-${now}`,
       ...(estimatedFillPrice === undefined ? {} : { estimatedFillPrice }),
       ...(estimatedNotional === undefined ? {} : { estimatedNotional }),
-      slippageBps: order.type === "market" ? (isCrypto ? 18 : 10) : 0,
+      slippageBps: order.type === "market" ? (isCrypto ? "18" : "10") : "0",
       fees: [
         {
           type: "commission",
-          amount: 0.25,
+          amount: "0.25",
           currency: isCrypto ? "USDT" : "USD",
         },
       ],
       createdAt: new Date(now).toISOString(),
       expiresAt: new Date(now + 30_000).toISOString(),
     },
-    highSlippageBps: 50,
+    highSlippageBps: "50",
     now,
   });
 }

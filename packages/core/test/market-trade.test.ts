@@ -14,8 +14,8 @@ describe("market trade schemas", () => {
       symbol: "BTC/USD",
       assetClass: "crypto",
       tradeId: "t-1",
-      price: 67250.12,
-      quantity: 0.015,
+      price: "67250.12",
+      quantity: "0.015",
       side: "buy",
       timestamp,
       sequence: 10,
@@ -28,8 +28,8 @@ describe("market trade schemas", () => {
     const parsed = marketTradeSchema.parse({
       symbol: "BTC/USD",
       assetClass: "crypto",
-      price: 67250.12,
-      quantity: 0.015,
+      price: "67250.12",
+      quantity: "0.015",
       timestamp,
     });
 
@@ -41,8 +41,8 @@ describe("market trade schemas", () => {
       marketTradeSchema.parse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        price: 0,
-        quantity: 0.015,
+        price: "0",
+        quantity: "0.015",
         timestamp: "not-a-date",
       }),
     ).toThrow();
@@ -51,8 +51,8 @@ describe("market trade schemas", () => {
       marketTradeSchema.parse({
         symbol: "BTC/USD",
         assetClass: "crypto",
-        price: 67250.12,
-        quantity: 0,
+        price: "67250.12",
+        quantity: "0",
         timestamp,
       }),
     ).toThrow();
@@ -62,8 +62,8 @@ describe("market trade schemas", () => {
     const trade = {
       symbol: "BTC/USD",
       assetClass: "crypto" as const,
-      price: 67250.12,
-      quantity: 0.015,
+      price: "67250.12",
+      quantity: "0.015",
       side: "sell" as const,
       timestamp,
     };

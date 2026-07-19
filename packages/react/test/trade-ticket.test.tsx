@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AssetRules } from "@zagvar/mosaic-core";
+import type { AssetRules, DecimalString } from "@zagvar/mosaic-core";
 import { I18nProvider } from "react-aria-components";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -14,16 +14,16 @@ const equityRules: AssetRules = {
   allowedTifs: ["day", "gtc", "opg", "cls", "ioc", "fok"],
   supportsNotional: true,
   notionalOrderTypes: ["market"],
-  minQuantity: 0.000001,
-  minNotional: 1,
-  minPrice: 0.01,
-  maxPrice: 1000,
+  minQuantity: "0.000001",
+  minNotional: "1",
+  minPrice: "0.01",
+  maxPrice: "1000",
   quantityPrecision: 6,
   pricePrecision: 2,
   notionalPrecision: 2,
-  lotSize: 0.000001,
-  tickSize: 0.01,
-  quoteIncrement: 0.01,
+  lotSize: "0.000001",
+  tickSize: "0.01",
+  quoteIncrement: "0.01",
 };
 
 describe("TradeTicket", () => {
@@ -189,7 +189,7 @@ describe("TradeTicket", () => {
       {
         assetRules: {
           ...equityRules,
-          minNotional: 1000.5,
+          minNotional: "1000.5",
         },
       },
       { locale: "de-DE" },
@@ -251,7 +251,7 @@ describe("TradeTicket", () => {
 
   it("prefills the limit price from the host", () => {
     renderTradeTicket({
-      defaultLimitPrice: 195.5,
+      defaultLimitPrice: "195.5",
     });
 
     expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
@@ -292,8 +292,8 @@ describe("TradeTicket", () => {
         side: "sell",
         type: "limit",
         tif: "gtc",
-        quantity: 2,
-        limitPrice: 100,
+        quantity: "2",
+        limitPrice: "100",
       },
     });
 
@@ -337,13 +337,13 @@ describe("TradeTicket", () => {
   });
 
   it("reflects an externally controlled limit price", () => {
-    const { rerender } = render(<ControlledPriceTicket limitPrice={100} />);
+    const { rerender } = render(<ControlledPriceTicket limitPrice="100" />);
 
     expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
       "100",
     );
 
-    rerender(<ControlledPriceTicket limitPrice={101.25} />);
+    rerender(<ControlledPriceTicket limitPrice="101.25" />);
 
     expect(screen.getByRole("textbox", { name: "Limit price" })).toHaveValue(
       "101.25",
@@ -363,8 +363,8 @@ describe("TradeTicket", () => {
     expect(handleSubmit).toHaveBeenCalledTimes(1);
     expect(handleSubmit).toHaveBeenCalledWith({
       assetClass: "equity",
-      limitPrice: 10,
-      quantity: 1,
+      limitPrice: "10",
+      quantity: "1",
       side: "buy",
       symbol: "AAPL",
       tif: "day",
@@ -381,8 +381,8 @@ describe("TradeTicket", () => {
         side: "buy",
         type: "market",
         tif: "day",
-        notional: 100,
-        limitPrice: 95,
+        notional: "100",
+        limitPrice: "95",
       },
       onSubmit: handleSubmit,
     });
@@ -395,7 +395,7 @@ describe("TradeTicket", () => {
       side: "buy",
       type: "market",
       tif: "day",
-      notional: 100,
+      notional: "100",
     });
   });
 
@@ -408,8 +408,8 @@ describe("TradeTicket", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        quantity: 2,
-        limitPrice: 125,
+        quantity: "2",
+        limitPrice: "125",
       },
       onSubmit: vi.fn(),
       onSubmitSuccess: handleSuccess,
@@ -424,8 +424,8 @@ describe("TradeTicket", () => {
       side: "buy",
       type: "limit",
       tif: "day",
-      quantity: 2,
-      limitPrice: 125,
+      quantity: "2",
+      limitPrice: "125",
     });
 
     expect(screen.getByRole("textbox", { name: "Quantity" })).toHaveValue("2");
@@ -442,10 +442,10 @@ describe("TradeTicket", () => {
         side: "sell",
         type: "limit",
         tif: "gtc",
-        quantity: 2,
-        limitPrice: 125,
+        quantity: "2",
+        limitPrice: "125",
       },
-      defaultLimitPrice: 100,
+      defaultLimitPrice: "100",
       resetOnSubmitSuccess: true,
       onSubmit: vi.fn(),
     });
@@ -474,8 +474,8 @@ describe("TradeTicket", () => {
       side: "buy",
       type: "limit",
       tif: "day",
-      quantity: 1,
-      limitPrice: 10,
+      quantity: "1",
+      limitPrice: "10",
     };
 
     const { rerender } = render(
@@ -483,8 +483,8 @@ describe("TradeTicket", () => {
         symbol="AAPL"
         assetClass="equity"
         assetRules={equityRules}
-        cashAvailable={1000}
-        assetQuantityAvailable={10}
+        cashAvailable="1000"
+        assetQuantityAvailable="10"
         value={initialValue}
         onChange={handleChange}
         onSubmit={() => deferred.promise}
@@ -500,12 +500,12 @@ describe("TradeTicket", () => {
         symbol="AAPL"
         assetClass="equity"
         assetRules={equityRules}
-        cashAvailable={1000}
-        assetQuantityAvailable={10}
+        cashAvailable="1000"
+        assetQuantityAvailable="10"
         value={{
           ...initialValue,
-          quantity: 2,
-          limitPrice: 11,
+          quantity: "2",
+          limitPrice: "11",
         }}
         onChange={handleChange}
         onSubmit={() => deferred.promise}
@@ -537,8 +537,8 @@ describe("TradeTicket", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        quantity: 1,
-        limitPrice: 10,
+        quantity: "1",
+        limitPrice: "10",
       },
       isSubmitting: true,
     });
@@ -565,8 +565,8 @@ describe("TradeTicket", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        quantity: 1,
-        limitPrice: 10,
+        quantity: "1",
+        limitPrice: "10",
       },
       onSubmit: handleSubmit,
     });
@@ -607,8 +607,8 @@ describe("TradeTicket", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        quantity: 1,
-        limitPrice: 10,
+        quantity: "1",
+        limitPrice: "10",
       },
       onSubmit: async () => {
         throw error;
@@ -636,8 +636,8 @@ describe("TradeTicket", () => {
       side: "buy",
       type: "limit",
       tif: "day",
-      quantity: 1,
-      limitPrice: 10,
+      quantity: "1",
+      limitPrice: "10",
     };
 
     const { rerender } = render(
@@ -645,8 +645,8 @@ describe("TradeTicket", () => {
         symbol="AAPL"
         assetClass="equity"
         assetRules={equityRules}
-        cashAvailable={1000}
-        assetQuantityAvailable={10}
+        cashAvailable="1000"
+        assetQuantityAvailable="10"
         value={initialValue}
         onChange={() => {}}
         onSubmit={() => deferred.promise}
@@ -661,11 +661,11 @@ describe("TradeTicket", () => {
         symbol="AAPL"
         assetClass="equity"
         assetRules={equityRules}
-        cashAvailable={1000}
-        assetQuantityAvailable={10}
+        cashAvailable="1000"
+        assetQuantityAvailable="10"
         value={{
           ...initialValue,
-          limitPrice: 11,
+          limitPrice: "11",
         }}
         onChange={() => {}}
         onSubmit={() => deferred.promise}
@@ -690,8 +690,8 @@ describe("TradeTicket", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        quantity: 1,
-        limitPrice: 10,
+        quantity: "1",
+        limitPrice: "10",
       },
       messages: {
         submissionError: "注文を送信できませんでした。",
@@ -716,8 +716,8 @@ describe("TradeTicket", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        quantity: 1,
-        limitPrice: 10,
+        quantity: "1",
+        limitPrice: "10",
       },
       onSubmit: async () => {
         throw new Error("Rejected");
@@ -744,8 +744,8 @@ describe("TradeTicket", () => {
       side: "buy",
       type: "limit",
       tif: "day",
-      quantity: 1,
-      limitPrice: 10,
+      quantity: "1",
+      limitPrice: "10",
     };
 
     const { rerender } = render(
@@ -753,8 +753,8 @@ describe("TradeTicket", () => {
         symbol="AAPL"
         assetClass="equity"
         assetRules={equityRules}
-        cashAvailable={1000}
-        assetQuantityAvailable={10}
+        cashAvailable="1000"
+        assetQuantityAvailable="10"
         value={initialValue}
         onChange={() => {}}
         onSubmit={async () => {
@@ -772,11 +772,11 @@ describe("TradeTicket", () => {
         symbol="AAPL"
         assetClass="equity"
         assetRules={equityRules}
-        cashAvailable={1000}
-        assetQuantityAvailable={10}
+        cashAvailable="1000"
+        assetQuantityAvailable="10"
         value={{
           ...initialValue,
-          limitPrice: 11,
+          limitPrice: "11",
         }}
         onChange={() => {}}
         onSubmit={async () => {
@@ -825,8 +825,8 @@ describe("TradeTicket", () => {
         symbol="AAPL"
         assetClass="equity"
         assetRules={equityRules}
-        cashAvailable={1000}
-        assetQuantityAvailable={10}
+        cashAvailable="1000"
+        assetQuantityAvailable="10"
         submissionError={null}
       />,
     );
@@ -844,8 +844,8 @@ function renderTradeTicket(
       symbol="AAPL"
       assetClass="equity"
       assetRules={equityRules}
-      cashAvailable={1000}
-      assetQuantityAvailable={10}
+      cashAvailable="1000"
+      assetQuantityAvailable="10"
       {...overrides}
     />
   );
@@ -868,7 +868,7 @@ function ControlledTradeTicket({
     side: "buy",
     type: "limit",
     tif: "day",
-    limitPrice: 100,
+    limitPrice: "100",
   });
 
   function handleChange(nextValue: TradeDraftValue) {
@@ -881,15 +881,15 @@ function ControlledTradeTicket({
       symbol="AAPL"
       assetClass="equity"
       assetRules={equityRules}
-      cashAvailable={1000}
-      assetQuantityAvailable={10}
+      cashAvailable="1000"
+      assetQuantityAvailable="10"
       value={value}
       onChange={handleChange}
     />
   );
 }
 
-function ControlledPriceTicket({ limitPrice }: { limitPrice: number }) {
+function ControlledPriceTicket({ limitPrice }: { limitPrice: DecimalString }) {
   const value: TradeDraftValue = {
     side: "buy",
     type: "limit",
@@ -902,8 +902,8 @@ function ControlledPriceTicket({ limitPrice }: { limitPrice: number }) {
       symbol="AAPL"
       assetClass="equity"
       assetRules={equityRules}
-      cashAvailable={1000}
-      assetQuantityAvailable={10}
+      cashAvailable="1000"
+      assetQuantityAvailable="10"
       value={value}
       onChange={() => {}}
     />

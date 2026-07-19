@@ -85,10 +85,10 @@ For example:
 - Kraken Level 2 sends snapshots and batched bid/ask updates with checksums and
   timestamps.
 
-Adapters may also convert decimal strings into numbers or another application
-representation before validation. Mosaic currently uses JavaScript numbers for
-the display-oriented book contract; execution and accounting systems should
-retain their own decimal-safe source of truth.
+Adapters should convert provider values into Mosaic's canonical decimal strings
+before validation. The display-oriented order-book contract uses the same exact
+decimal representation as the trading contracts; execution and accounting
+systems should retain their own authoritative source of truth.
 
 ## Rendering
 

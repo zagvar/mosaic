@@ -20,7 +20,7 @@ hooks that host applications can style with their own design system.
 - Tick-size, lot-size, precision, balance, and boundary validation
 - Time-in-force selection
 - Controlled and uncontrolled trade-draft state
-- Localizable message-object APIs and locale-aware number formatting
+- Localizable message-object APIs and locale-aware decimal formatting
 - Order review, warnings, fee estimates, and confirmation states
 - Quote display and selectable order-book levels
 - Snapshot and incremental order-book reconciliation
@@ -65,8 +65,8 @@ import { TradeTicket } from "@zagvar/mosaic-react";
   symbol="BTC/USDT"
   assetClass="crypto"
   assetRules={assetRules}
-  cashAvailable={10_000}
-  assetQuantityAvailable={0.5}
+  cashAvailable="10000"
+  assetQuantityAvailable="0.5"
   quoteCurrency="USDT"
   onSubmit={(order) => setOrderForReview(order)}
 />;
@@ -75,6 +75,19 @@ import { TradeTicket } from "@zagvar/mosaic-react";
 `TradeTicket` creates a validated `OrderIntent`. The host application is
 responsible for obtaining any server-authoritative preview, displaying
 `OrderReview`, and submitting the confirmed order to its backend.
+
+## Exact Decimal Contracts
+
+All public trading values—prices, quantities, balances, notionals, fees, and
+market-data values—use canonical decimal strings. For example, use `"195.75"`
+or `"0.000001"`, not JavaScript numbers. Values do not permit exponent
+notation, signs, leading zeroes, or unnecessary trailing zeroes: `"1.2"` is
+valid, while `"1.20"` and `"1e-6"` are not.
+
+Mosaic validates and calculates these values with exact decimal arithmetic, and
+formats them for the active locale at the presentation boundary. Keep values as
+strings in application state and API payloads rather than parsing them as
+floating-point numbers.
 
 ## Design Principles
 

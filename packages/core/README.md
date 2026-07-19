@@ -2,8 +2,8 @@
 
 Framework-free trading contracts and utilities for Mosaic.
 
-> Pre-release: this package is currently consumed from the workspace and is not
-> published to npm.
+> Pre-release: published under the `@zagvar` scope. The repository's main
+> branch may contain the next unreleased version.
 
 ## Included
 
@@ -23,8 +23,8 @@ import { createOrderIntent } from "@zagvar/mosaic-core";
 
 const result = createOrderIntent(draft, {
   assetRules,
-  cashAvailable: 10_000,
-  assetQuantityAvailable: 0.5,
+  cashAvailable: "10000",
+  assetQuantityAvailable: "0.5",
 });
 
 if (result.valid) {
@@ -35,6 +35,17 @@ if (result.valid) {
 External API responses and WebSocket messages should be validated or adapted
 before entering application state. Frontend validation does not replace
 server-side order validation.
+
+## Decimal Values
+
+Every public economic value is a canonical `DecimalString`: prices, quantities,
+balances, notionals, fees, and market-data values. Use ordinary unsigned base-10
+strings such as `"195.75"` or `"0.000001"`; exponent notation, signs, leading
+zeroes, and unnecessary trailing zeroes are rejected.
+
+The package validates these values strictly and uses exact decimal arithmetic
+for comparisons and calculations. Keep them as strings at application and API
+boundaries; convert only for display when necessary.
 
 See the
 [order-book architecture guide](../../docs/order-book.md) for snapshot,

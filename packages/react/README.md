@@ -2,8 +2,8 @@
 
 Accessible, minimally styled React trading components for Mosaic.
 
-> Pre-release: this package is currently consumed from the workspace and is not
-> published to npm.
+> Pre-release: published under the `@zagvar` scope. The repository's main
+> branch may contain the next unreleased version.
 
 ## Components
 
@@ -45,7 +45,9 @@ This keeps the package independent of i18next, React Intl, Lingui, or any other
 host translation system.
 
 Wrap the application in React Aria's `I18nProvider` to control locale-aware
-number and date formatting.
+decimal and date formatting. Economic props and values emitted by components
+are canonical decimal strings, such as `"195.75"` or `"0.000001"`; keep them
+as strings in host state and API payloads.
 
 ## Order Flow
 

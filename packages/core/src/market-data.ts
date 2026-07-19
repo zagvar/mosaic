@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { isoTimestampSchema } from "./timestamp";
+import { compareDecimals, positiveDecimalStringSchema } from "./decimal-string";
 import { assetClassSchema } from "./order-schemas";
+import { isoTimestampSchema } from "./timestamp";
 
 export const marketPriceKindSchema = z.enum([
   "bid",
@@ -25,7 +26,7 @@ export const marketDataModeSchema = z.enum([
 export const marketReferenceSchema = z.object({
   symbol: z.string().min(1).max(32),
   assetClass: assetClassSchema,
-  price: z.number().positive(),
+  price: positiveDecimalStringSchema,
   kind: marketPriceKindSchema,
   timestamp: isoTimestampSchema,
   receivedAt: isoTimestampSchema.optional(),
@@ -44,18 +45,18 @@ export const marketQuoteSchema = z
   .object({
     symbol: z.string().min(1).max(32),
     assetClass: assetClassSchema,
-    bidPrice: z.number().positive(),
-    bidQuantity: z.number().positive().optional(),
-    askPrice: z.number().positive(),
-    askQuantity: z.number().positive().optional(),
-    lastPrice: z.number().positive().optional(),
+    bidPrice: positiveDecimalStringSchema,
+    bidQuantity: positiveDecimalStringSchema.optional(),
+    askPrice: positiveDecimalStringSchema,
+    askQuantity: positiveDecimalStringSchema.optional(),
+    lastPrice: positiveDecimalStringSchema.optional(),
     timestamp: isoTimestampSchema,
     receivedAt: isoTimestampSchema.optional(),
     mode: marketDataModeSchema.optional(),
     displaySource: z.string().trim().min(1).max(64).optional(),
   })
   .superRefine((quote, context) => {
-    if (quote.bidPrice > quote.askPrice) {
+    if (compareDecimals(quote.bidPrice, quote.askPrice) > 0) {
       context.addIssue({
         code: "custom",
         message: "bidPrice must not be greater than askPrice",

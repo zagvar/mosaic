@@ -7,13 +7,14 @@ import {
   TextField,
 } from "react-aria-components";
 import type { InputProps } from "react-aria-components";
+import { normalizeDecimalInput, type DecimalString } from "@zagvar/mosaic-core";
 import { classNameProps } from "./class-name";
 import type { TradeNumberFieldClassNames } from "./trade-number-field";
 
 export interface TradeDecimalFieldProps {
   label: string;
-  value?: number;
-  onChange?: (value: number | undefined) => void;
+  value?: DecimalString;
+  onChange?: (value: DecimalString | undefined) => void;
   precision: number;
   name?: string;
   suffix?: string;
@@ -57,17 +58,12 @@ export function TradeDecimalField({
 
     if (nextValue === "") {
       onChange?.(undefined);
-
       return;
     }
 
-    if (nextValue === "." || nextValue.endsWith(".")) return;
+    if (nextValue.endsWith(".")) return;
 
-    const parsed = Number(nextValue);
-
-    if (Number.isFinite(parsed)) {
-      onChange?.(parsed);
-    }
+    onChange?.(normalizeDecimalInput(nextValue));
   }
 
   const nameProps = name === undefined ? {} : { name };
@@ -93,6 +89,13 @@ export function TradeDecimalField({
           inputMode="decimal"
           onBlur={() => {
             setIsEditing(false);
+
+            if (inputValue === "" || inputValue.endsWith(".")) {
+              setInputValue(value ?? "");
+              return;
+            }
+
+            setInputValue(normalizeDecimalInput(inputValue));
           }}
           onFocus={() => {
             setIsEditing(true);
@@ -123,12 +126,14 @@ export function TradeDecimalField({
 }
 
 function isAllowedDecimalInput(value: string, precision: number) {
+  if (!Number.isSafeInteger(precision) || precision < 0) {
+    throw new RangeError("precision must be a non-negative safe integer.");
+  }
+
   if (value === "") return true;
-  if (!/^\d*\.?\d*$/.test(value)) return false;
+  if (!/^(?:0|[1-9]\d*)(?:\.\d*)?$/.test(value)) return false;
 
-  const [whole = "", decimals = ""] = value.split(".");
-
-  if (whole.length > 1 && whole.startsWith("0")) return false;
+  const [, decimals = ""] = value.split(".");
 
   return decimals.length <= precision;
 }

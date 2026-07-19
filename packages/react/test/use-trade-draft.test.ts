@@ -21,8 +21,8 @@ function renderTradeDraft() {
       symbol: "AAPL",
       assetClass: "equity",
       assetRules,
-      cashAvailable: 1000,
-      assetQuantityAvailable: 10,
+      cashAvailable: "1000",
+      assetQuantityAvailable: "10",
     }),
   );
 }
@@ -32,8 +32,8 @@ describe("useTradeDraft transitions", () => {
     const { result } = renderTradeDraft();
 
     act(() => {
-      result.current.setQuantity(2);
-      result.current.setLimitPrice(100);
+      result.current.setQuantity("2");
+      result.current.setLimitPrice("100");
     });
 
     act(() => {
@@ -49,14 +49,14 @@ describe("useTradeDraft transitions", () => {
 
     act(() => {
       result.current.setSide("sell");
-      result.current.setQuantity(2);
+      result.current.setQuantity("2");
     });
 
     act(() => {
       result.current.setType("market");
     });
 
-    expect(result.current.quantity).toBe(2);
+    expect(result.current.quantity).toBe("2");
     expect(result.current.limitPrice).toBeUndefined();
   });
 
@@ -65,7 +65,7 @@ describe("useTradeDraft transitions", () => {
 
     act(() => {
       result.current.setType("market");
-      result.current.setNotional(100);
+      result.current.setNotional("100");
     });
 
     act(() => {
@@ -83,8 +83,8 @@ describe("useTradeDraft transitions", () => {
           symbol,
           assetClass: rules.assetClass,
           assetRules: rules,
-          cashAvailable: 1000,
-          assetQuantityAvailable: 10,
+          cashAvailable: "1000",
+          assetQuantityAvailable: "10",
         }),
       {
         initialProps: {
@@ -95,9 +95,9 @@ describe("useTradeDraft transitions", () => {
     );
 
     act(() => {
-      result.current.setQuantity(2);
-      result.current.setLimitPrice(100);
-      result.current.setNotional(200);
+      result.current.setQuantity("2");
+      result.current.setLimitPrice("100");
+      result.current.setNotional("200");
     });
 
     rerender({
@@ -122,14 +122,14 @@ describe("useTradeDraft transitions", () => {
     });
 
     act(() => {
-      result.current.setQuantity(2);
+      result.current.setQuantity("2");
     });
 
     act(() => {
       result.current.setType("limit");
     });
 
-    expect(result.current.quantity).toBe(2);
+    expect(result.current.quantity).toBe("2");
     expect(result.current.limitPrice).toBeUndefined();
     expect(result.current.notional).toBeUndefined();
   });
@@ -138,8 +138,8 @@ describe("useTradeDraft transitions", () => {
     const { result } = renderTradeDraft();
 
     act(() => {
-      result.current.setQuantity(2);
-      result.current.setLimitPrice(100);
+      result.current.setQuantity("2");
+      result.current.setLimitPrice("100");
     });
 
     act(() => {
@@ -147,8 +147,8 @@ describe("useTradeDraft transitions", () => {
     });
 
     expect(result.current.side).toBe("sell");
-    expect(result.current.quantity).toBe(2);
-    expect(result.current.limitPrice).toBe(100);
+    expect(result.current.quantity).toBe("2");
+    expect(result.current.limitPrice).toBe("100");
     expect(result.current.notional).toBeUndefined();
   });
 
@@ -159,8 +159,8 @@ describe("useTradeDraft transitions", () => {
           symbol: "AAPL",
           assetClass: "equity",
           assetRules: rules,
-          cashAvailable: 1000,
-          assetQuantityAvailable: 10,
+          cashAvailable: "1000",
+          assetQuantityAvailable: "10",
         }),
       {
         initialProps: {
@@ -191,14 +191,14 @@ describe("useTradeDraft transitions", () => {
         symbol: "AAPL",
         assetClass: "equity",
         assetRules,
-        cashAvailable: 1000,
-        assetQuantityAvailable: 10,
-        defaultLimitPrice: 195.5,
+        cashAvailable: "1000",
+        assetQuantityAvailable: "10",
+        defaultLimitPrice: "195.5",
       }),
     );
 
     act(() => {
-      result.current.setLimitPrice(190);
+      result.current.setLimitPrice("190");
       result.current.setType("market");
     });
 
@@ -208,7 +208,26 @@ describe("useTradeDraft transitions", () => {
       result.current.setType("limit");
     });
 
-    expect(result.current.limitPrice).toBe(195.5);
+    expect(result.current.limitPrice).toBe("195.5");
+  });
+
+  it("truncates a limit-buy preset instead of rounding up", () => {
+    const { result } = renderHook(() =>
+      useTradeDraft({
+        symbol: "AAPL",
+        assetClass: "equity",
+        assetRules,
+        cashAvailable: "100",
+        assetQuantityAvailable: "10",
+        defaultLimitPrice: "3",
+      }),
+    );
+
+    act(() => {
+      result.current.applyPercent(100);
+    });
+
+    expect(result.current.quantity).toBe("33.333333");
   });
 });
 
@@ -225,13 +244,13 @@ describe("useTradeDraft initialization", () => {
         symbol: "AAPL",
         assetClass: "equity",
         assetRules,
-        cashAvailable: 1000,
-        assetQuantityAvailable: 10,
-        defaultLimitPrice: 195.5,
+        cashAvailable: "1000",
+        assetQuantityAvailable: "10",
+        defaultLimitPrice: "195.5",
       }),
     );
 
-    expect(result.current.limitPrice).toBe(195.5);
+    expect(result.current.limitPrice).toBe("195.5");
   });
 
   it("initializes uncontrolled state from defaultValue", () => {
@@ -240,12 +259,12 @@ describe("useTradeDraft initialization", () => {
         symbol: "AAPL",
         assetClass: "equity",
         assetRules,
-        cashAvailable: 1000,
-        assetQuantityAvailable: 10,
+        cashAvailable: "1000",
+        assetQuantityAvailable: "10",
         defaultValue: {
           side: "sell",
           type: "market",
-          quantity: 3,
+          quantity: "3",
         },
       }),
     );
@@ -254,7 +273,7 @@ describe("useTradeDraft initialization", () => {
       side: "sell",
       type: "market",
       tif: "day",
-      quantity: 3,
+      quantity: "3",
     });
   });
 });
@@ -265,7 +284,7 @@ describe("useTradeDraft controlled state", () => {
       side: "sell",
       type: "market",
       tif: "gtc",
-      quantity: 2,
+      quantity: "2",
     };
 
     const { result } = renderHook(() =>
@@ -273,8 +292,8 @@ describe("useTradeDraft controlled state", () => {
         symbol: "AAPL",
         assetClass: "equity",
         assetRules,
-        cashAvailable: 1000,
-        assetQuantityAvailable: 10,
+        cashAvailable: "1000",
+        assetQuantityAvailable: "10",
         value: controlledValue,
       }),
     );
@@ -295,14 +314,14 @@ describe("useTradeDraft controlled state", () => {
         symbol: "AAPL",
         assetClass: "equity",
         assetRules,
-        cashAvailable: 1000,
-        assetQuantityAvailable: 10,
+        cashAvailable: "1000",
+        assetQuantityAvailable: "10",
         value: {
           side: "buy",
           type: "limit",
           tif: "day",
-          quantity: 2,
-          limitPrice: 100,
+          quantity: "2",
+          limitPrice: "100",
         },
         onChange: handleChange,
       }),
@@ -327,8 +346,8 @@ describe("useTradeDraft controlled state", () => {
           symbol: "AAPL",
           assetClass: "equity",
           assetRules,
-          cashAvailable: 1000,
-          assetQuantityAvailable: 10,
+          cashAvailable: "1000",
+          assetQuantityAvailable: "10",
           value,
         }),
       {
@@ -337,7 +356,7 @@ describe("useTradeDraft controlled state", () => {
             side: "buy",
             type: "limit",
             tif: "day",
-            limitPrice: 100,
+            limitPrice: "100",
           } satisfies TradeDraftValue,
         },
       },
@@ -348,11 +367,11 @@ describe("useTradeDraft controlled state", () => {
         side: "buy",
         type: "limit",
         tif: "day",
-        limitPrice: 101,
+        limitPrice: "101",
       },
     });
 
-    expect(result.current.limitPrice).toBe(101);
+    expect(result.current.limitPrice).toBe("101");
   });
 });
 
@@ -363,18 +382,18 @@ describe("useTradeDraft reset", () => {
         symbol: "AAPL",
         assetClass: "equity",
         assetRules,
-        cashAvailable: 1000,
-        assetQuantityAvailable: 10,
+        cashAvailable: "1000",
+        assetQuantityAvailable: "10",
         initialSide: "sell",
         initialType: "limit",
         initialTif: "gtc",
-        defaultLimitPrice: 100,
+        defaultLimitPrice: "100",
       }),
     );
 
     act(() => {
-      result.current.setQuantity(2);
-      result.current.setLimitPrice(125);
+      result.current.setQuantity("2");
+      result.current.setLimitPrice("125");
     });
 
     act(() => {
@@ -385,7 +404,7 @@ describe("useTradeDraft reset", () => {
       side: "sell",
       type: "limit",
       tif: "gtc",
-      limitPrice: 100,
+      limitPrice: "100",
     });
   });
 });

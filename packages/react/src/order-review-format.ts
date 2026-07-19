@@ -1,4 +1,5 @@
 import type {
+  DecimalString,
   OrderExecutionError,
   OrderExecutionErrorCode,
   OrderSummary,
@@ -39,7 +40,7 @@ export function hasWarning(summary: OrderSummary, code: OrderWarningCode) {
 }
 
 export function formatNumber(
-  value: number,
+  value: DecimalString,
   locale: string,
   maximumFractionDigits: number,
 ) {
@@ -47,7 +48,7 @@ export function formatNumber(
 }
 
 export function formatQuoteAmount(
-  value: number,
+  value: DecimalString,
   quoteCurrency: string,
   locale: string,
   maximumFractionDigits: number,

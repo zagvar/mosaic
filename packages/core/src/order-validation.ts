@@ -1,10 +1,9 @@
 import {
-  hasMoreDecimals,
-  isGreaterThan,
-  isLessThan,
-  isMultipleOfIncrement,
-  multiplyDecimal,
-} from "./decimal";
+  compareDecimals,
+  decimalScale,
+  isMultipleOfDecimalIncrement,
+  multiplyDecimals,
+} from "./decimal-string";
 import type { OrderDraft, OrderValidationCode } from "./order-schemas";
 import {
   orderDraftSchema,
@@ -134,32 +133,33 @@ export function validateOrderDraft(
   if (order.quantity !== undefined) {
     if (
       rules.minQuantity !== undefined &&
-      isLessThan(order.quantity, rules.minQuantity)
+      compareDecimals(order.quantity, rules.minQuantity) < 0
     ) {
       addIssue(issues, "quantity_below_min", ["quantity"]);
     }
 
     if (
       rules.maxQuantity !== undefined &&
-      isGreaterThan(order.quantity, rules.maxQuantity)
+      compareDecimals(order.quantity, rules.maxQuantity) > 0
     ) {
       addIssue(issues, "quantity_above_max", ["quantity"]);
     }
 
-    if (hasMoreDecimals(order.quantity, rules.quantityPrecision)) {
+    if (decimalScale(order.quantity) > rules.quantityPrecision) {
       addIssue(issues, "quantity_precision_exceeded", ["quantity"]);
     }
 
     if (
       rules.lotSize !== undefined &&
-      !isMultipleOfIncrement(order.quantity, rules.lotSize)
+      !isMultipleOfDecimalIncrement(order.quantity, rules.lotSize)
     ) {
       addIssue(issues, "quantity_lot_size_mismatch", ["quantity"]);
     }
 
     if (
       order.side === "sell" &&
-      isGreaterThan(order.quantity, validatedContext.assetQuantityAvailable)
+      compareDecimals(order.quantity, validatedContext.assetQuantityAvailable) >
+        0
     ) {
       addIssue(issues, "insufficient_asset_quantity", ["quantity", "account"]);
     }
@@ -168,32 +168,32 @@ export function validateOrderDraft(
   if (order.notional !== undefined) {
     if (
       rules.minNotional !== undefined &&
-      isLessThan(order.notional, rules.minNotional)
+      compareDecimals(order.notional, rules.minNotional) < 0
     ) {
       addIssue(issues, "notional_below_min", ["notional"]);
     }
 
     if (
       rules.maxNotional !== undefined &&
-      isGreaterThan(order.notional, rules.maxNotional)
+      compareDecimals(order.notional, rules.maxNotional) > 0
     ) {
       addIssue(issues, "notional_above_max", ["notional"]);
     }
 
-    if (hasMoreDecimals(order.notional, rules.notionalPrecision)) {
+    if (decimalScale(order.notional) > rules.notionalPrecision) {
       addIssue(issues, "notional_precision_exceeded", ["notional"]);
     }
 
     if (
       rules.quoteIncrement !== undefined &&
-      !isMultipleOfIncrement(order.notional, rules.quoteIncrement)
+      !isMultipleOfDecimalIncrement(order.notional, rules.quoteIncrement)
     ) {
       addIssue(issues, "notional_quote_increment_mismatch", ["notional"]);
     }
 
     if (
       order.side === "buy" &&
-      isGreaterThan(order.notional, validatedContext.cashAvailable)
+      compareDecimals(order.notional, validatedContext.cashAvailable) > 0
     ) {
       addIssue(issues, "insufficient_cash", ["notional", "account"]);
     }
@@ -201,7 +201,7 @@ export function validateOrderDraft(
 
   if (
     order.limitPrice !== undefined &&
-    hasMoreDecimals(order.limitPrice, rules.pricePrecision)
+    decimalScale(order.limitPrice) > rules.pricePrecision
   ) {
     addIssue(issues, "limit_price_precision_exceeded", ["limitPrice"]);
   }
@@ -209,7 +209,7 @@ export function validateOrderDraft(
   if (
     order.limitPrice !== undefined &&
     rules.tickSize !== undefined &&
-    !isMultipleOfIncrement(order.limitPrice, rules.tickSize)
+    !isMultipleOfDecimalIncrement(order.limitPrice, rules.tickSize)
   ) {
     addIssue(issues, "limit_price_tick_size_mismatch", ["limitPrice"]);
   }
@@ -217,7 +217,7 @@ export function validateOrderDraft(
   if (
     order.limitPrice !== undefined &&
     rules.minPrice !== undefined &&
-    isLessThan(order.limitPrice, rules.minPrice)
+    compareDecimals(order.limitPrice, rules.minPrice) < 0
   ) {
     addIssue(issues, "limit_price_below_min", ["limitPrice"]);
   }
@@ -225,7 +225,7 @@ export function validateOrderDraft(
   if (
     order.limitPrice !== undefined &&
     rules.maxPrice !== undefined &&
-    isGreaterThan(order.limitPrice, rules.maxPrice)
+    compareDecimals(order.limitPrice, rules.maxPrice) > 0
   ) {
     addIssue(issues, "limit_price_above_max", ["limitPrice"]);
   }
@@ -236,9 +236,9 @@ export function validateOrderDraft(
     order.quantity !== undefined &&
     order.limitPrice !== undefined
   ) {
-    const estimatedCost = multiplyDecimal(order.quantity, order.limitPrice);
+    const estimatedCost = multiplyDecimals(order.quantity, order.limitPrice);
 
-    if (isGreaterThan(estimatedCost, validatedContext.cashAvailable)) {
+    if (compareDecimals(estimatedCost, validatedContext.cashAvailable) > 0) {
       addIssue(issues, "insufficient_cash", [
         "quantity",
         "limitPrice",

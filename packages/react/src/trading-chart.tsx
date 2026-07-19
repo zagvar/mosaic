@@ -1,4 +1,8 @@
-import type { MarketCandle } from "@zagvar/mosaic-core";
+import {
+  compareDecimals,
+  type DecimalString,
+  type MarketCandle,
+} from "@zagvar/mosaic-core";
 import type {
   CandlestickData,
   HistogramData,
@@ -223,19 +227,34 @@ function setChartData(
 function toCandlestickData(candle: MarketCandle): CandlestickData {
   return {
     time: toUnixTimestamp(candle.timestamp),
-    open: candle.open,
-    high: candle.high,
-    low: candle.low,
-    close: candle.close,
+    open: toChartNumber(candle.open),
+    high: toChartNumber(candle.high),
+    low: toChartNumber(candle.low),
+    close: toChartNumber(candle.close),
   };
 }
 
 function toVolumeData(candle: MarketCandle): HistogramData {
   return {
     time: toUnixTimestamp(candle.timestamp),
-    value: candle.volume ?? 0,
-    color: candle.close >= candle.open ? "#05966955" : "#dc262655",
+    value: toChartNumber(candle.volume ?? "0"),
+    color:
+      compareDecimals(candle.close, candle.open) >= 0
+        ? "#05966955"
+        : "#dc262655",
   };
+}
+
+function toChartNumber(value: DecimalString): number {
+  const chartValue = Number(value);
+
+  if (!Number.isFinite(chartValue)) {
+    throw new RangeError(
+      `Decimal value ${value} cannot be represented by the chart library.`,
+    );
+  }
+
+  return chartValue;
 }
 
 function toUnixTimestamp(timestamp: string): UTCTimestamp {

@@ -1,8 +1,10 @@
 import type {
   AssetRules,
+  DecimalString,
   OrderValidationCode,
   OrderValidationIssue,
 } from "@zagvar/mosaic-core";
+import { formatDecimal } from "./internal/format";
 import { defaultTifSelectMessages } from "./tif-select";
 import type { TifSelectMessages } from "./tif-select";
 
@@ -207,7 +209,7 @@ export function getErrorMessageProps(
 }
 
 export function formatMinimum(
-  value: number | undefined,
+  value: DecimalString | undefined,
   fallback: string,
   options: {
     locale: string;
@@ -221,15 +223,11 @@ export function formatMinimum(
 }
 
 export function formatRuleNumber(
-  value: number,
+  value: DecimalString,
   {
     locale,
     maximumFractionDigits,
   }: { locale: string; maximumFractionDigits: number },
 ) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits,
-    minimumFractionDigits: 0,
-    useGrouping: false,
-  }).format(value);
+  return formatDecimal(value, locale, maximumFractionDigits, false);
 }

@@ -3,11 +3,11 @@ import { marketCandleSchema, marketCandlesSnapshotSchema } from "../src/order";
 
 const candle = {
   timestamp: "2026-01-01T14:30:00.000Z",
-  open: 100,
-  high: 105,
-  low: 99,
-  close: 103,
-  volume: 1_000,
+  open: "100",
+  high: "105",
+  low: "99",
+  close: "103",
+  volume: "1000",
 };
 
 describe("marketCandleSchema", () => {
@@ -28,7 +28,7 @@ describe("marketCandleSchema", () => {
     expect(
       marketCandleSchema.safeParse({
         ...candle,
-        high: 102,
+        high: "102",
       }).success,
     ).toBe(false);
   });
@@ -37,7 +37,7 @@ describe("marketCandleSchema", () => {
     expect(
       marketCandleSchema.safeParse({
         ...candle,
-        low: 101,
+        low: "101",
       }).success,
     ).toBe(false);
   });

@@ -12,12 +12,12 @@ const snapshot: OrderBookSnapshot = {
   baseAsset: "BTC",
   quoteAsset: "USD",
   bids: [
-    { price: 100, quantity: 2 },
-    { price: 99, quantity: 3 },
+    { price: "100", quantity: "2" },
+    { price: "99", quantity: "3" },
   ],
   asks: [
-    { price: 101, quantity: 1 },
-    { price: 102, quantity: 4 },
+    { price: "101", quantity: "1" },
+    { price: "102", quantity: "4" },
   ],
   timestamp: snapshotTimestamp,
   sequence: 10,
@@ -30,13 +30,13 @@ describe("applyOrderBookUpdate", () => {
       snapshot,
       createUpdate({
         bids: [
-          { price: 100.25, quantity: 1 },
-          { price: 100, quantity: 5 },
-          { price: 99, quantity: 0 },
+          { price: "100.25", quantity: "1" },
+          { price: "100", quantity: "5" },
+          { price: "99", quantity: "0" },
         ],
         asks: [
-          { price: 100.5, quantity: 2 },
-          { price: 102, quantity: 0 },
+          { price: "100.5", quantity: "2" },
+          { price: "102", quantity: "0" },
         ],
       }),
     );
@@ -50,12 +50,12 @@ describe("applyOrderBookUpdate", () => {
         baseAsset: "BTC",
         quoteAsset: "USD",
         bids: [
-          { price: 100.25, quantity: 1 },
-          { price: 100, quantity: 5 },
+          { price: "100.25", quantity: "1" },
+          { price: "100", quantity: "5" },
         ],
         asks: [
-          { price: 100.5, quantity: 2 },
-          { price: 101, quantity: 1 },
+          { price: "100.5", quantity: "2" },
+          { price: "101", quantity: "1" },
         ],
         timestamp: updateTimestamp,
         sequence: 11,
@@ -69,22 +69,28 @@ describe("applyOrderBookUpdate", () => {
       snapshot,
       createUpdate({
         bids: [
-          { price: 98, quantity: 1 },
-          { price: 100.25, quantity: 1 },
+          { price: "98", quantity: "1" },
+          { price: "100.25", quantity: "1" },
         ],
         asks: [
-          { price: 103, quantity: 1 },
-          { price: 100.5, quantity: 1 },
+          { price: "103", quantity: "1" },
+          { price: "100.5", quantity: "1" },
         ],
       }),
     );
 
     expectApplied(result);
     expect(result.snapshot.bids.map((level) => level.price)).toEqual([
-      100.25, 100, 99, 98,
+      "100.25",
+      "100",
+      "99",
+      "98",
     ]);
     expect(result.snapshot.asks.map((level) => level.price)).toEqual([
-      100.5, 101, 102, 103,
+      "100.5",
+      "101",
+      "102",
+      "103",
     ]);
   });
 
@@ -93,34 +99,34 @@ describe("applyOrderBookUpdate", () => {
       snapshot,
       createUpdate({
         reset: true,
-        bids: [{ price: 95, quantity: 10 }],
-        asks: [{ price: 105, quantity: 12 }],
+        bids: [{ price: "95", quantity: "10" }],
+        asks: [{ price: "105", quantity: "12" }],
       }),
     );
 
     expectApplied(result);
-    expect(result.snapshot.bids).toEqual([{ price: 95, quantity: 10 }]);
-    expect(result.snapshot.asks).toEqual([{ price: 105, quantity: 12 }]);
+    expect(result.snapshot.bids).toEqual([{ price: "95", quantity: "10" }]);
+    expect(result.snapshot.asks).toEqual([{ price: "105", quantity: "12" }]);
   });
 
   it("caps visible depth after reconciliation", () => {
     const result = applyOrderBookUpdate(
       snapshot,
       createUpdate({
-        bids: [{ price: 100.25, quantity: 1 }],
-        asks: [{ price: 100.5, quantity: 1 }],
+        bids: [{ price: "100.25", quantity: "1" }],
+        asks: [{ price: "100.5", quantity: "1" }],
       }),
       { depth: 2 },
     );
 
     expectApplied(result);
     expect(result.snapshot.bids).toEqual([
-      { price: 100.25, quantity: 1 },
-      { price: 100, quantity: 2 },
+      { price: "100.25", quantity: "1" },
+      { price: "100", quantity: "2" },
     ]);
     expect(result.snapshot.asks).toEqual([
-      { price: 100.5, quantity: 1 },
-      { price: 101, quantity: 1 },
+      { price: "100.5", quantity: "1" },
+      { price: "101", quantity: "1" },
     ]);
   });
 

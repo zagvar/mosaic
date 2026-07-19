@@ -3,9 +3,9 @@ import { orderQuotePreviewSchema } from "../src/order";
 
 const validPreview = {
   previewId: "preview-123",
-  estimatedFillPrice: 101,
-  estimatedNotional: 202,
-  slippageBps: 25,
+  estimatedFillPrice: "101",
+  estimatedNotional: "202",
+  slippageBps: "25",
   createdAt: isoTimestamp(1000),
   expiresAt: isoTimestamp(5000),
 };
@@ -23,7 +23,7 @@ describe("orderQuotePreviewSchema", () => {
         fees: [
           {
             type: "commission",
-            amount: 0.25,
+            amount: "0.25",
             currency: " USD ",
           },
         ],
@@ -33,7 +33,7 @@ describe("orderQuotePreviewSchema", () => {
       fees: [
         {
           type: "commission",
-          amount: 0.25,
+          amount: "0.25",
           currency: "USD",
         },
       ],
@@ -62,21 +62,21 @@ describe("orderQuotePreviewSchema", () => {
       name: "non-positive fill price",
       preview: {
         ...validPreview,
-        estimatedFillPrice: 0,
+        estimatedFillPrice: "0",
       },
     },
     {
       name: "negative estimated notional",
       preview: {
         ...validPreview,
-        estimatedNotional: -1,
+        estimatedNotional: "-1",
       },
     },
     {
       name: "negative slippage",
       preview: {
         ...validPreview,
-        slippageBps: -1,
+        slippageBps: "-1",
       },
     },
     {

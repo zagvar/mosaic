@@ -1,4 +1,10 @@
-import type { OrderBookSnapshot } from "@zagvar/mosaic-core";
+import {
+  addDecimals,
+  compareDecimals,
+  subtractDecimals,
+  type DecimalString,
+  type OrderBookSnapshot,
+} from "@zagvar/mosaic-core";
 import type { CSSProperties } from "react";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name";
@@ -42,26 +48,21 @@ export interface OrderBookMessages {
 export interface OrderBookProps {
   snapshot: OrderBookSnapshot;
   quoteCurrency: string;
-
   layout?: OrderBookLayout;
   depth?: number;
-
   priceFractionDigits?: number;
   quantityFractionDigits?: number;
-
   showTotals?: boolean;
   isDisabled?: boolean;
-
   messages?: Partial<OrderBookMessages>;
   classNames?: OrderBookClassNames;
-
-  onSelectPrice?: (price: number, side: OrderBookSide) => void;
+  onSelectPrice?: (price: DecimalString, side: OrderBookSide) => void;
 }
 
 interface DisplayLevel {
-  price: number;
-  quantity: number;
-  total: number;
+  price: DecimalString;
+  quantity: DecimalString;
+  total: DecimalString;
 }
 
 export const defaultOrderBookMessages: OrderBookMessages = {
@@ -90,15 +91,11 @@ export function OrderBook({
   onSelectPrice,
 }: OrderBookProps) {
   const { locale } = useLocale();
-
-  const text = {
-    ...defaultOrderBookMessages,
-    ...messages,
-  };
+  const text = { ...defaultOrderBookMessages, ...messages };
 
   const bids = addCumulativeTotals(snapshot.bids.slice(0, depth));
   const asks = addCumulativeTotals(snapshot.asks.slice(0, depth));
-  const maxTotal = Math.max(bids.at(-1)?.total ?? 0, asks.at(-1)?.total ?? 0);
+  const maxTotal = getMaximumTotal(bids.at(-1)?.total, asks.at(-1)?.total);
 
   const bestBid = bids[0]?.price;
   const bestAsk = asks[0]?.price;
@@ -106,7 +103,7 @@ export function OrderBook({
   const spread =
     bestBid === undefined || bestAsk === undefined
       ? undefined
-      : bestAsk - bestBid;
+      : subtractDecimals(bestAsk, bestBid);
 
   const empty = bids.length === 0 && asks.length === 0;
 
@@ -207,10 +204,10 @@ function ColumnHeaders({
 function addCumulativeTotals(
   levels: OrderBookSnapshot["bids"],
 ): DisplayLevel[] {
-  let total = 0;
+  let total: DecimalString = "0";
 
   return levels.map((level) => {
-    total += level.quantity;
+    total = addDecimals(total, level.quantity);
 
     return {
       price: level.price,
@@ -218,6 +215,18 @@ function addCumulativeTotals(
       total,
     };
   });
+}
+
+function getMaximumTotal(
+  ...values: Array<DecimalString | undefined>
+): DecimalString {
+  return values.reduce<DecimalString>((maximum, value) => {
+    if (value === undefined || compareDecimals(value, maximum) <= 0) {
+      return maximum;
+    }
+
+    return value;
+  }, "0");
 }
 
 function BookSide({
@@ -241,11 +250,13 @@ function BookSide({
   priceFractionDigits: number;
   quantityFractionDigits: number;
   showTotals: boolean;
-  maxTotal: number;
+  maxTotal: DecimalString;
   isDisabled: boolean;
   messages: OrderBookMessages;
   classNames: OrderBookClassNames | undefined;
-  onSelectPrice: ((price: number, side: OrderBookSide) => void) | undefined;
+  onSelectPrice:
+    | ((price: DecimalString, side: OrderBookSide) => void)
+    | undefined;
 }) {
   return (
     <section aria-label={title} {...classNameProps(classNames?.side)}>
@@ -290,18 +301,20 @@ function BookLevel({
   priceFractionDigits: number;
   quantityFractionDigits: number;
   showTotal: boolean;
-  maxTotal: number;
+  maxTotal: DecimalString;
   isDisabled: boolean;
   messages: OrderBookMessages;
   classNames: OrderBookClassNames | undefined;
-  onSelectPrice: ((price: number, side: OrderBookSide) => void) | undefined;
+  onSelectPrice:
+    | ((price: DecimalString, side: OrderBookSide) => void)
+    | undefined;
 }) {
   const formattedPrice = formatDecimal(
     level.price,
     locale,
     priceFractionDigits,
   );
-  const depthPercent = maxTotal === 0 ? 0 : (level.total / maxTotal) * 100;
+  const depthPercent = getDepthPercent(level.total, maxTotal);
 
   const content = (
     <>
@@ -348,6 +361,29 @@ function BookLevel({
       {content}
     </button>
   );
+}
+
+/**
+ * CSS widths are visual-only. Decimal contract values never leave their
+ * string form except at this browser-rendering boundary.
+ */
+function getDepthPercent(total: DecimalString, maximum: DecimalString): number {
+  if (compareDecimals(maximum, "0") === 0) {
+    return 0;
+  }
+
+  const totalNumber = Number(total);
+  const maximumNumber = Number(maximum);
+
+  if (
+    !Number.isFinite(totalNumber) ||
+    !Number.isFinite(maximumNumber) ||
+    maximumNumber <= 0
+  ) {
+    return 0;
+  }
+
+  return Math.min(100, Math.max(0, (totalNumber / maximumNumber) * 100));
 }
 
 function joinClassNames(...values: Array<string | undefined>) {

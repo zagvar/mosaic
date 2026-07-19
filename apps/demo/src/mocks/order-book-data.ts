@@ -17,19 +17,19 @@ export const bitcoinBookUpdateTemplates: Array<
     symbol: "BTC/USDT",
     assetClass: "crypto",
     bids: [
-      { price: 65000, quantity: 0.6 },
-      { price: 64999.5, quantity: 0 },
+      { price: "65000", quantity: "0.6" },
+      { price: "64999.5", quantity: "0" },
     ],
-    asks: [{ price: 65000.5, quantity: 0.5 }],
+    asks: [{ price: "65000.5", quantity: "0.5" }],
     reset: false,
   },
   {
     symbol: "BTC/USDT",
     assetClass: "crypto",
-    bids: [{ price: 65000.25, quantity: 0.3 }],
+    bids: [{ price: "65000.25", quantity: "0.3" }],
     asks: [
-      { price: 65000.5, quantity: 0 },
-      { price: 65000.75, quantity: 0.4 },
+      { price: "65000.5", quantity: "0" },
+      { price: "65000.75", quantity: "0.4" },
     ],
     reset: false,
   },
@@ -37,13 +37,13 @@ export const bitcoinBookUpdateTemplates: Array<
     symbol: "BTC/USDT",
     assetClass: "crypto",
     bids: [
-      { price: 65000.25, quantity: 0 },
-      { price: 65000, quantity: 0.4 },
-      { price: 64999.75, quantity: 0.55 },
+      { price: "65000.25", quantity: "0" },
+      { price: "65000", quantity: "0.4" },
+      { price: "64999.75", quantity: "0.55" },
     ],
     asks: [
-      { price: 65000.5, quantity: 0.25 },
-      { price: 65000.75, quantity: 0 },
+      { price: "65000.5", quantity: "0.25" },
+      { price: "65000.75", quantity: "0" },
     ],
     reset: false,
   },
@@ -70,9 +70,16 @@ function createLevels(side: "bid" | "ask", bestPrice: number, count: number) {
     const quantity = 0.35 + ((index * 7) % 11) * 0.13 + index * 0.08;
 
     return {
-      price: bestPrice + direction * index * 0.5,
-      quantity: Number(quantity.toFixed(6)),
+      price: toDemoDecimal(bestPrice + direction * index * 0.5),
+      quantity: toDemoDecimal(Number(quantity.toFixed(6))),
       orderCount: 2 + ((index * 3) % 9),
     };
   });
+}
+
+function toDemoDecimal(value: number): string {
+  const fixed = value.toFixed(8);
+  const normalized = fixed.replace(/(?:\.0+|(\.\d+?)0+)$/, "$1");
+
+  return normalized === "-0" ? "0" : normalized;
 }

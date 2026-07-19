@@ -20,7 +20,7 @@ describe("TradeDecimalField", () => {
 
     await user.type(input, ".");
 
-    expect(input).toHaveValue(".");
+    expect(input).toHaveValue("");
     expect(handleChange).not.toHaveBeenCalled();
   });
 
@@ -42,7 +42,7 @@ describe("TradeDecimalField", () => {
 
     expect(input).toHaveValue("1.");
     expect(handleChange).toHaveBeenCalledTimes(1);
-    expect(handleChange).toHaveBeenLastCalledWith(1);
+    expect(handleChange).toHaveBeenLastCalledWith("1");
   });
 
   it("does not collapse fractional input to zero while deleting", async () => {
@@ -63,7 +63,7 @@ describe("TradeDecimalField", () => {
     await user.keyboard("{Backspace}");
 
     expect(input).toHaveValue("0.0000");
-    expect(handleChange).toHaveBeenLastCalledWith(0);
+    expect(handleChange).toHaveBeenLastCalledWith("0");
   });
 
   it("prevents extra decimal places beyond the configured precision", async () => {

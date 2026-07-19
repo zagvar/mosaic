@@ -15,16 +15,16 @@ export const appleRules: AssetRules = {
   allowedTifs: ["day", "gtc", "opg", "cls", "ioc", "fok"],
   supportsNotional: true,
   notionalOrderTypes: ["market"],
-  minQuantity: 0.000001,
-  minNotional: 1,
-  minPrice: 0.01,
-  maxPrice: 1000,
+  minQuantity: "0.000001",
+  minNotional: "1",
+  minPrice: "0.01",
+  maxPrice: "1000",
   quantityPrecision: 6,
   pricePrecision: 2,
   notionalPrecision: 2,
-  lotSize: 0.000001,
-  tickSize: 0.01,
-  quoteIncrement: 0.01,
+  lotSize: "0.000001",
+  tickSize: "0.01",
+  quoteIncrement: "0.01",
   extendedHours: {
     allowed: true,
     allowedOrderTypes: ["limit"],
@@ -39,28 +39,28 @@ export const bitcoinRules: AssetRules = {
   allowedTifs: ["gtc", "ioc"],
   supportsNotional: true,
   notionalOrderTypes: ["market"],
-  minQuantity: 0.000001,
-  minNotional: 1,
-  minPrice: 0.01,
+  minQuantity: "0.000001",
+  minNotional: "1",
+  minPrice: "0.01",
   quantityPrecision: 6,
   pricePrecision: 2,
   notionalPrecision: 2,
-  lotSize: 0.000001,
-  tickSize: 0.01,
-  quoteIncrement: 0.01,
+  lotSize: "0.000001",
+  tickSize: "0.01",
+  quoteIncrement: "0.01",
 };
 
-export const latestPrice = 195.75;
-export const bidPrice = 195.7;
-export const askPrice = 195.8;
+export const latestPrice = "195.75";
+export const bidPrice = "195.7";
+export const askPrice = "195.8";
 
 export const appleQuote: MarketQuote = {
   symbol: "AAPL",
   assetClass: "equity",
-  bidPrice: bidPrice,
-  bidQuantity: 120,
-  askPrice: askPrice,
-  askQuantity: 95,
+  bidPrice,
+  bidQuantity: "120",
+  askPrice,
+  askQuantity: "95",
   lastPrice: latestPrice,
   timestamp: new Date().toISOString(),
   mode: "real_time",

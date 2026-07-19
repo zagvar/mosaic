@@ -8,8 +8,8 @@ const limitOrder: OrderIntent = {
   side: "buy",
   type: "limit",
   tif: "day",
-  quantity: 1.25,
-  limitPrice: 100.1,
+  quantity: "1.25",
+  limitPrice: "100.1",
 };
 
 const marketOrder: OrderIntent = {
@@ -18,13 +18,13 @@ const marketOrder: OrderIntent = {
   side: "buy",
   type: "market",
   tif: "day",
-  quantity: 2,
+  quantity: "2",
 };
 
 const marketReference = {
   symbol: "AAPL",
   assetClass: "equity" as const,
-  price: 100,
+  price: "100",
   kind: "ask" as const,
   timestamp: isoTimestamp(1000),
   mode: "real_time" as const,
@@ -38,7 +38,7 @@ describe("createOrderSummary", () => {
   it("estimates limit-order notional from quantity and limit price", () => {
     expect(createOrderSummary(limitOrder)).toEqual({
       order: limitOrder,
-      estimatedNotional: 125.125,
+      estimatedNotional: "125.125",
       estimateBasis: "limit_price",
       warnings: [{ code: "estimated_notional" }],
     });
@@ -51,13 +51,13 @@ describe("createOrderSummary", () => {
       side: "sell",
       type: "market",
       tif: "gtc",
-      quantity: 0.01,
+      quantity: "0.01",
     };
 
     const marketReference = {
       symbol: "BTC/USD",
       assetClass: "crypto" as const,
-      price: 65000,
+      price: "65000",
       kind: "bid" as const,
       timestamp: isoTimestamp(1000),
       mode: "real_time" as const,
@@ -66,7 +66,7 @@ describe("createOrderSummary", () => {
 
     expect(createOrderSummary(order, { marketReference, now: 1000 })).toEqual({
       order,
-      estimatedNotional: 650,
+      estimatedNotional: "650",
       estimateBasis: "reference_price",
       marketReference,
       warnings: [
@@ -83,7 +83,7 @@ describe("createOrderSummary", () => {
       side: "sell",
       type: "market",
       tif: "day",
-      quantity: 2,
+      quantity: "2",
     };
 
     expect(createOrderSummary(order)).toEqual({
@@ -99,7 +99,7 @@ describe("createOrderSummary", () => {
       side: "buy",
       type: "market",
       tif: "day",
-      notional: 100,
+      notional: "100",
     };
 
     expect(
@@ -107,7 +107,7 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          price: 195,
+          price: "195",
           kind: "ask",
           timestamp: isoTimestamp(1000),
         },
@@ -118,7 +118,7 @@ describe("createOrderSummary", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        price: 195,
+        price: "195",
         kind: "ask",
         timestamp: isoTimestamp(1000),
       },
@@ -131,7 +131,7 @@ describe("createOrderSummary", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        price: 95,
+        price: "95",
         kind: "last",
         timestamp: isoTimestamp(1000),
         mode: "delayed",
@@ -150,14 +150,14 @@ describe("createOrderSummary", () => {
       side: "sell",
       type: "market",
       tif: "day",
-      quantity: 1,
+      quantity: "1",
     };
 
     const delayed = createOrderSummary(order, {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        price: 100,
+        price: "100",
         kind: "bid",
         timestamp: isoTimestamp(1000),
         receivedAt: isoTimestamp(2000),
@@ -178,7 +178,7 @@ describe("createOrderSummary", () => {
       marketReference: {
         symbol: "AAPL",
         assetClass: "equity",
-        price: 100,
+        price: "100",
         kind: "mark",
         timestamp: isoTimestamp(8000),
         mode: "indicative",
@@ -201,7 +201,7 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "MSFT",
           assetClass: "equity",
-          price: 100,
+          price: "100",
           kind: "last",
           timestamp: isoTimestamp(1000),
         },
@@ -213,7 +213,7 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          price: 0,
+          price: "0",
           kind: "last",
           timestamp: isoTimestamp(1000),
         },
@@ -225,7 +225,7 @@ describe("createOrderSummary", () => {
         marketReference: {
           symbol: "AAPL",
           assetClass: "equity",
-          price: 100,
+          price: "100",
           kind: "last",
           timestamp: isoTimestamp(1000),
           displaySource: " ",
@@ -244,18 +244,18 @@ describe("createOrderSummary", () => {
     const result = createOrderSummary(marketOrder, {
       quotePreview: {
         previewId: "preview-123",
-        estimatedFillPrice: 101,
-        estimatedNotional: 202,
-        slippageBps: 20,
+        estimatedFillPrice: "101",
+        estimatedNotional: "202",
+        slippageBps: "20",
         createdAt: isoTimestamp(2000),
         expiresAt: isoTimestamp(5000),
       },
       now: 3000,
     });
 
-    expect(result.estimatedNotional).toBe(202);
+    expect(result.estimatedNotional).toBe("202");
     expect(result.estimateBasis).toBe("quote_preview");
-    expect(result.quotePreview?.estimatedFillPrice).toBe(101);
+    expect(result.quotePreview?.estimatedFillPrice).toBe("101");
   });
 
   it("uses preview fees instead of separately supplied fees", () => {
@@ -263,7 +263,7 @@ describe("createOrderSummary", () => {
       fees: [
         {
           type: "regulatory",
-          amount: 0.01,
+          amount: "0.01",
           currency: "USD",
         },
       ],
@@ -272,7 +272,7 @@ describe("createOrderSummary", () => {
         fees: [
           {
             type: "commission",
-            amount: 0.25,
+            amount: "0.25",
             currency: "USD",
           },
         ],
@@ -284,7 +284,7 @@ describe("createOrderSummary", () => {
     expect(result.fees).toEqual([
       {
         type: "commission",
-        amount: 0.25,
+        amount: "0.25",
         currency: "USD",
       },
     ]);
@@ -294,10 +294,10 @@ describe("createOrderSummary", () => {
     const aboveThreshold = createOrderSummary(marketOrder, {
       quotePreview: {
         previewId: "preview-high",
-        slippageBps: 51,
+        slippageBps: "51",
         createdAt: isoTimestamp(1000),
       },
-      highSlippageBps: 50,
+      highSlippageBps: "50",
       now: 1000,
     });
 
@@ -308,10 +308,10 @@ describe("createOrderSummary", () => {
     const atThreshold = createOrderSummary(marketOrder, {
       quotePreview: {
         previewId: "preview-accepted",
-        slippageBps: 50,
+        slippageBps: "50",
         createdAt: isoTimestamp(1000),
       },
-      highSlippageBps: 50,
+      highSlippageBps: "50",
       now: 1000,
     });
 
@@ -345,7 +345,7 @@ describe("createOrderSummary", () => {
       staleAfterMs: 5000,
       quotePreview: {
         previewId: "preview-123",
-        estimatedNotional: 202,
+        estimatedNotional: "202",
         createdAt: isoTimestamp(7000),
         expiresAt: isoTimestamp(9000),
       },
@@ -363,13 +363,13 @@ describe("createOrderSummary", () => {
   it("validates the high-slippage threshold", () => {
     expect(() =>
       createOrderSummary(marketOrder, {
-        highSlippageBps: -1,
+        highSlippageBps: "-1",
       }),
     ).toThrow();
 
     expect(() =>
       createOrderSummary(marketOrder, {
-        highSlippageBps: Number.POSITIVE_INFINITY,
+        highSlippageBps: "1e999",
       }),
     ).toThrow();
   });
@@ -381,14 +381,14 @@ describe("createOrderSummary", () => {
       side: "buy",
       type: "market",
       tif: "gtc",
-      notional: 100,
+      notional: "100",
     };
 
     const result = createOrderSummary(order, {
       fees: [
         {
           type: "commission",
-          amount: 0.25,
+          amount: "0.25",
           currency: "USD",
         },
       ],
@@ -397,7 +397,7 @@ describe("createOrderSummary", () => {
     expect(result.fees).toEqual([
       {
         type: "commission",
-        amount: 0.25,
+        amount: "0.25",
         currency: "USD",
       },
     ]);
@@ -408,7 +408,7 @@ describe("createOrderSummary", () => {
       fees: [
         {
           type: "commission",
-          amount: 0.000001,
+          amount: "0.000001",
           currency: " BTC ",
           fractionDigits: 8,
         },
@@ -418,7 +418,7 @@ describe("createOrderSummary", () => {
     expect(result.fees).toEqual([
       {
         type: "commission",
-        amount: 0.000001,
+        amount: "0.000001",
         currency: "BTC",
         fractionDigits: 8,
       },
@@ -429,16 +429,16 @@ describe("createOrderSummary", () => {
     const fees = [
       {
         type: "commission" as const,
-        amount: 0.25,
+        amount: "0.25",
         currency: "USD",
       },
     ];
 
     const result = createOrderSummary(limitOrder, { fees });
 
-    fees[0]!.amount = 99;
+    fees[0]!.amount = "99";
 
-    expect(result.fees?.[0]?.amount).toBe(0.25);
+    expect(result.fees?.[0]?.amount).toBe("0.25");
   });
 
   it.each([
@@ -446,7 +446,7 @@ describe("createOrderSummary", () => {
       name: "negative amount",
       fee: {
         type: "commission" as const,
-        amount: -0.01,
+        amount: "-0.01",
         currency: "USD",
       },
     },
@@ -454,7 +454,7 @@ describe("createOrderSummary", () => {
       name: "non-finite amount",
       fee: {
         type: "commission" as const,
-        amount: Number.POSITIVE_INFINITY,
+        amount: "Infinity",
         currency: "USD",
       },
     },
@@ -462,7 +462,7 @@ describe("createOrderSummary", () => {
       name: "empty currency",
       fee: {
         type: "commission" as const,
-        amount: 0.01,
+        amount: "0.01",
         currency: "   ",
       },
     },
@@ -470,7 +470,7 @@ describe("createOrderSummary", () => {
       name: "fractional precision",
       fee: {
         type: "commission" as const,
-        amount: 0.01,
+        amount: "0.01",
         currency: "USD",
         fractionDigits: 2.5,
       },
@@ -479,7 +479,7 @@ describe("createOrderSummary", () => {
       name: "negative precision",
       fee: {
         type: "commission" as const,
-        amount: 0.01,
+        amount: "0.01",
         currency: "USD",
         fractionDigits: -1,
       },
@@ -488,7 +488,7 @@ describe("createOrderSummary", () => {
       name: "precision above 18",
       fee: {
         type: "commission" as const,
-        amount: 0.01,
+        amount: "0.01",
         currency: "USD",
         fractionDigits: 19,
       },
@@ -506,13 +506,13 @@ describe("createOrderSummary", () => {
       fees: [
         {
           type: "commission",
-          amount: 0,
+          amount: "0",
           currency: "USD",
           fractionDigits: 0,
         },
         {
           type: "other",
-          amount: 0,
+          amount: "0",
           currency: "ETH",
           fractionDigits: 18,
         },
@@ -529,8 +529,8 @@ describe("createOrderSummary", () => {
       side: "buy",
       type: "limit",
       tif: "day",
-      quantity: 1,
-      limitPrice: 100,
+      quantity: "1",
+      limitPrice: "100",
       extendedHours: true,
     };
 

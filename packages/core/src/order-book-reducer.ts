@@ -1,3 +1,4 @@
+import { compareDecimals } from "./decimal-string";
 import type {
   OrderBookLevel,
   OrderBookSnapshot,
@@ -99,14 +100,16 @@ function reconcileSide(
   const levels = new Map(current.map((level) => [level.price, level]));
 
   for (const update of updates) {
-    if (update.quantity === 0) {
+    if (update.quantity === "0") {
       levels.delete(update.price);
     } else {
       levels.set(update.price, update);
     }
   }
 
-  return [...levels.values()].sort((a, b) =>
-    direction === "ascending" ? a.price - b.price : b.price - a.price,
-  );
+  return [...levels.values()].sort((left, right) => {
+    const comparison = compareDecimals(left.price, right.price);
+
+    return direction === "ascending" ? comparison : -comparison;
+  });
 }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
+  DecimalString,
   OrderDraft,
   OrderSide,
   OrderType,
@@ -9,7 +10,15 @@ import type {
   OrderValidationResult,
   Tif,
 } from "@zagvar/mosaic-core";
-import { validateOrderDraft } from "@zagvar/mosaic-core";
+import {
+  compareDecimals,
+  decimalScale,
+  decimalStringSchema,
+  divideDecimals,
+  multiplyDecimals,
+  truncateDecimal,
+  validateOrderDraft,
+} from "@zagvar/mosaic-core";
 
 /**
  * User-editable state managed by a trade ticket.
@@ -21,17 +30,17 @@ export interface TradeDraftValue {
   side: OrderSide;
   type: OrderType;
   tif?: Tif;
-  quantity?: number;
-  limitPrice?: number;
-  notional?: number;
+  quantity?: DecimalString;
+  limitPrice?: DecimalString;
+  notional?: DecimalString;
 }
 
 export interface UseTradeDraftOptions {
   symbol: string;
   assetClass: AssetClass;
   assetRules: AssetRules;
-  cashAvailable: number;
-  assetQuantityAvailable: number;
+  cashAvailable: DecimalString;
+  assetQuantityAvailable: DecimalString;
 
   /**
    * Controlled editable draft value.
@@ -51,7 +60,7 @@ export interface UseTradeDraftOptions {
   initialSide?: OrderSide;
   initialType?: OrderType;
   initialTif?: Tif;
-  defaultLimitPrice?: number;
+  defaultLimitPrice?: DecimalString;
 }
 
 export interface UseTradeDraftResult {
@@ -66,14 +75,14 @@ export interface UseTradeDraftResult {
   tif: Tif | undefined;
   setTif: (tif: Tif | undefined) => void;
 
-  quantity: number | undefined;
-  setQuantity: (quantity: number | undefined) => void;
+  quantity: DecimalString | undefined;
+  setQuantity: (quantity: DecimalString | undefined) => void;
 
-  limitPrice: number | undefined;
-  setLimitPrice: (limitPrice: number | undefined) => void;
+  limitPrice: DecimalString | undefined;
+  setLimitPrice: (limitPrice: DecimalString | undefined) => void;
 
-  notional: number | undefined;
-  setNotional: (notional: number | undefined) => void;
+  notional: DecimalString | undefined;
+  setNotional: (notional: DecimalString | undefined) => void;
 
   applyPercent: (percent: number) => void;
 
@@ -89,7 +98,7 @@ interface CreateInitialTradeDraftValueOptions {
   side: OrderSide;
   type: OrderType;
   tif: Tif | undefined;
-  defaultLimitPrice: number | undefined;
+  defaultLimitPrice: DecimalString | undefined;
   allowedTifs: Tif[] | undefined;
 }
 
@@ -199,19 +208,19 @@ export function useTradeDraft({
     updateValue((current) => updateOptionalField(current, "tif", nextTif));
   }
 
-  function setQuantity(nextQuantity: number | undefined) {
+  function setQuantity(nextQuantity: DecimalString | undefined) {
     updateValue((current) =>
       updateOptionalField(current, "quantity", nextQuantity),
     );
   }
 
-  function setLimitPrice(nextLimitPrice: number | undefined) {
+  function setLimitPrice(nextLimitPrice: DecimalString | undefined) {
     updateValue((current) =>
       updateOptionalField(current, "limitPrice", nextLimitPrice),
     );
   }
 
-  function setNotional(nextNotional: number | undefined) {
+  function setNotional(nextNotional: DecimalString | undefined) {
     updateValue((current) =>
       updateOptionalField(current, "notional", nextNotional),
     );
@@ -266,53 +275,48 @@ export function useTradeDraft({
   }
 
   function applyPercent(percent: number) {
-    const ratio = percent / 100;
+    const ratio = percentToRatio(percent);
 
     updateValue((current) => {
       if (current.side === "buy" && current.type === "market") {
-        const notional = roundToPrecision(
-          cashAvailable * ratio,
+        const notional = truncateDecimal(
+          multiplyDecimals(cashAvailable, ratio),
           assetRules.notionalPrecision,
         );
 
         const { quantity: _quantity, notional: _notional, ...rest } = current;
 
-        return {
-          ...rest,
-          notional,
-        };
+        return { ...rest, notional };
       }
 
       if (current.side === "buy" && current.type === "limit") {
-        if (current.limitPrice === undefined || current.limitPrice <= 0) {
+        if (
+          current.limitPrice === undefined ||
+          compareDecimals(current.limitPrice, "0") <= 0
+        ) {
           return current;
         }
 
-        const quantity = roundToPrecision(
-          (cashAvailable * ratio) / current.limitPrice,
+        const quantity = divideDecimals(
+          multiplyDecimals(cashAvailable, ratio),
+          current.limitPrice,
           assetRules.quantityPrecision,
         );
 
         const { quantity: _quantity, notional: _notional, ...rest } = current;
 
-        return {
-          ...rest,
-          quantity,
-        };
+        return { ...rest, quantity };
       }
 
       if (current.side === "sell") {
-        const quantity = roundToPrecision(
-          assetQuantityAvailable * ratio,
+        const quantity = truncateDecimal(
+          multiplyDecimals(assetQuantityAvailable, ratio),
           assetRules.quantityPrecision,
         );
 
         const { quantity: _quantity, notional: _notional, ...rest } = current;
 
-        return {
-          ...rest,
-          quantity,
-        };
+        return { ...rest, quantity };
       }
 
       return current;
@@ -352,10 +356,24 @@ export function useTradeDraft({
   };
 }
 
-function roundToPrecision(value: number, precision: number) {
-  const factor = 10 ** precision;
+function percentToRatio(percent: number): DecimalString {
+  if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+    throw new RangeError("percent must be a finite value from 0 through 100.");
+  }
 
-  return Math.floor(value * factor) / factor;
+  const percentText = percent.toString();
+
+  if (/[eE]/.test(percentText)) {
+    throw new RangeError("percent must not use exponent notation.");
+  }
+
+  const percentDecimal = decimalStringSchema.parse(percentText);
+
+  return divideDecimals(
+    percentDecimal,
+    "100",
+    decimalScale(percentDecimal) + 2,
+  );
 }
 
 function getValidTif(
@@ -404,7 +422,7 @@ function createInitialTradeDraftValue({
 function updateOptionalField(
   value: TradeDraftValue,
   field: OptionalTradeDraftField,
-  nextValue: number | Tif | undefined,
+  nextValue: DecimalString | Tif | undefined,
 ): TradeDraftValue {
   if (nextValue === undefined) {
     const next = { ...value };

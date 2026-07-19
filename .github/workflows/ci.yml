@@ -41,11 +41,13 @@ jobs:
         run: |
           pnpm --filter @zagvar/mosaic-core typecheck
           pnpm --filter @zagvar/mosaic-core test
+          pnpm --filter @zagvar/mosaic-core build
 
       - name: Validate React
         run: |
           pnpm --filter @zagvar/mosaic-react typecheck
           pnpm --filter @zagvar/mosaic-react test
+          pnpm --filter @zagvar/mosaic-react build
 
       - name: Validate demo
         run: |

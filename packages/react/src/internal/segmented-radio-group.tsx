@@ -5,7 +5,7 @@ import {
   RadioGroup,
 } from "react-aria-components";
 import type { RadioGroupProps } from "react-aria-components";
-import { classNameProps } from "./class-name";
+import { classNameProps } from "./class-name.js";
 
 export interface SegmentedRadioOption<TValue extends string> {
   value: TValue;

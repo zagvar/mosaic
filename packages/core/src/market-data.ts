@@ -1,7 +1,11 @@
 import { z } from "zod";
-import { compareDecimals, positiveDecimalStringSchema } from "./decimal-string";
-import { assetClassSchema } from "./order-schemas";
-import { isoTimestampSchema } from "./timestamp";
+import {
+  compareDecimals,
+  nonNegativeDecimalStringSchema,
+  positiveDecimalStringSchema,
+} from "./decimal-string.js";
+import { assetClassSchema } from "./order-schemas.js";
+import { isoTimestampSchema } from "./timestamp.js";
 
 export const marketPriceKindSchema = z.enum([
   "bid",
@@ -46,9 +50,9 @@ export const marketQuoteSchema = z
     symbol: z.string().min(1).max(32),
     assetClass: assetClassSchema,
     bidPrice: positiveDecimalStringSchema,
-    bidQuantity: positiveDecimalStringSchema.optional(),
+    bidQuantity: nonNegativeDecimalStringSchema.optional(),
     askPrice: positiveDecimalStringSchema,
-    askQuantity: positiveDecimalStringSchema.optional(),
+    askQuantity: nonNegativeDecimalStringSchema.optional(),
     lastPrice: positiveDecimalStringSchema.optional(),
     timestamp: isoTimestampSchema,
     receivedAt: isoTimestampSchema.optional(),

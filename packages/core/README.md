@@ -47,6 +47,10 @@ The package validates these values strictly and uses exact decimal arithmetic
 for comparisons and calculations. Keep them as strings at application and API
 boundaries; convert only for display when necessary.
 
+Mosaic re-exports the contracts and arithmetic helpers from
+`@zagvar/decimal`, allowing applications to share the same implementation with
+other Zagvar packages.
+
 See the
 [order-book architecture guide](../../docs/order-book.md) for snapshot,
 incremental-update, and resynchronization details.

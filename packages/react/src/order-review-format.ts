@@ -5,8 +5,8 @@ import type {
   OrderSummary,
   OrderWarningCode,
 } from "@zagvar/mosaic-core";
-import { formatBasisPoints, formatDecimal } from "./internal/format";
-import type { OrderReviewMessages } from "./order-review-messages";
+import { formatBasisPoints, formatDecimal } from "./internal/format.js";
+import type { OrderReviewMessages } from "./order-review-messages.js";
 
 export function getConfirmationErrorMessage(
   error: string | OrderExecutionError | null | undefined,

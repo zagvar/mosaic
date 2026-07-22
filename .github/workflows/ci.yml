@@ -53,3 +53,9 @@ jobs:
         run: |
           pnpm --filter @zagvar/mosaic-demo typecheck
           pnpm --filter @zagvar/mosaic-demo build
+
+      - name: Validate package entry points
+        run: >-
+          node --input-type=module -e
+          "await Promise.all([import('./packages/core/dist/index.js'),
+          import('./packages/react/dist/index.js')]);"

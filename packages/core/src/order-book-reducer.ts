@@ -1,9 +1,9 @@
-import { compareDecimals } from "./decimal-string";
+import { compareDecimals } from "./decimal-string.js";
 import type {
   OrderBookLevel,
   OrderBookSnapshot,
   OrderBookUpdate,
-} from "./order-book";
+} from "./order-book.js";
 
 /** Reasons an update cannot be safely applied to the current snapshot. */
 export type OrderBookUpdateFailure =

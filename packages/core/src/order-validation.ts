@@ -3,12 +3,12 @@ import {
   decimalScale,
   isMultipleOfDecimalIncrement,
   multiplyDecimals,
-} from "./decimal-string";
-import type { OrderDraft, OrderValidationCode } from "./order-schemas";
+} from "./decimal-string.js";
+import type { OrderDraft, OrderValidationCode } from "./order-schemas.js";
 import {
   orderDraftSchema,
   orderValidationContextSchema,
-} from "./order-schemas";
+} from "./order-schemas.js";
 
 export interface OrderValidationIssue {
   code: OrderValidationCode;

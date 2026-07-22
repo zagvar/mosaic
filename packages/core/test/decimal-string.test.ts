@@ -1,4 +1,3 @@
-import Big from "big.js";
 import { describe, expect, it } from "vitest";
 import {
   addDecimals,
@@ -13,7 +12,6 @@ import {
   positiveDecimalStringSchema,
   roundDecimalForDisplay,
   subtractDecimals,
-  toDecimalString,
 } from "../src/decimal-string";
 
 describe("decimal strings", () => {
@@ -81,12 +79,6 @@ describe("decimal strings", () => {
     expect(compareDecimals("0.3", "0.300000000000000001")).toBe(-1);
     expect(isMultipleOfDecimalIncrement("0.000003", "0.000001")).toBe(true);
     expect(isMultipleOfDecimalIncrement("0.0000031", "0.000001")).toBe(false);
-  });
-
-  it("serializes Big values without exponent notation", () => {
-    expect(toDecimalString(new Big("0.000000000000000001"))).toBe(
-      "0.000000000000000001",
-    );
   });
 
   it("rounds with an explicit half-up policy", () => {

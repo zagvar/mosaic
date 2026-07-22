@@ -6,7 +6,7 @@ import {
   Text,
 } from "react-aria-components";
 import type { InputProps, NumberFieldProps } from "react-aria-components";
-import { classNameProps } from "./class-name";
+import { classNameProps } from "./class-name.js";
 
 export interface TradeNumberFieldClassNames {
   root?: string;

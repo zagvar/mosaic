@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "react-aria-components";
 import type { SelectProps } from "react-aria-components";
-import { classNameProps } from "./internal/class-name";
+import { classNameProps } from "./internal/class-name.js";
 
 export interface TifSelectMessages {
   label: string;

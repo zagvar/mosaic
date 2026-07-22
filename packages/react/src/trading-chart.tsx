@@ -17,7 +17,7 @@ import {
   HistogramSeries,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
-import { classNameProps } from "./internal/class-name";
+import { classNameProps } from "./internal/class-name.js";
 
 export interface TradingChartClassNames {
   root?: string;

@@ -5,7 +5,7 @@ import type {
   OrderSummary,
 } from "@zagvar/mosaic-core";
 import { useLocale } from "react-aria-components";
-import { classNameProps } from "./internal/class-name";
+import { classNameProps } from "./internal/class-name.js";
 import {
   formatDateTime,
   formatNumber,
@@ -13,11 +13,11 @@ import {
   getConfirmationErrorMessage,
   getWarningMessage,
   hasWarning,
-} from "./order-review-format";
+} from "./order-review-format.js";
 import {
   mergeOrderReviewMessages,
   type OrderReviewMessagesInput,
-} from "./order-review-messages";
+} from "./order-review-messages.js";
 
 export interface OrderReviewClassNames {
   root?: string;

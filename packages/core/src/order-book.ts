@@ -3,9 +3,9 @@ import {
   compareDecimals,
   nonNegativeDecimalStringSchema,
   positiveDecimalStringSchema,
-} from "./decimal-string";
-import { marketIdentitySchema } from "./market-identity";
-import { isoTimestampSchema } from "./timestamp";
+} from "./decimal-string.js";
+import { marketIdentitySchema } from "./market-identity.js";
+import { isoTimestampSchema } from "./timestamp.js";
 
 /**
  * Validates one aggregated price level in a complete order-book snapshot.

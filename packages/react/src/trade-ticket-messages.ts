@@ -4,9 +4,9 @@ import type {
   OrderValidationCode,
   OrderValidationIssue,
 } from "@zagvar/mosaic-core";
-import { formatDecimal } from "./internal/format";
-import { defaultTifSelectMessages } from "./tif-select";
-import type { TifSelectMessages } from "./tif-select";
+import { formatDecimal } from "./internal/format.js";
+import { defaultTifSelectMessages } from "./tif-select.js";
+import type { TifSelectMessages } from "./tif-select.js";
 
 export interface TradeTicketValidationMessageContext {
   issue: OrderValidationIssue;

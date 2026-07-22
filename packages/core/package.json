@@ -19,7 +19,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -42,7 +42,7 @@
     "url": "https://github.com/zagvar/mosaic/issues"
   },
   "dependencies": {
-    "big.js": "^7.0.1",
+    "@zagvar/decimal": "^0.1.2",
     "zod": "^4.4.3"
   }
 }

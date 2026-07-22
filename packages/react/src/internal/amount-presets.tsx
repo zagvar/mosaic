@@ -1,5 +1,5 @@
-import { classNameProps } from "./class-name";
-import { formatPercent } from "./format";
+import { classNameProps } from "./class-name.js";
+import { formatPercent } from "./format.js";
 import { useLocale } from "react-aria-components";
 
 export interface AmountPresetsClassNames {

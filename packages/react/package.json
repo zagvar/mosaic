@@ -1,6 +1,6 @@
 {
   "name": "@zagvar/mosaic-react",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Accessible React components for Mosaic trading interfaces.",
   "license": "MIT",
   "type": "module",

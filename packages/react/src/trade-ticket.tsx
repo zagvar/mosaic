@@ -3,37 +3,37 @@ import { useEffect, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
-  DecimalString,
   OrderSide,
   OrderType,
   OrderValidationIssue,
   OrderIntent,
   Tif,
 } from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
 import { createOrderIntent } from "@zagvar/mosaic-core";
 import { useLocale, VisuallyHidden } from "react-aria-components";
-import { OrderTypeToggle } from "./order-type-toggle";
-import { AvailableBalance } from "./internal/available-balance";
-import type { AvailableBalanceClassNames } from "./internal/available-balance";
-import type { SegmentedRadioGroupClassNames } from "./internal/segmented-radio-group";
-import { TradeDecimalField } from "./internal/trade-decimal-field";
-import type { TradeNumberFieldClassNames } from "./internal/trade-number-field";
-import { TradeSideToggle } from "./trade-side-toggle";
-import { TifSelect } from "./tif-select";
-import type { TifSelectClassNames } from "./tif-select";
-import { useTradeDraft, type TradeDraftValue } from "./use-trade-draft";
-import { AmountPresets } from "./internal/amount-presets";
-import type { AmountPresetsClassNames } from "./internal/amount-presets";
+import { OrderTypeToggle } from "./order-type-toggle.js";
+import { AvailableBalance } from "./internal/available-balance.js";
+import type { AvailableBalanceClassNames } from "./internal/available-balance.js";
+import type { SegmentedRadioGroupClassNames } from "./internal/segmented-radio-group.js";
+import { TradeDecimalField } from "./internal/trade-decimal-field.js";
+import type { TradeNumberFieldClassNames } from "./internal/trade-number-field.js";
+import { TradeSideToggle } from "./trade-side-toggle.js";
+import { TifSelect } from "./tif-select.js";
+import type { TifSelectClassNames } from "./tif-select.js";
+import { useTradeDraft, type TradeDraftValue } from "./use-trade-draft.js";
+import { AmountPresets } from "./internal/amount-presets.js";
+import type { AmountPresetsClassNames } from "./internal/amount-presets.js";
 import {
   formatMinimum,
   getErrorMessageProps,
   getValidationMessage,
   mergeTradeTicketMessages,
-} from "./trade-ticket-messages";
+} from "./trade-ticket-messages.js";
 import type {
   TradeTicketMessagesInput,
   TradeTicketValidationMessageBaseContext,
-} from "./trade-ticket-messages";
+} from "./trade-ticket-messages.js";
 
 export interface TradeTicketClassNames {
   root?: string;

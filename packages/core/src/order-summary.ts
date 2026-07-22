@@ -4,14 +4,14 @@ import {
   multiplyDecimals,
   nonNegativeDecimalStringSchema,
   type DecimalString,
-} from "./decimal-string";
-import { marketReferenceSchema, type MarketReference } from "./market-data";
-import { orderFeeEstimateSchema, type OrderFeeEstimate } from "./order-fees";
-import type { OrderIntent } from "./order-intent";
+} from "@zagvar/decimal";
+import { marketReferenceSchema, type MarketReference } from "./market-data.js";
+import { orderFeeEstimateSchema, type OrderFeeEstimate } from "./order-fees.js";
+import type { OrderIntent } from "./order-intent.js";
 import {
   orderQuotePreviewSchema,
   type OrderQuotePreview,
-} from "./order-quote-preview";
+} from "./order-quote-preview.js";
 
 export type OrderEstimateBasis =
   | "limit_price"

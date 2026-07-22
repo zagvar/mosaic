@@ -1,8 +1,5 @@
-import {
-  compareDecimals,
-  type DecimalString,
-  type MarketCandle,
-} from "@zagvar/mosaic-core";
+import { compareDecimals, type DecimalString } from "@zagvar/decimal";
+import type { MarketCandle } from "@zagvar/mosaic-core";
 import type {
   CandlestickData,
   HistogramData,
@@ -17,7 +14,7 @@ import {
   HistogramSeries,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
-import { classNameProps } from "./internal/class-name";
+import { classNameProps } from "./internal/class-name.js";
 
 export interface TradingChartClassNames {
   root?: string;

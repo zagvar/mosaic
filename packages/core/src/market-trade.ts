@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { positiveDecimalStringSchema } from "./decimal-string";
-import { marketIdentitySchema } from "./market-identity";
-import { isoTimestampSchema } from "./timestamp";
+import { positiveDecimalStringSchema } from "@zagvar/decimal";
+import { marketIdentitySchema } from "./market-identity.js";
+import { isoTimestampSchema } from "./timestamp.js";
 
 export const tradeSideSchema = z.enum(["buy", "sell", "unknown"]);
 

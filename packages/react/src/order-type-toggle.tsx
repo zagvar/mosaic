@@ -1,6 +1,6 @@
 import type { OrderType } from "@zagvar/mosaic-core";
-import { SegmentedRadioGroup } from "./internal/segmented-radio-group";
-import type { SegmentedRadioGroupClassNames } from "./internal/segmented-radio-group";
+import { SegmentedRadioGroup } from "./internal/segmented-radio-group.js";
+import type { SegmentedRadioGroupClassNames } from "./internal/segmented-radio-group.js";
 
 export interface OrderTypeToggleMessages {
   label: string;

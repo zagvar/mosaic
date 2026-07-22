@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   nonNegativeDecimalStringSchema,
   positiveDecimalStringSchema,
-} from "./decimal-string";
+} from "@zagvar/decimal";
 
 /**
  * Broad economic classification of a market instrument.

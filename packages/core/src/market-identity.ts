@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { assetClassSchema } from "./order-schemas";
+import { assetClassSchema } from "./order-schemas.js";
 
 const instrumentIdentifierSchema = z.string().trim().min(1).max(64);
 

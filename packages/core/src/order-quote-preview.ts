@@ -2,9 +2,9 @@ import { z } from "zod";
 import {
   nonNegativeDecimalStringSchema,
   positiveDecimalStringSchema,
-} from "./decimal-string";
-import { orderFeeEstimateSchema } from "./order-fees";
-import { isoTimestampSchema } from "./timestamp";
+} from "@zagvar/decimal";
+import { orderFeeEstimateSchema } from "./order-fees.js";
+import { isoTimestampSchema } from "./timestamp.js";
 
 export const orderQuotePreviewSchema = z
   .object({

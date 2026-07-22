@@ -35,6 +35,16 @@ describe("marketQuoteSchema", () => {
     ).toBe(true);
   });
 
+  it("allows zero-sized quotes", () => {
+    expect(
+      marketQuoteSchema.safeParse({
+        ...validQuote,
+        bidQuantity: "0",
+        askQuantity: "0",
+      }).success,
+    ).toBe(true);
+  });
+
   it.each([
     {
       name: "crossed bid and ask",
@@ -48,13 +58,6 @@ describe("marketQuoteSchema", () => {
       quote: {
         ...validQuote,
         bidPrice: "0",
-      },
-    },
-    {
-      name: "non-positive size",
-      quote: {
-        ...validQuote,
-        askQuantity: "0",
       },
     },
     {

@@ -3,12 +3,12 @@ import {
   compareDecimals,
   subtractDecimals,
   type DecimalString,
-  type OrderBookSnapshot,
-} from "@zagvar/mosaic-core";
+} from "@zagvar/decimal";
+import type { OrderBookSnapshot } from "@zagvar/mosaic-core";
 import type { CSSProperties } from "react";
 import { useLocale } from "react-aria-components";
-import { classNameProps } from "./internal/class-name";
-import { formatDecimal } from "./internal/format";
+import { classNameProps } from "./internal/class-name.js";
+import { formatDecimal } from "./internal/format.js";
 
 export type OrderBookSide = "bid" | "ask";
 export type OrderBookLayout = "stacked" | "split";

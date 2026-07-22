@@ -1,7 +1,7 @@
-import type { OrderDraft, OrderValidationContext } from "./order-schemas";
-import { orderDraftSchema } from "./order-schemas";
-import type { OrderValidationIssue } from "./order-validation";
-import { validateOrderDraft } from "./order-validation";
+import type { OrderDraft, OrderValidationContext } from "./order-schemas.js";
+import { orderDraftSchema } from "./order-schemas.js";
+import type { OrderValidationIssue } from "./order-validation.js";
+import { validateOrderDraft } from "./order-validation.js";
 
 /**
  * Canonical order intent produced after draft parsing and validation.

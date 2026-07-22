@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
-  DecimalString,
   OrderDraft,
   OrderSide,
   OrderType,
@@ -17,8 +16,9 @@ import {
   divideDecimals,
   multiplyDecimals,
   truncateDecimal,
-  validateOrderDraft,
-} from "@zagvar/mosaic-core";
+  type DecimalString,
+} from "@zagvar/decimal";
+import { validateOrderDraft } from "@zagvar/mosaic-core";
 
 /**
  * User-editable state managed by a trade ticket.

@@ -1,10 +1,10 @@
 import type {
-  DecimalString,
   OrderExecutionError,
   OrderExecutionErrorCode,
   OrderSummary,
   OrderWarningCode,
 } from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
 import { formatBasisPoints, formatDecimal } from "./internal/format.js";
 import type { OrderReviewMessages } from "./order-review-messages.js";
 

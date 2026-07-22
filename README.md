@@ -89,6 +89,10 @@ formats them for the active locale at the presentation boundary. Keep values as
 strings in application state and API payloads rather than parsing them as
 floating-point numbers.
 
+`DecimalString`, its schemas, and arithmetic helpers are owned by
+`@zagvar/decimal`. Import them directly from that package; Mosaic Core and React
+consume the same shared contract without re-exporting it.
+
 ## Design Principles
 
 ### Behavior, Not Branding

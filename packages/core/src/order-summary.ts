@@ -4,7 +4,7 @@ import {
   multiplyDecimals,
   nonNegativeDecimalStringSchema,
   type DecimalString,
-} from "./decimal-string.js";
+} from "@zagvar/decimal";
 import { marketReferenceSchema, type MarketReference } from "./market-data.js";
 import { orderFeeEstimateSchema, type OrderFeeEstimate } from "./order-fees.js";
 import type { OrderIntent } from "./order-intent.js";

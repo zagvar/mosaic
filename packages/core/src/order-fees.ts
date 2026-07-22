@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nonNegativeDecimalStringSchema } from "./decimal-string.js";
+import { nonNegativeDecimalStringSchema } from "@zagvar/decimal";
 
 export const orderFeeTypeSchema = z.enum([
   "commission",

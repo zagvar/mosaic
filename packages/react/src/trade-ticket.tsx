@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import type {
   AssetClass,
   AssetRules,
-  DecimalString,
   OrderSide,
   OrderType,
   OrderValidationIssue,
   OrderIntent,
   Tif,
 } from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
 import { createOrderIntent } from "@zagvar/mosaic-core";
 import { useLocale, VisuallyHidden } from "react-aria-components";
 import { OrderTypeToggle } from "./order-type-toggle.js";

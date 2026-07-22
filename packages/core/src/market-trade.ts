@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { positiveDecimalStringSchema } from "./decimal-string.js";
+import { positiveDecimalStringSchema } from "@zagvar/decimal";
 import { marketIdentitySchema } from "./market-identity.js";
 import { isoTimestampSchema } from "./timestamp.js";
 

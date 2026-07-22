@@ -47,7 +47,8 @@ host translation system.
 Wrap the application in React Aria's `I18nProvider` to control locale-aware
 decimal and date formatting. Economic props and values emitted by components
 are canonical decimal strings, such as `"195.75"` or `"0.000001"`; keep them
-as strings in host state and API payloads.
+as strings in host state and API payloads. Import `DecimalString` and decimal
+helpers directly from `@zagvar/decimal` when working with those values.
 
 ## Order Flow
 

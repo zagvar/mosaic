@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   nonNegativeDecimalStringSchema,
   positiveDecimalStringSchema,
-} from "./decimal-string.js";
+} from "@zagvar/decimal";
 import { orderFeeEstimateSchema } from "./order-fees.js";
 import { isoTimestampSchema } from "./timestamp.js";
 

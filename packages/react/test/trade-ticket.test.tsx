@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { AssetRules, DecimalString } from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
+import type { AssetRules } from "@zagvar/mosaic-core";
 import { I18nProvider } from "react-aria-components";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

@@ -1,9 +1,9 @@
 import type {
   AssetRules,
-  DecimalString,
   OrderValidationCode,
   OrderValidationIssue,
 } from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
 import { formatDecimal } from "./internal/format.js";
 import { defaultTifSelectMessages } from "./tif-select.js";
 import type { TifSelectMessages } from "./tif-select.js";

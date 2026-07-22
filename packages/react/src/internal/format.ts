@@ -1,7 +1,7 @@
 import {
   roundDecimalForDisplay,
   type DecimalString,
-} from "@zagvar/mosaic-core";
+} from "@zagvar/decimal";
 
 export function formatDecimal(
   value: DecimalString | number,

@@ -1,8 +1,5 @@
-import {
-  compareDecimals,
-  type DecimalString,
-  type MarketCandle,
-} from "@zagvar/mosaic-core";
+import { compareDecimals, type DecimalString } from "@zagvar/decimal";
+import type { MarketCandle } from "@zagvar/mosaic-core";
 import type {
   CandlestickData,
   HistogramData,

@@ -3,7 +3,7 @@ import {
   compareDecimals,
   nonNegativeDecimalStringSchema,
   positiveDecimalStringSchema,
-} from "./decimal-string.js";
+} from "@zagvar/decimal";
 import { assetClassSchema } from "./order-schemas.js";
 import { isoTimestampSchema } from "./timestamp.js";
 

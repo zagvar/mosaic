@@ -3,7 +3,7 @@ import {
   decimalScale,
   isMultipleOfDecimalIncrement,
   multiplyDecimals,
-} from "./decimal-string.js";
+} from "@zagvar/decimal";
 import type { OrderDraft, OrderValidationCode } from "./order-schemas.js";
 import {
   orderDraftSchema,

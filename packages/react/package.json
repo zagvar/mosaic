@@ -25,6 +25,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@zagvar/decimal": "^0.1.2",
     "@zagvar/mosaic-core": "workspace:*",
     "react-aria-components": "^1.19.0"
   },

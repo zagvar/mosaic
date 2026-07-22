@@ -3,12 +3,8 @@ import type {
   OrderIntent,
   OrderSummary,
 } from "@zagvar/mosaic-core";
-import {
-  addDecimals,
-  createOrderSummary,
-  multiplyDecimals,
-  subtractDecimals,
-} from "@zagvar/mosaic-core";
+import { addDecimals, multiplyDecimals, subtractDecimals } from "@zagvar/decimal";
+import { createOrderSummary } from "@zagvar/mosaic-core";
 import { askPrice, bidPrice } from "./demo-config";
 
 export function createDemoOrderSummary(

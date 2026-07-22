@@ -11,6 +11,7 @@
     "e2e:headed": "playwright test -c playwright.config.ts --headed"
   },
   "dependencies": {
+    "@zagvar/decimal": "^0.1.2",
     "@zagvar/mosaic-core": "workspace:*",
     "@zagvar/mosaic-react": "workspace:*",
     "@vitejs/plugin-react": "^6.0.2",

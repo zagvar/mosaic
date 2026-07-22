@@ -1,8 +1,5 @@
-import type {
-  DecimalString,
-  MarketTrade,
-  TradeSide,
-} from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
+import type { MarketTrade, TradeSide } from "@zagvar/mosaic-core";
 import { useLocale } from "react-aria-components";
 import { classNameProps } from "./internal/class-name.js";
 import { formatDecimal } from "./internal/format.js";

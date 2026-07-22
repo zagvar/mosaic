@@ -1,4 +1,4 @@
-import { compareDecimals } from "./decimal-string.js";
+import { compareDecimals } from "@zagvar/decimal";
 import type {
   OrderBookLevel,
   OrderBookSnapshot,

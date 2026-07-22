@@ -1,11 +1,11 @@
 import { lazy, StrictMode, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type {
-  DecimalString,
   OrderExecutionError,
   OrderIntent,
   OrderSummary,
 } from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
 import {
   OrderBook,
   OrderReview,

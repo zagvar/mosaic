@@ -7,7 +7,7 @@ import {
   TextField,
 } from "react-aria-components";
 import type { InputProps } from "react-aria-components";
-import { normalizeDecimalInput, type DecimalString } from "@zagvar/mosaic-core";
+import { normalizeDecimalInput, type DecimalString } from "@zagvar/decimal";
 import { classNameProps } from "./class-name.js";
 import type { TradeNumberFieldClassNames } from "./trade-number-field.js";
 

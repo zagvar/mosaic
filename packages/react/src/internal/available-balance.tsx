@@ -1,4 +1,5 @@
-import type { DecimalString, OrderSide } from "@zagvar/mosaic-core";
+import type { DecimalString } from "@zagvar/decimal";
+import type { OrderSide } from "@zagvar/mosaic-core";
 import { classNameProps } from "./class-name.js";
 import { formatCurrencyOrQuoteAmount, formatDecimal } from "./format.js";
 

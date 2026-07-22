@@ -4,4 +4,5 @@
 ---
 
 Migrate public trading values from JavaScript numbers to canonical decimal
-strings backed by the shared `@zagvar/decimal` contract.
+strings. Decimal contracts and helpers now come directly from the shared
+`@zagvar/decimal` package instead of a Mosaic Core proxy.

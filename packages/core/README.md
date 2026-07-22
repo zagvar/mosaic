@@ -47,9 +47,9 @@ The package validates these values strictly and uses exact decimal arithmetic
 for comparisons and calculations. Keep them as strings at application and API
 boundaries; convert only for display when necessary.
 
-Mosaic re-exports the contracts and arithmetic helpers from
-`@zagvar/decimal`, allowing applications to share the same implementation with
-other Zagvar packages.
+Import `DecimalString`, its schemas, and arithmetic helpers directly from
+`@zagvar/decimal`. Mosaic Core uses that shared package internally rather than
+defining or proxying a second decimal API.
 
 See the
 [order-book architecture guide](../../docs/order-book.md) for snapshot,

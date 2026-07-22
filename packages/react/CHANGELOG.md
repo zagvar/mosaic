@@ -1,5 +1,18 @@
 # @zagvar/mosaic-react
 
+## 0.3.0
+
+### Minor Changes
+
+- 27af705: Migrate public trading values from JavaScript numbers to canonical decimal
+  strings. Decimal contracts and helpers now come directly from the shared
+  `@zagvar/decimal` package instead of a Mosaic Core proxy.
+
+### Patch Changes
+
+- Updated dependencies [27af705]
+  - @zagvar/mosaic-core@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

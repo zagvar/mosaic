@@ -1,7 +1,4 @@
-import {
-  roundDecimalForDisplay,
-  type DecimalString,
-} from "@zagvar/decimal";
+import { roundDecimalForDisplay, type DecimalString } from "@zagvar/decimal";
 
 export function formatDecimal(
   value: DecimalString | number,
@@ -22,7 +19,7 @@ export function formatDecimal(
   const formattedInteger = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 0,
     useGrouping,
-  }).format(BigInt(integer));
+  }).format(integer === "-0" ? -0 : BigInt(integer));
 
   if (fraction === undefined) {
     return formattedInteger;
@@ -124,4 +121,11 @@ function localizeDigits(value: string, locale: string) {
     .reverse();
 
   return value.replace(/\d/g, (digit) => digits[Number(digit)]!);
+}
+
+export function formatDateTime(value: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  }).format(new Date(value));
 }

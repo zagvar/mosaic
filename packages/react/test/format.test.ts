@@ -33,4 +33,8 @@ describe("formatDecimal", () => {
   it("preserves the existing numeric formatting path during migration", () => {
     expect(formatDecimal(1234.5, "en-US", 2)).toBe("1,234.5");
   });
+
+  it("preserves the sign of negative values below one", () => {
+    expect(formatDecimal("-0.005", "en-US", 3)).toBe("-0.005");
+  });
 });

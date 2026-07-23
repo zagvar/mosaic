@@ -1,5 +1,11 @@
 # @zagvar/mosaic-core
 
+## 0.4.0
+
+### Minor Changes
+
+- 89c2d5e: Add provider-neutral contracts for order records, lifecycle statuses, fills, fees, events, server-driven queries, cursor pages, updates, and deterministic page reconciliation.
+
 ## 0.3.0
 
 ### Minor Changes

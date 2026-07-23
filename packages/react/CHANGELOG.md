@@ -1,5 +1,16 @@
 # @zagvar/mosaic-react
 
+## 0.4.0
+
+### Minor Changes
+
+- 89c2d5e: Add accessible OrdersPanel and OrderDetails components and the useOrdersQuery hook, including mixed-instrument formatting, filters, sorting, cursor pagination, and host-controlled order actions.
+
+### Patch Changes
+
+- Updated dependencies [89c2d5e]
+  - @zagvar/mosaic-core@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
